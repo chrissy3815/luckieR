@@ -5,6 +5,16 @@
 ##
 #############################################################################
 
+#' Calculates an average over a user-provided distribution
+#'
+#' @param x A vector to be averaged
+#' @param traitDist The vector containing the probability of each
+#'   value in x
+#' @return The average of x over traitDist
+#' @examples
+#' x = 1:3
+#' traitDist = rep (1/3, 3)
+#' traitAve (x, traitDist)
 source ("megamatrixFunctions.R")
 
 traitAve = function (x, traitDist) {
