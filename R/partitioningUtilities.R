@@ -277,7 +277,8 @@ calcMoments = function (M, R1, R2, R3) {
 #' Reproductive Success." The American Naturalist 197(4). 
 #' DOI: https://doi.org/10.1086/712874.  It assumes that a
 #' breeder is defined as an individual who has produced at least one
-#' offspring ("definition 3"). 
+#' offspring ("definition 3").
+#' @seealso [luckieR::makePCondBreedDef3], which calls this function
 makePDef3 = function (P, F) {
   ## The number of original states
   mz = dim(P)[1]
@@ -348,6 +349,7 @@ makePDef3 = function (P, F) {
 #' F = matrix (0, 3, 3); F[1,] = 0:2
 #' c0 = c(1,0,0)
 #' out = makePCondBreedDef3 (P, F, c0)
+#' @seealso [luckieR::makePDef3], which this function calls
 makePCondBreedDef3 = function (P, F, c0) {
   ## The number of original states
   mz = dim(P)[1]

@@ -1,9 +1,70 @@
-#####################################################################################
+##########################################################################
 ##
 ## partitioning: functions for partitioning variance and skewness
 ##
-#####################################################################################
+##########################################################################
 
+#' Partitions variance and skewness of LRO
+#' 
+#' Partitions variance and skewness of lifetime reproductive output
+#' (LRO) for models without trait or environmental variation. 
+#'
+#' @param P The survival/growth transition matrix: P\[i,j\] is the
+#'   probability of transitioning from state j to state i.
+#' @param F The fecundity matrix: F\[i,j\] is the expected number of
+#'   state i offspring from a state j parent
+#' @param c0 A vector specifying the offspring state distribution:
+#'   c0\[j\] is the probability that an individual is born in state j
+#' @param maxAge The maximum age an individual can attain.  Optional.
+#'   The default value is 100.
+#' @param esR1 The 1st order reward matrix for the extended state
+#'   space (see Details).  Optional.  The default assumes
+#'   Poisson-distributed clutch sizes.
+#' @param esR2 The 2nd order reward matrix for the extended state
+#'   space (see Details).  Optional.  The default assumes
+#'   Poisson-distributed clutch sizes.
+#' @param esR3 The 3rd order reward matrix for the extended state
+#'   space (see Details).  Optional.  The default assumes
+#'   Poisson-distributed clutch sizes.
+#' @param bsR1 The 1st order reward matrix for the extended state
+#'   space that includes the pre-birth "ur-state" (see Details).
+#'   Optional.  The default assumes Poisson-distributed clutch sizes. 
+#' @param bsR2 The 2nd order reward matrix for the extended state
+#'   space that includes the pre-birth "ur-state" (see Details).
+#'   Optional.  The default assumes Poisson-distributed clutch sizes. 
+#' @param bsR3 The 3rd order reward matrix for the extended state
+#'   space that includes the pre-birth "ur-state" (see Details).
+#'   Optional.  The default assumes Poisson-distributed clutch sizes.
+#' @param debugging Will print the results of various sanity checks if
+#'   debugging is set to TRUE.  Optional.  Default value is FALSE.
+#' @details The details of this calculation, including the definitions
+#'   of the extended states can be found in Robin E. Snyder and
+#'   Stephen P. Ellner.  2024.  "To prosper, live long: Understanding
+#'   the sources of reproductive skew and extreme reproductive success
+#'   in structured populations."  The American Naturalist 204(2) and
+#'   its online supplemnt.
+#' @return A list containing the following:
+#' * birthStateVar: the contribution to Var(LRO) from birth state luck
+#' * survTrajecVar: a vector whose jth entry contains the contribution
+#'   to Var(LRO) from survival trajectory luck at age j-1.
+#' * growthTrajecVar: a vector whose jth entry contains the contribution
+#'   to Var(LRO) from growth trajectory luck at age j-1.
+#' * fecVar: a vector whose jth entry contains the contribution
+#'   to Var(LRO) from fecundity luck at age j-1.
+#' * totVar: the total variance in LRO
+#' * survTrajecSkewness: a vector whose jth entry contains the contribution
+#'   to LRO skewness from survival trajectory luck at age j-1.
+#' * growthTrajecSkewness: a vector whose jth entry contains the contribution
+#'   to LRO skewness from growth trajectory luck at age j-1.
+#' * fecSkewness: a vector whose jth entry contains the contribution
+#'   to LRO skewness from fecundity luck at age j-1.
+#' * totSkewness: the total skewness in LRO
+#' * lifespan: the age by which 99% of a cohort is expected to be dead
+#' @examples
+#' P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' F = matrix (0, 3, 3); F[1,] = 0:2
+#' c0 = c(1,0,0)
+#' out = getVarSkewnessPartitionsNoEnvVar (P, F, c0)
 getVarSkewnessPartitionsNoEnvVar = function (P, F, c0, maxAge=100,
                                              esR1=NULL, esR2=NULL,
                                              esR3=NULL,
@@ -13,15 +74,6 @@ getVarSkewnessPartitionsNoEnvVar = function (P, F, c0, maxAge=100,
   # P is the survival/growth transition matrix (called U in COMPADRE)
   # F is the matrix of fertility transitions
   # c0 is the birth state distribution (also called mixing distribution)
-
-  if (debugging) {
-    ## some toy matrices for testing things out:
-    P<- matrix(c(0.5, 0.07, 0.05, 0, 0.5, 0.21, 0, 0, 0.8), ncol=3)
-    F<- matrix(c(0.2, 0, 0, 1, 0.5, 0, 5, 3, 0), ncol=3)
-    
-    c0 = c(0.9, 0.1, 0)
-    maxAge = 100
-  }
 
   mz = dim(P)[1]
 
@@ -239,32 +291,6 @@ getVarSkewnessPartitionsNoEnvVar = function (P, F, c0, maxAge=100,
     cat (totSurvTrajecVar + totGrowthTrajecVar +
          totFecVar + birthStateVar, "should = ",
          totVar, "\n")
-
-  if (FALSE) {
-    par (cex.lab=1.4, lwd=2)
-
-    ymax = max(survTrajecSkewness, growthTrajecSkewness)
-    ymin = min(survTrajecSkewness, growthTrajecSkewness)
-    plot (0:25, survTrajecSkewness[1:26], col="black",
-          xlab="Age", ylab="Skewness contributions", type="l",
-          ylim=c(ymin, ymax))
-    lines (0:25, growthTrajecSkewness[1:26], col="orange")
-    lines (0:25, fecSkewness[1:26], col="blue")
-    lines (rep(lifespan, 2), c(0, 0.5*ymax), col="black",
-           lty=2, lwd=2)
-
-    dev.new ()
-    par (cex.lab=1.4, lwd=2)
-    ymax = max(survTrajecVar, growthTrajecVar)
-    ymin = min(survTrajecVar, growthTrajecVar)
-    plot (0:25, survTrajecVar[1:26], col="black",
-          xlab="Age", ylab="Var contributions", type="l",
-          ylim=c(ymin, ymax))
-    lines (0:25, growthTrajecVar[1:26], col="orange")
-    lines (0:25, fecVar[1:26], col="blue")
-    lines (rep(lifespan, 2), c(0, 0.45*ymax), col="black",
-           lty=2, lwd=2)
-  }
 
   return (out=list(birthStateVar=birthStateVar,
                    survTrajecVar=survTrajecVar,
