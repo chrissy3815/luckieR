@@ -1,29 +1,80 @@
-
-
-
-#####################################################################
-## This version doesn't require you to add age as a state variable.
-## Keeps the memory needs to a dull roar.
-##
-## This version uses the kernel conditional on LRO = R_T, not LRO >=
-## R_T.  (That version is in genericPartitionVarSkewness4.R and gives
-## the same answers.)
-##
-#####################################################################
-
+#' Distribution of lifespan conditional on LRO
+#'
+#' Calculates the distribution of lifespan conditional on LRO in the
+#' presence of environmental variation.
+#'
+#' @param Plist A list of survival/growth transition matrices.
+#'   Plist\[\[q\]\]\[i,j\] is the probability of transitioning from
+#'   state j to state i in environment q.
+#' @param Flist A list of fecundity matrices.  Flist\[\[q\]\]\[i,j\]
+#'   is the expected number of state i offspring from a state j parent
+#'   in environment q
+#' @param Q The environment transition matrix.  Q\[i,j\] is the
+#'   probability of transitioning from environment j to environment i.
+#' @param c0 A vector specifying the offspring state distribution:
+#'   c0\[j\] is the probability that an individual is born in state j
+#' @param maxClutchSize The maximum clutch size to consider
+#' @param maxAge The maximum attainable age
+#' @param percentileCutoff A value between 0 and 1.  Calculations are
+#'   performed for values of LRO out to this percentile.  Optional.
+#'   The default value is 0.99. 
+#' @param Fdist The clutch size distribution.  The recognized options
+#'   are "Poisson" and "Bernoulli".  Optional.  The default value is
+#'   "Poisson".
+#' @details The details of this calculation can be found in Robin
+#'   E. Snyder and Stephen P. Ellner.
+#'   2024. "To prosper, live long: Understanding the sources of
+#'   reproductive skew and extreme reproductive success in structured
+#'   populations." 
+#'   The American Naturalist 204(2) and its online supplement.
+#' @return Returns a list containing the following:
+#' * probLifespanCondR: A matrix whose \[i,j\]th entry is the
+#'   probability that an individual with LRO = i-1 will have a
+#'   lifespan of j years (i.e. age j-1).
+#' * distKidsAtDeath: A vector whose jth entry is the probability of
+#'   having an LRO of j-1.
+#' * sdLifespanCondR: A vector whose jth entry is the standard
+#'   deviation of lifespan conditional on having an LRO of j-1.
+#' * CVLifespanCondR: A vector whose jth entry is the coefficient of
+#'   variation of lifespan conditional on having an LRO of j-1.
+#' * maxKidsIndex: calculations were performed out to values of LRO
+#'   equal to maxKidsIndex-1.
+#' * normalSurvProb: A vector whose jth entry is the unconditional
+#'   probability of surviving j years (i.e. until age j-1).
+#' @examples
+#' P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' P2 = matrix (c(0, 0.2, 0, 0, 0, 0.3, 0, 0, 0.4), 3, 3)
+#' F1 = matrix (0, 3, 3); F1[1,] = 0:2
+#' F2 = matrix (0, 3, 3); F1[1,] = 0.8*(0:2)
+#' Plist = list (P1, P2)
+#' Flist = list (F1, F2)
+#' Q = matrix (1/2, 2, 2)
+#' c0 = c(1,0,0)
+#' maxClutchSize = 20
+#' maxAge=20
+#' out = distLifespanCondR2 (Plist, Flist, Q, c0, maxClutchSize, maxAge)
 distLifespanCondR2 = function (Plist, Flist, Q,
-                                  m0, maxKids, maxAge,
-                                  percentileCutoff = 0.99,
-                                  B=NULL, Fdist="Poisson") {
+                               c0, maxClutchSize, maxAge,
+                               percentileCutoff = 0.99,
+                               Fdist="Poisson") {
   require (Matrix)
   debugging = TRUE
   
-  mT = maxKids + 1
+  mT = maxClutchSize + 1
   mA = maxAge + 1
   
   mz = dim(Plist[[1]])[1]
   numEnv = dim(Q)[1]
   bigmz = numEnv*mz
+
+  ## u0 is the stationary environmental distribution, given by the
+  ## dominant eigenvector of Q
+  u0 = eigen(Q)$vectors[,1]
+  u0 = u0 / sum(u0)
+
+  ## m0 is the stationary state cross-classified by size and
+  ## environment
+  m0 = matrix (outer (c0, as.vector(u0)), bigmz, 1)
 
   ## Define megamatrices M and F
   F = M = matrix (0, bigmz, bigmz)
@@ -34,14 +85,10 @@ distLifespanCondR2 = function (Plist, Flist, Q,
     }
   }
 
-  ## expected number of offspring in a clutch
-  ## b = colSums (F)
-
-  if (is.null(B)) 
-    ## B[i,j] is the probability that a class-j individual has i-1 kids.
-    ## We assume Poisson-distributed number of offspring.
-    ## The columns of B should sum to 1 and they do.
-    B = mk_B (maxKids, F, Fdist)
+  ## B[i,j] is the probability that a class-j individual has i-1 kids.
+  ## We assume Poisson-distributed number of offspring.
+  ## The columns of B should sum to 1 and they do.
+  B = mk_B (maxClutchSize, F, Fdist)
 
   ## Construct A, the transition matrix for a (number of kids) x stage x
   ## env. model.   
@@ -176,8 +223,8 @@ distLifespanCondR2 = function (Plist, Flist, Q,
          "kids.\n")
   }
   RCutoff = which (cumDistKidsAtDeath > percentileCutoff)[1]
-  if (RCutoff > maxKids)
-    stop ("RCutoff = ", RCutoff, "but maxKids = ", maxKids, "\n")
+  if (RCutoff > maxClutchSize)
+    stop ("RCutoff = ", RCutoff, "but maxClutchSize = ", maxClutchSize, "\n")
 
   probLifespanCondR = matrix (0, RCutoff+2, mA)
   probThresholdOrMore = matrix (0, RCutoff+2, esmzA)
@@ -332,9 +379,42 @@ distLifespanCondR2 = function (Plist, Flist, Q,
 ## though currently, only the "Poisson" option is implemented.  (TO
 ## DO: implement Bernoulli distribution.)
 ########################################################################
+
+#' Distribution of lifetime reproductive output
+#'
+#' Calculates the distribution of lifetime reproductive output (LRO)
+#' the presence of environmental variation.  Assumes a pre-breeding
+#' census (reproductiion happens before survival and growth).
+#' @param Plist A list of survival/growth transition matrices.
+#'   Plist\[\[q\]\]\[i,j\] is the probability of transitioning from
+#'   state j to state i in environment q.
+#' @param Flist A list of fecundity matrices.  Flist\[\[q\]\]\[i,j\]
+#'   is the expected number of state i offspring from a state j parent
+#'   in environment q
+#' @param Q The environment transition matrix.  Q\[i,j\] is the
+#'   probability of transitioning from environment j to environment i.
+#' @param c0 A vector specifying the offspring state distribution:
+#'   c0\[j\] is the probability that an individual is born in state j
+#' @param maxClutchSize The maximum clutch size to consider
+#' @param maxLRO The maximum LRO to consider
+#' @param Fdist The clutch size distribution.  The recognized options
+#'   are "Poisson" and "Bernoulli".  Optional.  The default value is
+#'   "Poisson".
+#' @details It is also possible to calculate the distribution of LRO
+#' by cross-classifying states by stage and number of offspring
+#' produced so far and calculating the state distribution at death.
+#' If s[j] is the survival probability for cross-classified state j,
+#' M[i,j] is the probability of transitioning from cross-classified
+#' state j to cross-classified state i, and N = (I - M)^{-1}, then the
+#' state distribution at death is (1 - s) N, i.e. (1 - colSums(M)) %*%
+#' solve (diag(length(M) - M).  (See, e.g., eq. 3.2.8 in Data-driven
+#' Modeling of Structured Populations: A Practical Guide to the
+#' Integral Projection Model, by Stephen P. Ellner, Dylan Z. Childs
+#' and Mark Rees, 2015.  However, this implicitly assumes that reproduction
+#' happens *after* survival and growth, i.e. a post-breeding census.
 calcDistLRO = function (Plist, Flist, Q,
-                        m0, maxClutchSize, maxLRO,
-                        B=NULL, Fdist="Poisson") {
+                        c0, maxClutchSize, maxLRO,
+                        Fdist="Poisson") {
   require (Matrix)
   debugging = TRUE
 
@@ -343,6 +423,15 @@ calcDistLRO = function (Plist, Flist, Q,
   mz = dim(Plist[[1]])[1]
   numEnv = dim(Q)[1]
   bigmz = numEnv*mz
+
+  ## u0 is the stationary environmental distribution, given by the
+  ## dominant eigenvector of Q
+  u0 = eigen(Q)$vectors[,1]
+  u0 = u0 / sum(u0)
+
+  ## m0 is the stationary state cross-classified by size and
+  ## environment
+  m0 = matrix (outer (c0, as.vector(u0)), bigmz, 1)
 
   ## Define megamatrices M and F
   F = M = matrix (0, bigmz, bigmz)
@@ -353,13 +442,9 @@ calcDistLRO = function (Plist, Flist, Q,
     }
   }
 
-  ## expected number of offspring in a clutch
-
-  if (is.null(B)) 
-    ## B[i,j] is the probability that a class-j individual has i-1 kids.
-    ## We assume Poisson-distributed number of offspring.
-    ## The columns of B should sum to 1 and they do.
-    B = mk_B (maxClutchSize, F, Fdist)
+  ## B[i,j] is the probability that a class-j individual has i-1 kids.
+  ## The columns of B should sum to 1.
+  B = mk_B (maxClutchSize, F, Fdist)
 
   ## Sanity check: is maxLRO large enough?
   cat ("calcDistLRO: x = ", x, ": min(colSums(B)) = ", min(colSums(B)),
@@ -485,11 +570,20 @@ calcDistLRO = function (Plist, Flist, Q,
 }
 
 probTraitCondLRO = function (PlistAllTraits, FlistAllTraits, Q,
-                             m0, maxClutchSize, maxLRO,
+                             c0, maxClutchSize, maxLRO,
                              traitDist,
                              Fdist="Poisson", B=NULL) {
   numTraits = length (PlistAllTraits)
   mT = maxLRO + 1
+
+  ## u0 is the stationary environmental distribution, given by the
+  ## dominant eigenvector of Q
+  u0 = eigen(Q)$vectors[,1]
+  u0 = u0 / sum(u0)
+
+  ## m0 is the stationary state cross-classified by size and
+  ## environment
+  m0 = matrix (outer (c0, as.vector(u0)), bigmz, 1)
 
   ## P(LRO | trait value) for each trait value
   probRCondX = matrix (0, mT, numTraits)
