@@ -25,8 +25,8 @@
 #'   E. Snyder and Stephen P. Ellner.
 #'   2024. "To prosper, live long: Understanding the sources of
 #'   reproductive skew and extreme reproductive success in structured
-#'   populations." 
-#'   The American Naturalist 204(2) and its online supplement.
+#'   populations."  The American Naturalist 204(2),
+#'   https://doi.org/10.1086/730557 and its online supplement. 
 #' @return Returns a list containing the following:
 #' * probLifespanCondR: A matrix whose \[i,j\]th entry is the
 #'   probability that an individual with LRO = i-1 will have a
@@ -400,22 +400,39 @@ distLifespanCondR2 = function (Plist, Flist, Q,
 #' @param Fdist The clutch size distribution.  The recognized options
 #'   are "Poisson" and "Bernoulli".  Optional.  The default value is
 #'   "Poisson".
-#' @details It is also possible to calculate the distribution of LRO
+#' @details Called by probTraitCondLRO.
+#'
+#' It is also possible to calculate the distribution of LRO
 #' by cross-classifying states by stage and number of offspring
 #' produced so far and calculating the state distribution at death.
-#' If s[j] is the survival probability for cross-classified state j,
-#' M[i,j] is the probability of transitioning from cross-classified
-#' state j to cross-classified state i, and N = (I - M)^{-1}, then the
-#' state distribution at death is (1 - s) N, i.e. (1 - colSums(M)) %*%
-#' solve (diag(length(M) - M).  (See, e.g., eq. 3.2.8 in Data-driven
-#' Modeling of Structured Populations: A Practical Guide to the
-#' Integral Projection Model, by Stephen P. Ellner, Dylan Z. Childs
-#' and Mark Rees, 2015.  However, this implicitly assumes that reproduction
-#' happens *after* survival and growth, i.e. a post-breeding census.
+#' If s(z') is the survival probability for cross-classified state z',
+#' M(z', z) is the probability of transitioning from cross-classified
+#' state z to cross-classified state z', and N is the fundamental
+#' matrix for M: N = (I - M)^\{-1\}, then the state distribution at
+#' death, conditional on starting in state z, is (1 - s(z')) * N(z',
+#' z), where * denotes a Hadamard product (element-by-element
+#' multiplication, not matrix multiplication).  (See, e.g., eq. 3.2.8
+#' in Data-driven Modeling of Structured Populations: A Practical
+#' Guide to the Integral Projection Model, by Stephen P. Ellner, Dylan
+#' Z. Childs and Mark Rees, ed. 1, 2015.)  However, this implicitly assumes
+#' that reproduction  happens after survival and growth, i.e. a
+#' post-breeding census. 
+#' @examples
+#' P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' P2 = matrix (c(0, 0.2, 0, 0, 0, 0.3, 0, 0, 0.4), 3, 3)
+#' F1 = matrix (0, 3, 3); F1[1,] = 0:2
+#' F2 = matrix (0, 3, 3); F1[1,] = 0.8*(0:2)
+#' Plist = list (P1, P2)
+#' Flist = list (F1, F2)
+#' Q = matrix (1/2, 2, 2)
+#' c0 = c(1,0,0)
+#' maxClutchSize = 10
+#' maxLRO=20
+#' out = calcDistLRO (Plist, Flist, Q, c0, maxClutchSize, maxLRO)
 calcDistLRO = function (Plist, Flist, Q,
                         c0, maxClutchSize, maxLRO,
                         Fdist="Poisson") {
-  require (Matrix)
+##  require (Matrix)
   debugging = TRUE
 
   mT = maxLRO + 1
@@ -447,8 +464,8 @@ calcDistLRO = function (Plist, Flist, Q,
   B = mk_B (maxClutchSize, F, Fdist)
 
   ## Sanity check: is maxLRO large enough?
-  cat ("calcDistLRO: x = ", x, ": min(colSums(B)) = ", min(colSums(B)),
-       "\n")
+##  cat ("calcDistLRO: x = ", x, ": min(colSums(B)) = ", min(colSums(B)),
+##       "\n")
 
   ## Construct A, the transition matrix for a (number of kids) x stage x
   ## env. model.   
@@ -569,10 +586,64 @@ calcDistLRO = function (Plist, Flist, Q,
   return (distKidsAtDeath) 
 }
 
+#' Distribution of a trait conditional on LRO
+#'
+#' Calculates Prob(X | R), where X is a trait value and R is lifetime
+#' reproductive output (LRO).
+#' @param PlistAllTraits A list of lists of survival/growth transition
+#'   matrices. Plist\[\[x\]\]\[\[q\]\]\[i,j\] is the probability of
+#'   transitioning from state j to state i in environment q when an
+#'   individual has trait x. 
+#' @param FlistAllTraits A list of lists of fecundity  matrices.
+#'   Flist\[\[x\]\]\[\[q\]\]\[i,j\] is the expected number of state i
+#'   offspring from a state j, trait x parent in environment q.
+#' @param Q The environment transition matrix.  Q\[i,j\] is the
+#'   probability of transitioning from environment j to environment
+#'   i.
+#' @param c0 A vector specifying the offspring state distribution:
+#'   c0\[j\] is the probability that an individual is born in state j
+#' @param maxClutchSize The maximum clutch size to consider
+#' @param maxLRO The maximum LRO to consider
+#' @param traitDist A vector whose jth entry is the unconditional
+#' probability that the trait takes on the jth value
+#' @param Fdist The clutch size distribution.  The recognized options
+#'   are "Poisson" and "Bernoulli".  Optional.  The default value is
+#'   "Poisson".
+#' @details The details of this calculation can be found in Robin
+#' E. Snyder and Stephen P. Ellner.  2018.  "Pluck or Luck: Does Trait
+#' Variation or Chance Drive Variation in Lifetime Reproductive
+#' Success?"  The American Naturalist 191(4).  DOI:
+#' 10.1086/696125  
+#' @return A list containing the following:
+#' * probXCondR: a matrix whose i,jth component is the probability
+#' that the trait has the jth value given that LRO = i-1
+#' * probR: A vector whose jth entry is the unconditional probability
+#' that LRO = j-1
+#' * probRCondX: A matrix whose i,jth entry is the probability that
+#' LRO = i-1 given that the trait takes the jth value.
+#' @examples
+#' PlistAllTraits = FlistAllTraits = list ()
+#' P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' P2 = 0.9*P1
+#' PlistAllTraits[[1]] = list (P1, P2)
+#' P1 = matrix (c(0, 0.5, 0, 0, 0, 0.2, 0, 0, 0.7), 3, 3)
+#' P2 = 0.9*P1
+#' PlistAllTraits[[2]] = list (P1, P2)
+#' F1 = matrix (0, 3, 3); F1[1,] = 0:2
+#' F2 = 0.8*F1
+#' FlistAllTraits[[1]] = list (F1, F2)
+#' F1 = matrix (0, 3, 3); F1[1,] = 0.9*(0:2)
+#' F2 = 1.1*F1
+#' FlistAllTraits[[2]] = list (F1, F2)
+#' Q = matrix (1/2, 2, 2)
+#' c0 = c(1,0,0)
+#' traitDist = rep(0.5, 2)
+#' out = probTraitCondLRO (PlistAllTraits, FlistAllTraits, Q,
+#'       c0, maxClutchSize=10, maxLRO=15, traitDist)
 probTraitCondLRO = function (PlistAllTraits, FlistAllTraits, Q,
                              c0, maxClutchSize, maxLRO,
                              traitDist,
-                             Fdist="Poisson", B=NULL) {
+                             Fdist="Poisson") {
   numTraits = length (PlistAllTraits)
   mT = maxLRO + 1
 
@@ -595,8 +666,8 @@ probTraitCondLRO = function (PlistAllTraits, FlistAllTraits, Q,
     Plist = PlistAllTraits[[x]]
     Flist = FlistAllTraits[[x]]
     probRCondX[,x] = calcDistLRO (Plist, Flist, Q,
-                                  m0, maxClutchSize, maxLRO,
-                                  B, Fdist)
+                                  c0, maxClutchSize, maxLRO,
+                                  Fdist)
   }
   ## Sanity check
   cat ("Testing probRCondX:", colSums(probRCondX), "should = 1.\n")
