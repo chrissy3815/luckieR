@@ -37,8 +37,9 @@
 #'   Optional.  The default assumes Poisson-distributed clutch sizes.
 #' @param survThreshold The threshold to use in determining lifespan
 #'   (see return values).  Optional.  Default value is 0.05.
-#' @param debugging Will print the results of various sanity checks if
-#'   debugging is set to TRUE.  Optional.  Default value is FALSE.
+#' @param Fdist The clutch size distribution.  The recognized options
+#'   are "Poisson" and "Bernoulli".  Optional.  The default value is
+#'   "Poisson".
 #' @details The details of this calculation, including the definitions
 #'   of the extended states, can be found in Robin E. Snyder and
 #'   Stephen P. Ellner.  2024.  "To prosper, live long: Understanding
@@ -71,17 +72,16 @@
 #' c0 = c(1,0,0)
 #' out = getVarSkewnessPartitionsNoEnvVar (P, F, c0)
 getVarSkewnessPartitionsNoEnvVar = function (P, F, c0, maxAge=100,
+                                             survThreshold=0.05,
+                                             Fdist="Poisson",
                                              esR1=NULL, esR2=NULL,
                                              esR3=NULL,
                                              bsR1=NULL, bsR2=NULL,
-                                             bsR3=NULL,
-                                             survThreshold=0.05,
-                                             debugging=FALSE) {
-  # Input parameters:
-  # P is the survival/growth transition matrix (called U in COMPADRE)
-  # F is the matrix of fertility transitions
-  # c0 is the birth state distribution (also called mixing distribution)
-
+                                             bsR3=NULL) {
+  
+  ## tolerance for error checking.  0.001 = 0.1% tolerance
+  percentTol = 0.001
+  
   mz = dim(P)[1]
 
   ## Make survival, growth, and fecundity bullet matrices
@@ -95,8 +95,12 @@ getVarSkewnessPartitionsNoEnvVar = function (P, F, c0, maxAge=100,
   Gbullet = P;  
   for(ic in 1:ncol(Gbullet)){
         if(Sbullet[ic,ic]>0) Gbullet[,ic]=Gbullet[,ic]/Sbullet[ic,ic]
-  }       
-  cat(range(Gbullet%*%Sbullet-P), "should equal 0", "\n"); 
+  }
+
+  ## Sanity check
+  epsilon = 0.00001
+  if (sum(abs(range (Gbullet%*%Sbullet-P))) > epsilon)
+    warning ("Gbullet %*% Sbullet does not equal P.")
   
   ## #kids isn't part of the state definition, so Fbullet = I
   Fbullet = diag (mz)
@@ -136,9 +140,8 @@ getVarSkewnessPartitionsNoEnvVar = function (P, F, c0, maxAge=100,
 
   ## set up reward matrices ###############################
 
-  ## If the reward matrices aren't specified, we assume
-  ## Poisson-distributed clutch sizes
-  if (is.null(esR1)) {
+  if (is.null (esR1) & is.null (esR2) & is.null (esR3) &
+        is.null (bsR1) & is.null (bsR2) & is.null (bsR3)) {
     esR1 = esR2 = esR3 = matrix (0, esmz+1, esmz+1)
     bsR1 = bsR2 = bsR3 = matrix (0, bsmz+1, bsmz+1)
 
@@ -148,12 +151,24 @@ getVarSkewnessPartitionsNoEnvVar = function (P, F, c0, maxAge=100,
     for (j in 1:bsmz) 
       bsR1[,j] = sum(bsF[,j])
 
-    ## Second moment of clutch size  
-    esR2 = esR1 + esR1^2
-    bsR2 = bsR1 + bsR1^2
-    ## Third moment of clutch size
-    esR3 = esR1+ 3*esR1*esR1 + esR1*esR1*esR1
-    bsR3 = bsR1+ 3*bsR1*bsR1 + bsR1*bsR1*bsR1
+    if (Fdist == "Poisson") {
+      ## Second moment of clutch size  
+      esR2 = esR1 + esR1^2
+      bsR2 = bsR1 + bsR1^2
+      ## Third moment of clutch size
+      esR3 = esR1+ 3*esR1*esR1 + esR1*esR1*esR1
+      bsR3 = bsR1+ 3*bsR1*bsR1 + bsR1*bsR1*bsR1
+    } else if (Fdist == "Bernoulli") {
+      esR2 = esR3 = esR1
+      bsR2 = bsR3 = bsR1
+    } else {
+      stop("Currently only supports Poisson- and Bernoulli-distributed clutch sizes.")
+    }
+  } else if (!is.null (esR1) & !is.null (esR2) & !is.null (esR3) &
+               !is.null (bsR1) & !is.null (bsR2) & !is.null (bsR3)) {
+    ## User-supplied reward matrices are fine too.
+  } else {
+    stop("Values need to be specified for all or none of esR1, esR2, esR3, bs$1, bsR2, bsR3.")
   }
   
   ## Get moments conditional on init. state #########################
@@ -219,13 +234,13 @@ getVarSkewnessPartitionsNoEnvVar = function (P, F, c0, maxAge=100,
   PaC0 = c0  ## P^a c_0
   mzZero = rep(0, mz)
 
-  ## Sanity check: passes
-  if (debugging) {
-    N = solve(diag(mz) - P)
-    rho1Vec = colSums (F %*% N)
-    cat (esRho1Vec %*% c(c0, mzZero, mzZero),
-         "should = ", rho1Vec %*% c0, "\n")
-  }
+  ## Sanity check
+  N = solve(diag(mz) - P)
+  rho1Vec = colSums (F %*% N)
+  foo1 = esRho1Vec %*% c(c0, mzZero, mzZero)
+  foo2 = rho1Vec %*% c0
+  if ((foo1 < (1 - percentTol)*foo2) | (foo1 > (1 + percentTol)*foo2))
+    warning("Calculation of mean via esRho1Vec isn't the same as calculation of mean via rho1Vec.") 
 
   fecUpdateSkewness[1] = esSkewnessVec %*% c(mzZero, PaC0, mzZero)
   survUpdateSkewness[1] = esSkewnessVec %*% 
@@ -280,21 +295,23 @@ getVarSkewnessPartitionsNoEnvVar = function (P, F, c0, maxAge=100,
   totGrowthTrajecSkewness = sum(growthTrajecSkewness)
   totFecSkewness = sum(fecSkewness)
   totSkewness = bsSkewnessVec %*% bsC0
-  ## Sanity check: passes
-  if (debugging) 
-    cat (totSurvTrajecSkewness + totGrowthTrajecSkewness +
-         totFecSkewness + birthStateSkewness, "should = ",
-         totSkewness, "\n")
+  ## Sanity check
+  foo = totSurvTrajecSkewness + totGrowthTrajecSkewness +
+    totFecSkewness + birthStateSkewness
+  if ((foo < (1 - percentTol)*totSkewness) |
+      (foo > (1 + percentTol)*totSkewness))
+    warning("Skewness components do not sum to total skewness as calculated by bsSkewnessVec.")
 
   totSurvTrajecVar = sum(survTrajecVar)
   totGrowthTrajecVar = sum(growthTrajecVar)
   totFecVar = sum(fecVar)
   totVar = bsMu2Vec %*% bsC0
-  ## Sanity check: passes
-  if (debugging)
-    cat (totSurvTrajecVar + totGrowthTrajecVar +
-         totFecVar + birthStateVar, "should = ",
-         totVar, "\n")
+  ## Sanity check
+  foo = totSurvTrajecVar + totGrowthTrajecVar +
+      totFecVar + birthStateVar
+  if ((foo < (1 - percentTol)*totVar) |
+      (foo > (1 + percentTol)*totVar))
+    warning("Variance components do not sum to total variance as calculated by bsMu2Vec.")
 
   return (out=list(birthStateVar=birthStateVar,
                    survTrajecVar=survTrajecVar,
@@ -348,8 +365,9 @@ getVarSkewnessPartitionsNoEnvVar = function (P, F, c0, maxAge=100,
 #'   Optional.  The default assumes Poisson-distributed clutch sizes.
 #' @param survThreshold The threshold to use in determining lifespan
 #'   (see return values).  Optional.  Default value is 0.05.
-#' @param debugging Will print the results of various sanity checks if
-#'   debugging is set to TRUE.  Optional.  Default value is FALSE.
+#' @param Fdist The clutch size distribution.  The recognized options
+#'   are "Poisson" and "Bernoulli".  Optional.  The default value is
+#'   "Poisson".
 #' @details The details of this calculation, including the definitions
 #'   of the extended states, can be found in Robin E. Snyder and
 #'   Stephen P. Ellner.  2024.  "To prosper, live long: Understanding
@@ -395,14 +413,16 @@ getVarSkewnessPartitionsNoEnvVar = function (P, F, c0, maxAge=100,
 #' c0 = c(1,0,0)
 #' out = getVarSkewnessPartitionsEnvVar (Plist, Flist, Q, c0)
 getVarSkewnessPartitionsEnvVar = function (Plist, Flist, Q, c0,
-                                           maxAge=100, esR1=NULL,
-                                           esR2=NULL, esR3=NULL,
-                                           bsR1=NULL, bsR2=NULL,
-                                           bsR3=NULL,
+                                           maxAge=100, 
                                            survThreshold=0.05,
-                                           debugging=FALSE)
+                                           Fdist="Poisson",
+                                           esR1=NULL, esR2=NULL, esR3=NULL,
+                                           bsR1=NULL, bsR2=NULL, bsR3=NULL)
 {
-##  require (Matrix)
+  ##  require (Matrix)
+  
+  ## tolerance for error checking.  0.001 = 0.1% tolerance
+  percentTol = 0.001
   
   mz = dim(Plist[[1]])[1]
   numEnv = dim(Q)[1]
@@ -448,8 +468,9 @@ getVarSkewnessPartitionsEnvVar = function (Plist, Flist, Q, c0,
   Fbullet = diag(bigmz)
 
   ## Sanity check
-  if (debugging)
-    cat (sum(Qbullet %*% Gbullet %*% Sbullet - M), "should = 0.\n")
+  epsilon = 0.00001
+  if (sum(abs(range(Qbullet %*% Gbullet %*% Sbullet - M))) > epsilon)
+    warning("Qbullet %*% Gbullet %*% Sbullet does not equal M.")
 
   ## create matrices for extended state space, which I will denote with
   ## the prefix "es".
@@ -496,33 +517,44 @@ getVarSkewnessPartitionsEnvVar = function (Plist, Flist, Q, c0,
   ## set up reward matrices
   ################################################################
   
-  ## If the reward matrices aren't specified, we assume
-  ## Poisson-distributed clutch sizes
-  if (is.null(esR1)) {
+  if (is.null (esR1) & is.null (esR2) & is.null (esR3) &
+        is.null (bsR1) & is.null (bsR2) & is.null (bsR3)) {
     esR1 = esR2 = esR3 = matrix (0, esbigmz+1, esbigmz+1)
     bsR1 = bsR2 = bsR3 = matrix (0, bsbigmz+1, bsbigmz+1)
 
-    ## First moment of clutch size (Poisson)
+    ## First moment of clutch size
     for (j in 1:esbigmz) 
       esR1[,j] = sum(esF[,j])
     for (j in 1:bsbigmz) 
       bsR1[,j] = sum(bsF[,j])
 
-    ## Second moment of clutch size  
-    esR2 = esR1 + esR1^2
-    bsR2 = bsR1 + bsR1^2
-    ## Third moment of clutch size
-    esR3 = esR1+ 3*esR1*esR1 + esR1*esR1*esR1
-    bsR3 = bsR1+ 3*bsR1*bsR1 + bsR1*bsR1*bsR1
+    if (Fdist == "Poisson") {
+      ## Second moment of clutch size  
+      esR2 = esR1 + esR1^2
+      bsR2 = bsR1 + bsR1^2
+      ## Third moment of clutch size
+      esR3 = esR1+ 3*esR1*esR1 + esR1*esR1*esR1
+      bsR3 = bsR1+ 3*bsR1*bsR1 + bsR1*bsR1*bsR1
+    } else if (Fdist == "Bernoulli") {
+      esR2 = esR3 = esR1
+      bsR2 = bsR3 = bsR1
+    } else {
+      stop("Currently only supports Poisson- and Bernoulli-distributed clutch sizes.")
+    }
+  } else if (!is.null (esR1) & !is.null (esR2) & !is.null (esR3) &
+               !is.null (bsR1) & !is.null (bsR2) & !is.null (bsR3)) {
+    ## User-supplied reward matrices are fine too.
+  } else {
+    stop("Values need to be specified for all or none of esR1, esR2, esR3, bs$1, bsR2, bsR3.")
   }
 
-  cat ("Calculating es moments...\n")
+  message ("Calculating es moments...\n")
   out = calcMoments (esM, esR1, esR2, esR3)
   esRho1Vec = out$rho1Vec
   esMu2Vec = out$mu2Vec
   esSkewnessVec = out$skewnessVec
 
-  cat ("Calculating bs moments...\n")
+  message ("Calculating bs moments...\n")
   out = calcMoments (bsM, bsR1, bsR2, bsR3)
   bsRho1Vec = out$rho1Vec
   bsMu2Vec = out$mu2Vec
@@ -585,13 +617,13 @@ getVarSkewnessPartitionsEnvVar = function (Plist, Flist, Q, c0,
   bigmzZero = rep(0, bigmz)
 
   ## Sanity check --- passes
-  if (debugging) {
-    N = solve(diag(bigmz) - M)
-    rho1Vec = colSums (F %*% N)
-    cat ("Checking Exp(R):", esRho1Vec %*%
-                             c(bigmzZero, bigmzZero, bigmzZero, m0),
-         "should = ", rho1Vec %*% m0, "\n")
-  }
+  N = solve(diag(bigmz) - M)
+  rho1Vec = colSums (F %*% N)
+  foo1 = esRho1Vec %*% c(bigmzZero, bigmzZero, bigmzZero, m0)
+  foo2 = rho1Vec %*% m0
+  if ((foo1 < (1 - percentTol)*foo2) |
+      (foo1 > (1 + percentTol)*foo2))
+    warning("Calculating the mean via esRho1Vec doesn't get the same answer as calculating it via rho1Vec.")
 
   fecUpdateSkewness[1] = esSkewnessVec %*%
     c(bigmzZero, Fbullet %*% MaM0, bigmzZero, bigmzZero)
@@ -670,27 +702,26 @@ getVarSkewnessPartitionsEnvVar = function (Plist, Flist, Q, c0,
   totSkewness = bsSkewnessVec %*% bsM0
 
   ## sanity check
-  if (debugging) 
-    cat ("Checking sum of skewness luck:",
-         totSurvTrajecSkewness + totGrowthTrajecSkewness +
+  foo = totSurvTrajecSkewness + totGrowthTrajecSkewness +
          totEnvTrajecSkewness + totFecSkewness +
-         birthStateSkewness + birthEnvSkewness, "should = ",
-         totSkewness, "\n")
+         birthStateSkewness + birthEnvSkewness
+  if ((foo < (1 - percentTol)*totSkewness) |
+      (foo > (1 + percentTol)*totSkewness))
+    warning("Skewness luck components do not sum to total skewness as calculated by bsSkewnessVec.")
   
   totSurvTrajecVar = sum(survTrajecVar)
   totGrowthTrajecVar = sum(growthTrajecVar)
   totEnvTrajecVar = sum(envTrajecVar)
   totFecVar = sum(fecVar)
   totVar = bsMu2Vec %*% bsM0
-  ## Sanity check: passes
-  if (debugging)
-    cat ("Checking sum of variance luck:",
-         totSurvTrajecVar +
+  ## Sanity check
+  foo = totSurvTrajecVar +
          totGrowthTrajecVar +
          totEnvTrajecVar + totFecVar +
-         birthStateVar + birthEnvVar, "should = ",
-         totVar, "\n")
-
+         birthStateVar + birthEnvVar
+  if ((foo < (1 - percentTol)*totVar) |
+      (foo > (1 + percentTol)*totVar))
+    warning("Variance luck components do not sum to total variance as calculated by bsMu2Vec.")
 
   return (out=list(birthStateVar=birthStateVar,
                    birthEnvVar=birthEnvVar,
@@ -736,28 +767,11 @@ getVarSkewnessPartitionsEnvVar = function (Plist, Flist, Q, c0,
 #'   having trait j
 #' @param maxAge The maximum age an individual can attain.  Optional. 
 #'   The default value is 100.
-#' @param esR1 The 1st order reward matrix for the extended state
-#'   space (see Details).  Optional.  The default assumes
-#'   Poisson-distributed clutch sizes.
-#' @param esR2 The 2nd order reward matrix for the extended state
-#'   space (see Details).  Optional.  The default assumes
-#'   Poisson-distributed clutch sizes.
-#' @param esR3 The 3rd order reward matrix for the extended state
-#'   space (see Details).  Optional.  The default assumes
-#'   Poisson-distributed clutch sizes.
-#' @param bsR1 The 1st order reward matrix for the extended state
-#'   space that includes the pre-birth "ur-state" (see Details).
-#'   Optional.  The default assumes Poisson-distributed clutch sizes. 
-#' @param bsR2 The 2nd order reward matrix for the extended state
-#'   space that includes the pre-birth "ur-state" (see Details).
-#'   Optional.  The default assumes Poisson-distributed clutch sizes. 
-#' @param bsR3 The 3rd order reward matrix for the extended state
-#'   space that includes the pre-birth "ur-state" (see Details).
-#'   Optional.  The default assumes Poisson-distributed clutch sizes.
 #' @param survThreshold The threshold to use in determining lifespan
 #'   (see return values).  Optional.  Default value is 0.05.
-#' @param debugging Will print the results of various sanity checks if
-#'   debugging is set to TRUE.  Optional.  Default value is FALSE.
+#' @param Fdist The clutch size distribution.  The recognized options
+#'   are "Poisson" and "Bernoulli".  Optional.  The default value is
+#'   "Poisson".
 #' @details The details of this calculation, including the definitions
 #'   of the extended states, can be found in Robin E. Snyder and
 #'   Stephen P. Ellner.  2024.  "To prosper, live long: Understanding
@@ -850,29 +864,28 @@ partitionVarSkewnessWithEnvAndTraits = function (PlistAllTraits,
                                                  FlistAllTraits, Q,
                                                  c0, traitDist,
                                                  maxAge=100,
-                                                 esR1=NULL, esR2=NULL,
-                                                 esR3=NULL, bsR1=NULL,
-                                                 bsR2=NULL, bsR3=NULL,
                                                  survThreshold=0.05,
-                                                 debugging=FALSE) {
+                                                 Fdist="Poisson") {
+
+  ## tolerance for error checking.  0.001 = 0.1% tolerance
+  percentTol = 0.001
 
   mz = length (c0)
-  numEnv = length(u0)
-  bigmz = mz*numEnv
 
   ## u0 is the stationary environmental distribution, given by the
   ## dominant eigenvector of Q
   u0 = eigen(Q)$vectors[,1]
   u0 = u0 / sum(u0)
-  
-  ## Initial cross-classified state
-  m0 = matrix (outer (c0, as.vector(u0)), bigmz, 1)
 
   ## number of traits
   numTraits = length (PlistAllTraits)
 
   ## number of environment states
   numEnv = dim(Q)[1]
+
+  bigmz = mz*numEnv
+  ## Initial cross-classified state
+  m0 = matrix (outer (c0, as.vector(u0)), bigmz, 1)
 
   lifespanCondX = birthEnvSkewnessCondX =
     birthEnvVarCondX = birthStateSkewnessCondX =
@@ -884,35 +897,20 @@ partitionVarSkewnessWithEnvAndTraits = function (PlistAllTraits,
   survTrajecSkewnessCondX = growthTrajecSkewnessCondX = envTrajecSkewnessCondX =
     fecSkewnessCondX = matrix (0, numTraits, maxAge)
 
-  if (debugging) 
-    expRCondXZ = r2CondX = skewnessVecCondX = matrix (0, numTraits, bigmz)
-
-  if (debugging)
-    totVarCondX2 = numeric (numTraits)
+  ## For sanity checking
+  expRCondXZ = matrix (0, numTraits, bigmz)
 
   for (x in 1:numTraits) {
 
-    cat ("About to define Plist for x =", x, "\n")
+    message ("About to define Plist for x =", x, "\n")
     Plist = PlistAllTraits[[x]]
     Flist = FlistAllTraits[[x]]
 
-    if (is.null (esR1) & is.null (esR2) & is.null (esR3) &
-        is.null (bsR1) & is.null (bsR2) & is.null (bsR3)) {
-      out = getVarSkewnessPartitionsEnvVar (Plist, Flist, Q, 
-                                            c0, maxAge,
-                                            survThreshold=survThreshold,
-                                            debugging=debugging) 
-    } else if (!is.null (esR1) & !is.null (esR2) & !is.null (esR3) &
-               !is.null (bsR1) & !is.null (bsR2) & !is.null (bsR3)) {
-      out = getVarSkewnessPartitionsEnvVar (Plist, Flist, Q, 
-                                            c0, maxAge,
-                                            esR1, esR2, esR3,
-                                            bsR1, bsR2, bsR3,
-                                            survThreshold,
-                                            debugging)
-    } else {
-      stop("partitionVarSkewnessWithEnvAndTraits: Values need to be specified for all or none of esR1, esR2, esR3, bs$1, bsR2, bsR3.\n")
-    }
+    out = getVarSkewnessPartitionsEnvVar (Plist=Plist, Flist=Flist,
+                                          Q=Q, c0=c0, maxAge=maxAge,
+                                          survThreshold=survThreshold,
+                                          Fdist=Fdist)
+
     birthEnvSkewnessCondX[x] = out$birthEnvSkewness
     survTrajecSkewnessCondX[x,] = out$survTrajecSkewness
     growthTrajecSkewnessCondX[x,] = out$growthTrajecSkewness
@@ -928,15 +926,6 @@ partitionVarSkewnessWithEnvAndTraits = function (PlistAllTraits,
     envTrajecVarCondX[x,] = out$envTrajecVar
     fecVarCondX[x,] = out$fecVar
     totVarCondX[x] = out$totVar
-    ## Sanity check: passes
-    if (debugging) {
-      totVarCondX2[x] = birthEnvVarCondX[x] +
-        sum(survTrajecVarCondX[x,] + growthTrajecVarCondX[x,] +
-            envTrajecVarCondX[x,] + fecVarCondX[x,])
-      cat ("Do the contributions to variance add up to tot. var.?",
-           totVarCondX[x], "should = ",
-           totVarCondX2[x], "\n")
-    }
     
     ## Get expected LRO while you're at it.
     ## Define megamatrices M and F
@@ -950,44 +939,6 @@ partitionVarSkewnessWithEnvAndTraits = function (PlistAllTraits,
     N = solve (diag(bigmz) - M)
     expRCondXZ[x,] = (colSums (F %*% N))
     expRCondX[x] = (colSums (F %*% N)) %*% m0
-
-    if (debugging) {
-      ## All but the seedling class reproduce
-      foo = rep (1, mz)
-      foo[1] = 0
-      pb = rep (foo, numEnv)
-      b = colSums (F)
-      sigbsq = b
-      rbarPib = expRCondXZ[x,] %*% M     # \bar{r} \pi_b
-      r2CondX[x,] = (sigbsq + (pb*b)^2 + 2*pb*b*rbarPib) %*% N
-      varRCondXZ = r2CondX[x,] - expRCondXZ[x,]^2
-      expZVarRCondXZ = varRCondXZ %*% m0
-      varZExpRCondXZ = sum(m0*expRCondXZ[x,]^2) -
-        sum(m0*expRCondXZ[x,])^2
-            ## Passes
-      cat ("Var. check:", totVarCondX[x], "should = ",
-           expZVarRCondXZ + varZExpRCondXZ, "\n")
-      
-      R1 = R2 = R3 = matrix (0, bigmz+1, bigmz+1)
-      for (j in 1:bigmz)
-        R1[,j] = sum(F[,j])
-      R2 = R1 + R1^2 ## Poisson
-      R3 = R1 + 3*R1^2 + R1^3  ## Poisson
-      out = calcMoments (M, R1, R2, R3)
-
-      skewnessVecCondX[x,] = out$skewness
-      ## rho1 matches up perfectly
-      ## plot (expRCondXZ[x,], main="Ex[R | z]")
-      ## lines (out$rho1Vec[1,])
-      
-      ## plot (r2CondX[x,], main="Ex[R^2 | z]")
-      ## lines (out$mu2Vec[1,] + out$rho1Vec[1,]^2)
-      
-      ## Passes
-      cat ("Ex (R^2) check:", r2CondX[x,] %*% m0, "should = ",
-      (out$mu2Vec[1,] + out$rho1Vec[1,]^2) %*% m0, "\n")
-    }
-
   } ## end loop over traits
   
   ## Average over traits
@@ -1051,7 +1002,7 @@ partitionVarSkewnessWithEnvAndTraits = function (PlistAllTraits,
   ## See SI section S1 of Snyder and Ellner 2024 for a guide to these
   ## calculations.
 
-  cat ("Calculating the effect of trait variation...\n")
+  message ("Calculating the effect of trait variation...\n")
 
   tsbigmz = numTraits * bigmz
   bstsbigmz = 1 + numTraits + numTraits*mz + tsbigmz
@@ -1070,8 +1021,6 @@ partitionVarSkewnessWithEnvAndTraits = function (PlistAllTraits,
   }
 
   tsM = as.matrix(bdiag (Mlist))
-  ## Is this right?  fulmar code has a mix of F and M.  But kittiwake
-  ## code has all F.  I think the fulmar code has a bug. :-(
   tsF = as.matrix(bdiag (bigFlist))
   rm (Mlist, bigFlist)
   
@@ -1094,11 +1043,10 @@ partitionVarSkewnessWithEnvAndTraits = function (PlistAllTraits,
   bstsM[1 + numTraits + numTraits*mz + 1:tsbigmz,
         1 + numTraits + numTraits*mz + 1:tsbigmz] = tsM
 
-  ## You only start reproducing once you're past the ur-stages.  I guess
-  ## reproduction should go to the ur-stage x ur-environment state.  Not
+  ## You only start reproducing once you're past the ur-stages.  
+  ## Reproduction should go to the ur-stage x ur-environment state.  Not
   ## that it matters much, since all we need are the column sums of
   ## bsF.
-
   bstsF[1, 1 + numTraits + numTraits*mz + 1:tsbigmz] =
       colSums (tsF)
 
@@ -1128,48 +1076,41 @@ partitionVarSkewnessWithEnvAndTraits = function (PlistAllTraits,
   for (j in 1:bstsbigmz)
     bstsR1[,j] = foo[j]
 
-  ## bstsR2 = bstsR1^2
-  bstsR2 = bstsR1 + bstsR1^2
-  ## bstsR3 = bstsR1^3
-  bstsR3 = bstsR1 + 3*bstsR1^2 + bstsR1^3
-
+  if (Fdist == "Poisson") {
+    ## bstsR2 = bstsR1^2
+    bstsR2 = bstsR1 + bstsR1^2
+    ## bstsR3 = bstsR1^3
+    bstsR3 = bstsR1 + 3*bstsR1^2 + bstsR1^3
+  } else if (Fdist == "Bernoulli") {
+    bstsR2 = bstsR3 = bstsR1
+  } else {
+    stop("Currently only supports Poisson- and Bernoulli-distributed clutch sizes.")
+  }
+  
   ## R1Stripped has the absorbed state cleaved off
   bstsR1Stripped = bstsR1[1:bstsbigmz,1:bstsbigmz]
   bstsR2Stripped = bstsR2[1:bstsbigmz,1:bstsbigmz]
 
   ## Ex(R)
-  cat ("Calculating bstsRho1Vec...\n")
+  message ("Calculating bstsRho1Vec...\n")
   bstse = rep (1, bstsbigmz+1)
   bstsN = solve (diag(bstsbigmz) - bstsM)
 
   bstsRho1Vec = t(bstsN) %*% bstsZ %*% t(bstsMplus * bstsR1) %*% bstse
-  ## Sanity check: passes
-  if (debugging)  
-    cat ("Checking bstsRho1Vec:",
-         range (bstsRho1Vec[(numTraits*mz + numTraits+2):
-                            (numTraits*mz + numTraits+ 1 + mz*numEnv)]
-                -
-                expRCondXZ[1,]), "should = 0 0.\n")
-
-  ## Ex(R^2 | x) Do I get the correct bstsRho2Vec for traits 1 and 3 (and
-  ## presumably 2), all values of (z,q)?  (E.g. compare
-  ## bstsRho2Vec[248--1833] with r2 for x = 1.)
-
-  cat ("Calculating bstsRho2Vec...\n")
+  ## Sanity check
+  epsilon = 0.00001
+  foo = bstsRho1Vec[(numTraits*mz + numTraits+2):
+                    (numTraits*mz + numTraits+ 1 + mz*numEnv)]
+  if (sum(abs(range(foo - expRCondXZ[1,]))) > epsilon)
+    warning("bstsRho1Vec differs substantially from expRCondXZ[1,].")
+        
+  message ("Calculating bstsRho2Vec...\n")
   bstsRho2Vec = t(bstsN) %*% (bstsZ %*% t(bstsMplus * bstsR2) %*% bstse +
                               2*t(bstsM * bstsR1Stripped) %*%
                               bstsRho1Vec)
-  ## Sanity check: passes
-  if (debugging) 
-    cat ("Checking bstsRho2Vec:",
-         range (bstsRho2Vec[(numTraits*mz + numTraits+2):
-                            (numTraits*mz + numTraits+ 1 + mz*numEnv)]
-                -
-                r2CondX[1,]),
-         "should = 0 0.\n")
       
   ## Ex(R^3 | x)
-  cat ("Calculating bstsRho3Vec...\n")
+  message ("Calculating bstsRho3Vec...\n")
   bstsRho3Vec = t(bstsN) %*% (bstsZ %*% t(bstsMplus * bstsR3) %*% bstse +
                               3*t(bstsM*bstsR2Stripped) %*% bstsRho1Vec +
                               3*t(bstsM*bstsR1Stripped) %*% bstsRho2Vec)
@@ -1179,35 +1120,26 @@ partitionVarSkewnessWithEnvAndTraits = function (PlistAllTraits,
   bstsRho3Vec = t(bstsRho3Vec)
 
   ## Do I get the correct bstsMu2Vec for trait 3, all values of (z,q)?
-  ## (Compare bstsMu2Vec[41:52] with varRCondXZQ for x = 3 in
-  ## fulmarSurvGrowthPluckPartition.R.)
   bstsMu2Vec = bstsRho2Vec - bstsRho1Vec^2
   bstsMu3Vec = bstsRho3Vec - 3*bstsRho1Vec*bstsRho2Vec + 2*bstsRho1Vec^3
   bstsSkewnessVec = bstsMu3Vec / bstsMu2Vec^1.5
-
-  ## sanity check
-  if (debugging)
-    cat (range(
-        bstsSkewnessVec[(numTraits*mz + numTraits+2):
-                        (numTraits*mz + numTraits+ 1 + mz*numEnv)] -
-        skewnessVecCondX[1,]), "should = 0 0\n")
 
   urState = rep(0, bstsbigmz)
   urState[1] = 1
   totSkewness = bstsSkewnessVec %*% urState
   totVar2 = bstsMu2Vec %*% urState
 
-  ## Sanity check: passes
-  if (debugging)
-    cat ("Checking totVar:", totVar, "should = ", totVar2, "\n")
+  if ((totVar < (1 - percentTol)*totVar2) |
+      (totVar > (1 + percentTol)*totVar2))
+    warning("Variance calculated from bstsM differs from variance calculated from variances for each trait value.")
 
   skewnessFromTraits = totSkewness - traitAve (totSkewnessCondX, traitDist)
   varFromTraits = totVar - traitAve (totVarCondX, traitDist)
 
-  ## Sanity check: passes
-  if (debugging)
-    cat ("Checking variance from traits:", varFromTraits, "should = ",
-         varXExpRCondX, "\n")
+  ## Sanity check
+  if ((varFromTraits < (1 - percentTol)*varXExpRCondX) |
+      (varFromTraits > (1 + percentTol)*varXExpRCondX))
+    warning("The portion of variance due to traits that is calculated by subtracting Ex_x Var(R | x) from total variance is not equal to Var_x Ex(R | x).")
 
   return (out=list(varFromTraits=varFromTraits,
                    skewnessFromTraits=skewnessFromTraits,
