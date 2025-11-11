@@ -302,7 +302,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
   foo1 = apply (probLifespanCondR, 1, sum)
   foo2 = rep (1, nrow(probLifespanCondR))
   if (max(abs(range(foo1 - foo2))) > epsilon)
-    warning ("sum_x Pr(lifespan = x | R) should be 1s and it's not.")
+    warning ("Rows of probLifespanCondR should sum to 1 and they don't.")
 
   meanLifespanCondR = sdLifespanCondR = CVLifespanCondR =
     numeric (RCutoff+1)
@@ -605,6 +605,10 @@ probTraitCondLRO = function (PlistAllTraits, FlistAllTraits, Q,
   u0 = eigen(Q)$vectors[,1]
   u0 = u0 / sum(u0)
 
+  mz = dim(PlistAllTraits[[1]][[1]])[1]
+  numEnv = dim(Q)[1]
+  bigmz = numEnv*mz
+
   ## m0 is the stationary state cross-classified by size and
   ## environment
   m0 = matrix (outer (c0, as.vector(u0)), bigmz, 1)
@@ -623,7 +627,11 @@ probTraitCondLRO = function (PlistAllTraits, FlistAllTraits, Q,
                                   Fdist)
   }
   ## Sanity check
-  cat ("Testing probRCondX:", colSums(probRCondX), "should = 1.\n")
+  epsilon = 0.00001
+  foo1 = colSums(probRCondX)
+  foo2 = rep (1, ncol(probRCondX))
+  if (max(abs(range (foo1 - foo2))) > epsilon)
+    warning ("Columns of probRCondX should sum to 1 and they don't.")
 
   ## Now use Bayes thm to get P(X | R). ################
 
@@ -635,7 +643,8 @@ probTraitCondLRO = function (PlistAllTraits, FlistAllTraits, Q,
 
   ## Marginalize over X to get P(R)
   probR = apply (probRAndX, 1, sum)
-  cat ("Testing probR:", sum(probR), "should = 1.\n")
+  if (abs(sum(probR) - 1) > epsilon)
+    warning ("Pr(R) does not sum to 1.")
 
   ## Condition on R
   for (x in 1:numTraits)
