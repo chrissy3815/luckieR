@@ -57,9 +57,9 @@ distLifespanCondR2 = function (Plist, Flist, Q,
                                c0, maxClutchSize, maxAge,
                                percentileCutoff = 0.99,
                                Fdist="Poisson") {
-  require (Matrix)
-  debugging = TRUE
-  
+  ## tolerance for error checking.  0.001 = 0.1% tolerance
+  percentTol = 0.001
+
   mT = maxClutchSize + 1
   mA = maxAge + 1
   
@@ -118,7 +118,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
           Fbullet[(i-1)*bigmz + z, (j-1)*bigmz + z] =
             dbinom (i-j, prob=sum(F[,z]), size=1)
         } else {
-          cat ("Did not recognize Fdist choice.\n")
+          stop ("Supported options for Fdist are 'Poisson' and 'Bernoulli'.")
         }
       }
     }
@@ -161,11 +161,10 @@ distLifespanCondR2 = function (Plist, Flist, Q,
     Gbullet[(k-1)*bigmz + 1:bigmz, (k-1)*bigmz + 1:bigmz] = smallGbullet
 
   ## sanity check
-  if (debugging)
-    cat ("Checking the bullet matrices for all #kids:",
-         range((Qbullet %*% Gbullet %*% Sbullet %*% Fbullet - A)),
-         "should = 0.\n")
-
+  epsilon = 0.00001
+  if (sum(abs(range(Qbullet %*% Gbullet %*% Sbullet %*% Fbullet - A)))
+      > epsilon)
+    warning("Qbullet %*% Gbullet %*% Sbullet %*% Fbullet differs substantially from A")
 
   ####################################################################
   ## Now make the additionally extended space matrix that allows us to
@@ -216,12 +215,6 @@ distLifespanCondR2 = function (Plist, Flist, Q,
   cumDistKidsAtDeath = cumsum (distKidsAtDeath)
   R90 = which (cumDistKidsAtDeath > 0.9)[1]
   R99 = which (cumDistKidsAtDeath > 0.99)[1]
-  if (debugging) {
-    cat ("The 90th %ile of the LRO distribution occurs at", R90,
-         "kids.\n")
-    cat ("The 99th %ile of the LRO distribution occurs at", R99,
-         "kids.\n")
-  }
   RCutoff = which (cumDistKidsAtDeath > percentileCutoff)[1]
   if (RCutoff > maxClutchSize)
     stop ("RCutoff = ", RCutoff, "but maxClutchSize = ", maxClutchSize, "\n")
@@ -243,7 +236,6 @@ distLifespanCondR2 = function (Plist, Flist, Q,
   esAa = diag (esmzA)
   esA4 = esA %*% esA %*% esA %*% esA
   for (a in 1:(mA+1)) {
-    cat ("a = ", a, "\n")
     probSurvAgeA[a] = colSums (esAa) %*% extendedInit
     if (a >= 2)
       probLifespanCondR[1,a-1] =
@@ -260,7 +252,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
   ## k is the actual number of kids for the threshold.  We start with
   ## the threshold for success at LRO = 1 kid.
   for (k in 1:(RCutoff+1)) {
-    cat ("#kids threshold = ", k, "\n")
+    message ("'Success' = ", k, " offspring")
 
     ## Get esA conditional on success
     cutoff = k*bigmz
@@ -274,8 +266,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
       probThresholdOrMore[k,] - probThresholdOrMore[k+1,]
     probSuccess[k] = probSuccessCondZ[k,] %*% extendedInit
 
-    if (debugging)
-      cat ("Pr(success) = ", probSuccess[k], "\n")
+    message ("Pr(success) = ", probSuccess[k])
     
     condEsA = matrix (0, esmzA, esmzA)
     ## For any starting state with #kids > threshold, probSuccessCondZ
@@ -298,11 +289,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
     ## numKidsThreshold kids?
     condEsAa = diag(esmzA)
     for (a in 1:(mA+1)) {
-      cat ("a = ", a, "\n")
       probSurvAgeA[a] = colSums (condEsAa) %*% initCondSuccess
-      ##if (a >= 2)
-##        probLifespanCondR[k+1,a-1] =
-##          probSurvAgeA[a-1] - probSurvAgeA[a]
       ## Keep track of survival probabilities for unconditional kernel.
       ## we need to hit the last matrix 4 times to advance one time step
       condEsAa = condEsA4 %*% condEsAa
@@ -312,31 +299,11 @@ distLifespanCondR2 = function (Plist, Flist, Q,
   }  ## end loop over k
 
   ## Sanity check: passes if maxAge is large enough
-  if (debugging)
-    cat ("sum_x Pr(lifespan = x | R) is ",
-         apply (probLifespanCondR, 1, sum), "should = 1s.\n")
+  foo1 = apply (probLifespanCondR, 1, sum)
+  foo2 = rep (1, nrow(probLifespanCondR))
+  if (max(abs(range(foo1 - foo2))) > epsilon)
+    warning ("sum_x Pr(lifespan = x | R) should be 1s and it's not.")
 
-  ## Why are we calculating probLifespanCondR twice? #############
-
-  if (FALSE) {
-    ## Get P(L, R)
-    for (kidsIndexThreshold in 1:(RCutoff+1))
-      jointProbLifespanR[kidsIndexThreshold,] =
-        probLifespanCondR[kidsIndexThreshold,] *
-        probSuccess[kidsIndexThreshold]
-
-    ## Sanity check
-    cat ("sum_{L, R} Pr(L, R) = ", sum(jointProbLifespanR), " should = 1.\n")
-
-    for (kidsIndexThreshold in 1:(RCutoff+1))
-      probLifespanCondR[kidsIndexThreshold,] =
-        jointProbLifespanR[kidsIndexThreshold,] /
-        distKidsAtDeath[kidsIndexThreshold]
-    
-    cat ("sum_x Pr(lifespan = x | R) is ",
-         apply (probLifespanCondR, 1, sum), "\n")
-  }
-  
   meanLifespanCondR = sdLifespanCondR = CVLifespanCondR =
     numeric (RCutoff+1)
   
@@ -432,8 +399,8 @@ distLifespanCondR2 = function (Plist, Flist, Q,
 calcDistLRO = function (Plist, Flist, Q,
                         c0, maxClutchSize, maxLRO,
                         Fdist="Poisson") {
-##  require (Matrix)
-  debugging = TRUE
+  ## tolerance for error checking.  0.001 = 0.1% tolerance
+  percentTol = 0.001
 
   mT = maxLRO + 1
   
@@ -463,14 +430,10 @@ calcDistLRO = function (Plist, Flist, Q,
   ## The columns of B should sum to 1.
   B = mk_B (maxClutchSize, F, Fdist)
 
-  ## Sanity check: is maxLRO large enough?
-##  cat ("calcDistLRO: x = ", x, ": min(colSums(B)) = ", min(colSums(B)),
-##       "\n")
-
   ## Construct A, the transition matrix for a (number of kids) x stage x
   ## env. model.   
   out = make_AxT (B, M, mT)
-  cat ("calcDistLRO: making A...\n")
+  message ("calcDistLRO: Making A...")
   A = out$A
   mzA = bigmz*mT
   K = out$K
@@ -481,12 +444,6 @@ calcDistLRO = function (Plist, Flist, Q,
 
   ## Make "bullet" matrices for A.
   Fbullet = matrix (0, mzA, mzA)
-
-  ## BUG: We ought to be able to make Fbullet with just the info. in
-  ## B, but you need to respect the fact that i-j can't be bigger than
-  ## Fbullet[(i-1)*bigmz + z, (j-1)*bigmz + z] =
-  ## B[i-j + 1, z]
-
 
   ## Fbullet updates number of kids.
   for (j in 1:mT) {
@@ -499,7 +456,7 @@ calcDistLRO = function (Plist, Flist, Q,
           Fbullet[(i-1)*bigmz + z, (j-1)*bigmz + z] =
             dbinom (i-j, prob=sum(F[,z]), size=1)
         } else {
-          cat ("Did not recognize Fdist choice.\n")
+          stop ("Supported options for Fdist are 'Poisson' and 'Bernoulli.'\n")
         }
       }
     }
@@ -511,7 +468,6 @@ calcDistLRO = function (Plist, Flist, Q,
   for (j in 1:(mT-1)) {
     for (z in 1:bigmz) {
       Fbullet[(mT-1)*bigmz + z, (j-1)*bigmz + z] =
-        ##      1 - sum(Fbullet[1:((mT-1)*bigmz), (j-1)*bigmz + z])
         1 - sum(Fbullet[(0:(mT-2))*bigmz + z, (j-1)*bigmz + z])
     }
   }
@@ -534,11 +490,9 @@ calcDistLRO = function (Plist, Flist, Q,
 
   
   ## sanity check
-  if (debugging)
-    cat ("Checking the bullet matrices for all #kids:",
-         range((Mbullet %*% Fbullet - A)),
-         "should = 0.\n")
-
+  epsilon = 0.00001
+  if (sum(abs(range(Mbullet %*% Fbullet - A))) > epsilon)
+    stop ("Mbullet %*% Fbullet is substantially different than A.")
 
   ####################################################################
   ## Now make the additionally extended space matrix that allows us to
@@ -553,7 +507,6 @@ calcDistLRO = function (Plist, Flist, Q,
   esA = matrix (0, esmzA, esmzA)
   esA[mzA + 1:mzA, 1:mzA] = Fbullet
   esA[1:mzA, mzA + 1:mzA] = Mbullet
-
   
   ##################################################################
   ## What is the distribution of #kids at death when reproduction
@@ -564,7 +517,7 @@ calcDistLRO = function (Plist, Flist, Q,
   surv = apply (esA, 2, sum);  die = 1-surv; 
 
   ## And the fundamental matrix of esA
-  cat ("calcDistLRO: calculating fundamental matrix...\n")
+  message ("calcDistLRO: calculating fundamental matrix...\n")
   fundesA <- solve(diag(ncol(esA))-esA)
 
   ## Make omega
