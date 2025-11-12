@@ -81,6 +81,12 @@ getVarSkewnessPartitionsNoEnvVar = function (P, F, c0, maxAge=100,
   
   ## tolerance for error checking.  0.001 = 0.1% tolerance
   percentTol = 0.001
+
+  ## Sanity check input
+  if (Fdist == "Bernoulli") {
+    if (sum(colSums(F) > 1))
+        stop("Probability of having an offspring > 1!  Columns of fecundity matrix sum to > 1 but clutch size is Bernoulli-distributed.")
+  }
   
   mz = dim(P)[1]
 
@@ -427,6 +433,14 @@ getVarSkewnessPartitionsEnvVar = function (Plist, Flist, Q, c0,
   mz = dim(Plist[[1]])[1]
   numEnv = dim(Q)[1]
   bigmz = numEnv*mz
+
+  ## Sanity check input
+  if (Fdist == "Bernoulli") {
+    for (q in 1:numEnv)
+      if (sum(colSums(Flist[[q]]) > 1))
+        stop("Probability of having an offspring > 1!  Columns of fecundity matrix in environment ",
+             q, " sum to > 1 but clutch size is Bernoulli-distributed.")
+  }
 
   ## u0 is the stationary environmental distribution, given by the
   ## dominant eigenvector of Q
@@ -886,6 +900,16 @@ partitionVarSkewnessWithEnvAndTraits = function (PlistAllTraits,
   bigmz = mz*numEnv
   ## Initial cross-classified state
   m0 = matrix (outer (c0, as.vector(u0)), bigmz, 1)
+
+  ## Sanity check input
+  if (Fdist == "Bernoulli") {
+    for (x in 1:numTraits) {
+      for (q in 1:numEnv)
+        if (sum(colSums(FlistAllTraits[[x]][[q]]) > 1))
+          stop("Probability of having an offspring > 1!  Columns of fecundity matrix in environment ",
+               q, " with trait ", x," sum to > 1 but clutch size is Bernoulli-distributed.")
+    }
+  }
 
   lifespanCondX = birthEnvSkewnessCondX =
     birthEnvVarCondX = birthStateSkewnessCondX =

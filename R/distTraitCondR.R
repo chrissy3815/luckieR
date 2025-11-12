@@ -72,7 +72,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
     for (q in 1:numEnv)
       if (sum(colSums(Flist[[q]]) > 1))
         stop("Probability of having an offspring > 1!  Columns of fecundity matrix in environment ",
-             q, " sum to > 1 but clutch size is Bernoulli-distributed.\n")
+             q, " sum to > 1 but clutch size is Bernoulli-distributed.")
   }
 
   ## u0 is the stationary environmental distribution, given by the
@@ -421,7 +421,7 @@ calcDistLRO = function (Plist, Flist, Q,
     for (q in 1:numEnv)
       if (sum(colSums(Flist[[q]]) > 1))
         stop("Probability of having an offspring > 1!  Columns of fecundity matrix in environment ",
-             q, " sum to > 1 but clutch size is Bernoulli-distributed.\n")
+             q, " sum to > 1 but clutch size is Bernoulli-distributed.")
   }
 
   ## u0 is the stationary environmental distribution, given by the
@@ -631,7 +631,7 @@ probTraitCondLRO = function (PlistAllTraits, FlistAllTraits, Q,
       for (q in 1:numEnv)
         if (sum(colSums(FlistAllTraits[[x]][[q]]) > 1))
           stop("Probability of having an offspring > 1!  Columns of fecundity matrix in environment ",
-               q, " with trait ", x," sum to > 1 but clutch size is Bernoulli-distributed.\n")
+               q, " with trait ", x," sum to > 1 but clutch size is Bernoulli-distributed.")
     }
   }
 
