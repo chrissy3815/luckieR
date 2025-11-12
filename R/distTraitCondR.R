@@ -67,6 +67,14 @@ distLifespanCondR2 = function (Plist, Flist, Q,
   numEnv = dim(Q)[1]
   bigmz = numEnv*mz
 
+  ## Sanity check input
+  if (Fdist == "Bernoulli") {
+    for (q in 1:numEnv)
+      if (sum(colSums(Flist[[q]]) > 1))
+        stop("Probability of having an offspring > 1!  Columns of fecundity matrix in environment ",
+             q, " sum to > 1 but clutch size is Bernoulli-distributed.\n")
+  }
+
   ## u0 is the stationary environmental distribution, given by the
   ## dominant eigenvector of Q
   u0 = eigen(Q)$vectors[,1]
@@ -408,6 +416,14 @@ calcDistLRO = function (Plist, Flist, Q,
   numEnv = dim(Q)[1]
   bigmz = numEnv*mz
 
+  ## Sanity check input
+  if (Fdist == "Bernoulli") {
+    for (q in 1:numEnv)
+      if (sum(colSums(Flist[[q]]) > 1))
+        stop("Probability of having an offspring > 1!  Columns of fecundity matrix in environment ",
+             q, " sum to > 1 but clutch size is Bernoulli-distributed.\n")
+  }
+
   ## u0 is the stationary environmental distribution, given by the
   ## dominant eigenvector of Q
   u0 = eigen(Q)$vectors[,1]
@@ -608,6 +624,16 @@ probTraitCondLRO = function (PlistAllTraits, FlistAllTraits, Q,
   mz = dim(PlistAllTraits[[1]][[1]])[1]
   numEnv = dim(Q)[1]
   bigmz = numEnv*mz
+
+  ## Sanity check input
+  if (Fdist == "Bernoulli") {
+    for (x in 1:numTraits) {
+      for (q in 1:numEnv)
+        if (sum(colSums(FlistAllTraits[[x]][[q]]) > 1))
+          stop("Probability of having an offspring > 1!  Columns of fecundity matrix in environment ",
+               q, " with trait ", x," sum to > 1 but clutch size is Bernoulli-distributed.\n")
+    }
+  }
 
   ## m0 is the stationary state cross-classified by size and
   ## environment
