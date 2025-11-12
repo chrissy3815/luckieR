@@ -88,7 +88,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
   ## B[i,j] is the probability that a class-j individual has i-1 kids.
   ## We assume Poisson-distributed number of offspring.
   ## The columns of B should sum to 1 and they do.
-  B = mk_B (maxClutchSize, F, Fdist)
+  B = mk_B (F, maxClutchSize, Fdist)
 
   ## Construct A, the transition matrix for a (number of kids) x stage x
   ## env. model.   
@@ -428,7 +428,7 @@ calcDistLRO = function (Plist, Flist, Q,
 
   ## B[i,j] is the probability that a class-j individual has i-1 kids.
   ## The columns of B should sum to 1.
-  B = mk_B (maxClutchSize, F, Fdist)
+  B = mk_B (F, maxClutchSize, Fdist)
 
   ## Construct A, the transition matrix for a (number of kids) x stage x
   ## env. model.   

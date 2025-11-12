@@ -267,8 +267,10 @@ calcMoments = function (M, R1, R2, R3) {
 #'
 #' This code is called by makePCondBreedDef3.  It assumes that clutch
 #' sizes are Poisson-distributed. 
-#' @param P the survival/growth transition matrix
-#' @param F the fecundity matrix
+#' @param P the survival/growth transition matrix.  P\[i,j\] is the
+#' probability of surviving and transitioning from size j to size i.
+#' @param F the fecundity matrix.  F\[i,j\] is the expected number of
+#' size i offspring from a size j parent.
 #' @return bigP the extended state transition matrix (see Details)
 #' @details This function calculates the extended state transition
 #' kernel defined in eq. S34 of the supplementary information in Robin
