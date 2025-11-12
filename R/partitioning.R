@@ -70,8 +70,8 @@
 #' P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' F = matrix (0, 3, 3); F[1,] = 0:2
 #' c0 = c(1,0,0)
-#' out = getVarSkewnessPartitionsNoEnvVar (P, F, c0)
-getVarSkewnessPartitionsNoEnvVar = function (P, F, c0, maxAge=100,
+#' out = partitionVarSkewnessNoEnvVar (P, F, c0)
+partitionVarSkewnessNoEnvVar = function (P, F, c0, maxAge=100,
                                              survThreshold=0.05,
                                              Fdist="Poisson",
                                              esR1=NULL, esR2=NULL,
@@ -417,13 +417,13 @@ getVarSkewnessPartitionsNoEnvVar = function (P, F, c0, maxAge=100,
 #' Flist = list (F1, F2)
 #' Q = matrix (1/2, 2, 2)
 #' c0 = c(1,0,0)
-#' out = getVarSkewnessPartitionsEnvVar (Plist, Flist, Q, c0)
-getVarSkewnessPartitionsEnvVar = function (Plist, Flist, Q, c0,
-                                           maxAge=100, 
-                                           survThreshold=0.05,
-                                           Fdist="Poisson",
-                                           esR1=NULL, esR2=NULL, esR3=NULL,
-                                           bsR1=NULL, bsR2=NULL, bsR3=NULL)
+#' out = partitionVarSkewnessEnvVar (Plist, Flist, Q, c0)
+partitionVarSkewnessEnvVar = function (Plist, Flist, Q, c0,
+                                       maxAge=100, 
+                                       survThreshold=0.05,
+                                       Fdist="Poisson",
+                                       esR1=NULL, esR2=NULL, esR3=NULL,
+                                       bsR1=NULL, bsR2=NULL, bsR3=NULL)
 {
   ##  require (Matrix)
   
@@ -872,14 +872,14 @@ getVarSkewnessPartitionsEnvVar = function (Plist, Flist, Q, c0,
 #' Q = matrix (1/2, 2, 2)
 #' c0 = c(1,0,0)
 #' traitDist = rep(0.5, 2)
-#' out = partitionVarSkewnessWithEnvAndTraits (PlistAllTraits,
+#' out = partitionVarSkewnessEnvVarAndTraits (PlistAllTraits,
 #'       FlistAllTraits, Q, c0, traitDist)
-partitionVarSkewnessWithEnvAndTraits = function (PlistAllTraits,
-                                                 FlistAllTraits, Q,
-                                                 c0, traitDist,
-                                                 maxAge=100,
-                                                 survThreshold=0.05,
-                                                 Fdist="Poisson") {
+partitionVarSkewnessEnvVarAndTraits = function (PlistAllTraits,
+                                                FlistAllTraits, Q,
+                                                c0, traitDist,
+                                                maxAge=100,
+                                                survThreshold=0.05,
+                                                Fdist="Poisson") {
 
   ## tolerance for error checking.  0.001 = 0.1% tolerance
   percentTol = 0.001
