@@ -105,3 +105,35 @@ test_that("partitionVarSkewnessEnvVarAndTraits works with Bernoulli-dist. clutch
                                            Fdist="Bernoulli")
   )
 })
+
+## Sanity check comparisons
+## ###########################################
+
+P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+F = matrix (0, 3, 3); F[1,] = 0:2
+c0 = c(1,0,0)
+Plist = list (P, P)
+Flist = list (F, F)
+PlistAllTraits = list (Plist, Plist)
+FlistAllTraits = list (Flist, Flist)
+Q = matrix (1/2, 2, 2)
+out1 = partitionVarSkewnessNoEnvVar (P, F, c0)
+out2 = partitionVarSkewnessEnvVar(Plist, Flist, Q, c0)
+out3 = partitionVarSkewnessEnvVarAndTraits (PlistAllTraits,
+                                            FlistAllTraits,
+                                            Q, c0, traitDist)
+test_that("Having the same matrices for two environments gives the same survival trajectory luck for variance as having a single environment", {
+  expect_equal (out1$survTrajecVar, out2$survTrajecVar)
+})
+
+test_that("Having the same matrices for two environments gives the same growth trajectory luck for skewness as having a single environment", {
+  expect_equal (out1$survTrajecSkewness, out2$survTrajecSkewness)
+})
+
+test_that("Having the same matrices for both traits give the same environment trajectory luck for variance as having a single trait", {
+  expect_equal (out2$envTrajecVar, out3$envTrajecVar)
+})
+
+test_that("Having the same matrices for both traits give the same fecundity luck for skewness as having a single trait", {
+  expect_equal (out2$fecSkewness, out3$fecSkewness)
+})
