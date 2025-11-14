@@ -28,10 +28,10 @@
 #'   Poisson-distributed clutch sizes.
 #' @param bsR1 The 1st order reward matrix for the extended state
 #'   space that includes the pre-birth "ur-state" (see Details).
-#'   Optional.  The default assumes Poisson-distributed clutch sizes. 
+#'   Optional.  The default assumes Poisson-distributed clutch sizes.
 #' @param bsR2 The 2nd order reward matrix for the extended state
 #'   space that includes the pre-birth "ur-state" (see Details).
-#'   Optional.  The default assumes Poisson-distributed clutch sizes. 
+#'   Optional.  The default assumes Poisson-distributed clutch sizes.
 #' @param bsR3 The 3rd order reward matrix for the extended state
 #'   space that includes the pre-birth "ur-state" (see Details).
 #'   Optional.  The default assumes Poisson-distributed clutch sizes.
@@ -40,32 +40,29 @@
 #' @param Fdist The clutch size distribution.  The recognized options
 #'   are "Poisson" and "Bernoulli".  Optional.  The default value is
 #'   "Poisson".
-#' @details The details of this calculation, including the definitions
-#'   of the extended states, can be found in Robin E. Snyder and
-#'   Stephen P. Ellner.  2024.  "To prosper, live long: Understanding
-#'   the sources of reproductive skew and extreme reproductive success
-#'   in structured populations."  The American Naturalist 204(2) and
-#'   its online supplemnt.
-#' @return A list containing the following:
-#' * birthStateVar: the contribution to Var(LRO) from birth state luck
-#' * survTrajecVar: a vector whose jth entry contains the contribution
-#'   to Var(LRO) from survival trajectory luck at age j-1.
-#' * growthTrajecVar: a vector whose jth entry contains the contribution
-#'   to Var(LRO) from growth trajectory luck at age j-1.
-#' * fecVar: a vector whose jth entry contains the contribution
-#'   to Var(LRO) from fecundity luck at age j-1.
-#' * totVar: the total variance in LRO
-#' * birthStateSkewness: the contribution to LRO skewness from birth
-#'   state luck
-#' * survTrajecSkewness: a vector whose jth entry contains the contribution
-#'   to LRO skewness from survival trajectory luck at age j-1.
-#' * growthTrajecSkewness: a vector whose jth entry contains the contribution
-#'   to LRO skewness from growth trajectory luck at age j-1.
-#' * fecSkewness: a vector whose jth entry contains the contribution
-#'   to LRO skewness from fecundity luck at age j-1.
-#' * totSkewness: the total skewness in LRO
-#' * lifespan: the age by which a proportion survThreshold of a cohort
-#'   will be dead
+#' @details A pre-breeding census is assumed: reproduction happens
+#'   before survival and growth.  The details of this calculation,
+#'   including the definitions of the extended states, can be found in
+#'   Robin E. Snyder and Stephen P. Ellner.  2024.
+#'   "To prosper, live long: Understanding the sources of reproductive skew and extreme reproductive success in structured populations."
+#'   The American Naturalist 204(2) and its online supplemnt.
+#' @return A list containing the following: * birthStateVar: the
+#'   contribution to Var(LRO) from birth state luck * survTrajecVar: a
+#'   vector whose jth entry contains the contribution to Var(LRO) from
+#'   survival trajectory luck at age j-1.  * growthTrajecVar: a vector
+#'   whose jth entry contains the contribution to Var(LRO) from growth
+#'   trajectory luck at age j-1.  * fecVar: a vector whose jth entry
+#'   contains the contribution to Var(LRO) from fecundity luck at age
+#'   j-1.  * totVar: the total variance in LRO * birthStateSkewness:
+#'   the contribution to LRO skewness from birth state luck *
+#'   survTrajecSkewness: a vector whose jth entry contains the
+#'   contribution to LRO skewness from survival trajectory luck at age
+#'   j-1.  * growthTrajecSkewness: a vector whose jth entry contains
+#'   the contribution to LRO skewness from growth trajectory luck at
+#'   age j-1.  * fecSkewness: a vector whose jth entry contains the
+#'   contribution to LRO skewness from fecundity luck at age j-1.  *
+#'   totSkewness: the total skewness in LRO * lifespan: the age by
+#'   which a proportion survThreshold of a cohort will be dead
 #' @examples
 #' P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' F = matrix (0, 3, 3); F[1,] = 0:2
@@ -82,13 +79,21 @@ partitionVarSkewnessNoEnvVar = function (P, F, c0, maxAge=100,
   ## tolerance for error checking.  0.001 = 0.1% tolerance
   percentTol = 0.001
 
+  mz = dim(P)[1]
+  
   ## Sanity check input
   if (Fdist == "Bernoulli") {
     if (sum(colSums(F) > 1))
         stop("Probability of having an offspring > 1!  Columns of fecundity matrix sum to > 1 but clutch size is Bernoulli-distributed.")
   }
-  
-  mz = dim(P)[1]
+
+  ## Sanity check input
+  if (length(c0) != mz)
+    stop ("Length of c0 does not match dimension of P")
+
+  ## Sanity check input
+  if (dim(F)[1] != mz)
+    stop ("P and F should have the same dimensions.")
 
   ## Make survival, growth, and fecundity bullet matrices
   Sbullet = diag (colSums (P))
@@ -341,12 +346,11 @@ partitionVarSkewnessNoEnvVar = function (P, F, c0, maxAge=100,
 #' @param Plist A list of survival/growth transition matrices.
 #'   Plist\[\[q\]\]\[i,j\] is the probability of transitioning from
 #'   state j to state i in environment q.
-#' @param Flist A list of fecundity  matrices.  Flist\[\[q\]\]\[i,j\]
+#' @param Flist A list of fecundity matrices.  Flist\[\[q\]\]\[i,j\]
 #'   is the expected number of state i offspring from a state j parent
 #'   in environment q
 #' @param Q The environment transition matrix.  Q\[i,j\] is the
-#'   probability of transitioning from environment j to environment
-#'   i. 
+#'   probability of transitioning from environment j to environment i.
 #' @param c0 A vector specifying the offspring state distribution:
 #'   c0\[j\] is the probability that an individual is born in state j
 #' @param maxAge The maximum age an individual can attain.  Optional.
@@ -362,10 +366,10 @@ partitionVarSkewnessNoEnvVar = function (P, F, c0, maxAge=100,
 #'   Poisson-distributed clutch sizes.
 #' @param bsR1 The 1st order reward matrix for the extended state
 #'   space that includes the pre-birth "ur-state" (see Details).
-#'   Optional.  The default assumes Poisson-distributed clutch sizes. 
+#'   Optional.  The default assumes Poisson-distributed clutch sizes.
 #' @param bsR2 The 2nd order reward matrix for the extended state
 #'   space that includes the pre-birth "ur-state" (see Details).
-#'   Optional.  The default assumes Poisson-distributed clutch sizes. 
+#'   Optional.  The default assumes Poisson-distributed clutch sizes.
 #' @param bsR3 The 3rd order reward matrix for the extended state
 #'   space that includes the pre-birth "ur-state" (see Details).
 #'   Optional.  The default assumes Poisson-distributed clutch sizes.
@@ -374,40 +378,38 @@ partitionVarSkewnessNoEnvVar = function (P, F, c0, maxAge=100,
 #' @param Fdist The clutch size distribution.  The recognized options
 #'   are "Poisson" and "Bernoulli".  Optional.  The default value is
 #'   "Poisson".
-#' @details The details of this calculation, including the definitions
-#'   of the extended states, can be found in Robin E. Snyder and
-#'   Stephen P. Ellner.  2024.  "To prosper, live long: Understanding
-#'   the sources of reproductive skew and extreme reproductive success
-#'   in structured populations."  The American Naturalist 204(2) and
-#'   its online supplemnt.
-#' @return A list containing the following:
-#' * birthStateVar: the contribution to Var(LRO) from birth state luck
-#' * birthEnvVar: the contribution to Var(LRO) from birth environment
-#'   luck 
-#' * survTrajecVar: a vector whose jth entry contains the contribution
-#'   to Var(LRO) from survival trajectory luck at age j-1.
-#' * growthTrajecVar: a vector whose jth entry contains the contribution
-#'   to Var(LRO) from growth trajectory luck at age j-1.
-#' * envTrajecVar: a vector whose jth entry contains the contribution
-#'   to Var(LRO) from environment trajectory luck at age j-1.
-#' * fecVar: a vector whose jth entry contains the contribution
-#'   to Var(LRO) from fecundity luck at age j-1.
-#' * totVar: the total variance in LRO
-#' * birthStateSkewness: the contribution to LRO skewness from birth
-#'   state luck
-#' * birthEnvSkewness: the contribution to LRO skewness from birth
-#'   environment luck
-#' * survTrajecSkewness: a vector whose jth entry contains the contribution
-#'   to LRO skewness from survival trajectory luck at age j-1.
-#' * growthTrajecSkewness: a vector whose jth entry contains the contribution
-#'   to LRO skewness from growth trajectory luck at age j-1.
-#' * envTrajecSkewness: a vector whose jth entry contains the contribution
-#'   to LRO skewness from environment trajectory luck at age j-1.
-#' * fecSkewness: a vector whose jth entry contains the contribution
-#'   to LRO skewness from fecundity luck at age j-1.
-#' * totSkewness: the total skewness in LRO
-#' * lifespan: the age by which a proportion survThreshold of a cohort
-#'   will be dead
+#' @details A pre-breeding census is assumed: reproduction happens
+#'   before survival and growth.  The details of this calculation,
+#'   including the definitions of the extended states, can be found in
+#'   Robin E. Snyder and Stephen P. Ellner.  2024.
+#'   "To prosper, live long: Understanding the sources of reproductive
+#'   skew and extreme reproductive success in structured populations." 
+#'   The American Naturalist 204(2) and its online supplemnt.
+#' @return A list containing the following: * birthStateVar: the
+#'   contribution to Var(LRO) from birth state luck * birthEnvVar: the
+#'   contribution to Var(LRO) from birth environment luck *
+#'   survTrajecVar: a vector whose jth entry contains the contribution
+#'   to Var(LRO) from survival trajectory luck at age j-1.  *
+#'   growthTrajecVar: a vector whose jth entry contains the
+#'   contribution to Var(LRO) from growth trajectory luck at age j-1.
+#'   * envTrajecVar: a vector whose jth entry contains the
+#'   contribution to Var(LRO) from environment trajectory luck at age
+#'   j-1.  * fecVar: a vector whose jth entry contains the
+#'   contribution to Var(LRO) from fecundity luck at age j-1.  *
+#'   totVar: the total variance in LRO * birthStateSkewness: the
+#'   contribution to LRO skewness from birth state luck *
+#'   birthEnvSkewness: the contribution to LRO skewness from birth
+#'   environment luck * survTrajecSkewness: a vector whose jth entry
+#'   contains the contribution to LRO skewness from survival
+#'   trajectory luck at age j-1.  * growthTrajecSkewness: a vector
+#'   whose jth entry contains the contribution to LRO skewness from
+#'   growth trajectory luck at age j-1.  * envTrajecSkewness: a vector
+#'   whose jth entry contains the contribution to LRO skewness from
+#'   environment trajectory luck at age j-1.  * fecSkewness: a vector
+#'   whose jth entry contains the contribution to LRO skewness from
+#'   fecundity luck at age j-1.  * totSkewness: the total skewness in
+#'   LRO * lifespan: the age by which a proportion survThreshold of a
+#'   cohort will be dead
 #' @examples
 #' P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' P2 = matrix (c(0, 0.2, 0, 0, 0, 0.3, 0, 0, 0.4), 3, 3)
@@ -441,6 +443,14 @@ partitionVarSkewnessEnvVar = function (Plist, Flist, Q, c0,
         stop("Probability of having an offspring > 1!  Columns of fecundity matrix in environment ",
              q, " sum to > 1 but clutch size is Bernoulli-distributed.")
   }
+
+  ## Sanity check input
+  if (length(c0) != mz)
+    stop ("Length of c0 does not match dimension of P")
+
+  ## Sanity check input
+  if (dim(Flist[[1]])[1] != mz)
+    stop ("P and F should have the same dimensions.")
 
   ## u0 is the stationary environmental distribution, given by the
   ## dominant eigenvector of Q
@@ -768,93 +778,87 @@ partitionVarSkewnessEnvVar = function (Plist, Flist, Q, c0,
 #' @param PlistAllTraits A list of lists of survival/growth transition
 #'   matrices. Plist\[\[x\]\]\[\[q\]\]\[i,j\] is the probability of
 #'   transitioning from state j to state i in environment q when an
-#'   individual has trait x. 
-#' @param FlistAllTraits A list of lists of fecundity  matrices.
+#'   individual has trait x.
+#' @param FlistAllTraits A list of lists of fecundity matrices.
 #'   Flist\[\[x\]\]\[\[q\]\]\[i,j\] is the expected number of state i
 #'   offspring from a state j, trait x parent in environment q.
 #' @param Q The environment transition matrix.  Q\[i,j\] is the
-#'   probability of transitioning from environment j to environment
-#'   i.
+#'   probability of transitioning from environment j to environment i.
 #' @param c0 A vector specifying the offspring state distribution:
 #'   c0\[j\] is the probability that an individual is born in state j
 #' @param traitDist A vector whose jth entry is the probability of
 #'   having trait j
-#' @param maxAge The maximum age an individual can attain.  Optional. 
+#' @param maxAge The maximum age an individual can attain.  Optional.
 #'   The default value is 100.
 #' @param survThreshold The threshold to use in determining lifespan
 #'   (see return values).  Optional.  Default value is 0.05.
 #' @param Fdist The clutch size distribution.  The recognized options
 #'   are "Poisson" and "Bernoulli".  Optional.  The default value is
 #'   "Poisson".
-#' @details The details of this calculation, including the definitions
-#'   of the extended states, can be found in Robin E. Snyder and
-#'   Stephen P. Ellner.  2024.  "To prosper, live long: Understanding
-#'   the sources of reproductive skew and extreme reproductive success
-#'   in structured populations."  The American Naturalist 204(2) and
-#'   its online supplemnt.
-#' @return A list containing the following:
-#' * varFromTraits = the contribution to Var(LRO) from trait variation
-#' * skewnessFromTraits = the contribution to LRO skewness from trait
-#'   variation
-#' * totVar: the total variance in LRO
-#' * totSkewness: the total skewness in LRO
-#' * birthEnvVar: the contribution to Var(LRO) from birth environment
-#'   luck
-#' * birthEnvSkewness: the contribution to LRO skewness from birth
-#'   environment luck
-#' * birthStateVar: the contribution to Var(LRO) from birth state luck
-#' * birthStateSkewness: the contribution to LRO skewness from birth
-#'   state luck
-#' * survTrajecVar: a vector whose jth entry contains the contribution
-#'   to Var(LRO) from survival trajectory luck at age j-1.
-#' * survTrajecSkewness: a vector whose jth entry contains the contribution
-#'   to LRO skewness from survival trajectory luck at age j-1.
-#' * growthTrajecVar: a vector whose jth entry contains the contribution
-#'   to Var(LRO) from growth trajectory luck at age j-1.
-#' * growthTrajecSkewness: a vector whose jth entry contains the contribution
-#'   to LRO skewness from growth trajectory luck at age j-1.
-#' * envTrajecVar: a vector whose jth entry contains the contribution
-#'   to Var(LRO) from environment trajectory luck at age j-1.
-#' * envTrajecSkewness: a vector whose jth entry contains the contribution
-#'   to LRO skewness from environment trajectory luck at age j-1.
-#' * fecVar: a vector whose jth entry contains the contribution
-#'   to Var(LRO) from fecundity luck at age j-1.
-#' * fecSkewness: a vector whose jth entry contains the contribution
-#'   to LRO skewness from fecundity luck at age j-1.
-#' * totVarCondX: a vector whose jth entry is Var(LRO | trait = j)
-#' * totSkewnessCondX: a vector whose jth entry is the LRO skewness
-#'   conditional on trait = j
-#' * birthEnvVarCondX: a vector whose jth entry is the contribution of
-#'   birth environment luck to Var(LRO | trait = j)
-#' * birthEnvSkewnessCondX: a vector whose jth entry is the contribution of
-#'   birth environment luck to LRO skewness conditional on trait = j
-#' * birthStateVarCondX: a vector whose jth entry is the contribution of
-#'   birth state luck to Var(LRO | trait = j)
-#' * birthStateSkewnessCondX: a vector whose jth entry is the contribution of
-#'   birth state luck to LRO skewness conditional on trait = j
-#' * survTrajecVarCondX: a matrix whose i,jth entry contains the contribution
-#'   to Var(LRO | trait = i) from survival trajectory luck at age j-1.
-#' * survTrajecSkewnessCondX: a matrix whose i,jth entry contains the
+#' @details A pre-breeding census is assumed: reproduction happens
+#'   before survival and growth.  The details of this calculation,
+#'   including the definitions of the extended states, can be found in
+#'   Robin E. Snyder and Stephen P. Ellner.  2024.
+#'   "To prosper, live long: Understanding the sources of reproductive
+#'   skew and extreme reproductive success in structured populations." 
+#'   The American Naturalist 204(2) and its online supplemnt.
+#' @return A list containing the following: * varFromTraits = the
+#'   contribution to Var(LRO) from trait variation *
+#'   skewnessFromTraits = the contribution to LRO skewness from trait
+#'   variation * totVar: the total variance in LRO * totSkewness: the
+#'   total skewness in LRO * birthEnvVar: the contribution to Var(LRO)
+#'   from birth environment luck * birthEnvSkewness: the contribution
+#'   to LRO skewness from birth environment luck * birthStateVar: the
+#'   contribution to Var(LRO) from birth state luck *
+#'   birthStateSkewness: the contribution to LRO skewness from birth
+#'   state luck * survTrajecVar: a vector whose jth entry contains the
+#'   contribution to Var(LRO) from survival trajectory luck at age
+#'   j-1.  * survTrajecSkewness: a vector whose jth entry contains the
+#'   contribution to LRO skewness from survival trajectory luck at age
+#'   j-1.  * growthTrajecVar: a vector whose jth entry contains the
+#'   contribution to Var(LRO) from growth trajectory luck at age j-1.
+#'   * growthTrajecSkewness: a vector whose jth entry contains the
+#'   contribution to LRO skewness from growth trajectory luck at age
+#'   j-1.  * envTrajecVar: a vector whose jth entry contains the
+#'   contribution to Var(LRO) from environment trajectory luck at age
+#'   j-1.  * envTrajecSkewness: a vector whose jth entry contains the
+#'   contribution to LRO skewness from environment trajectory luck at
+#'   age j-1.  * fecVar: a vector whose jth entry contains the
+#'   contribution to Var(LRO) from fecundity luck at age j-1.  *
+#'   fecSkewness: a vector whose jth entry contains the contribution
+#'   to LRO skewness from fecundity luck at age j-1.  * totVarCondX: a
+#'   vector whose jth entry is Var(LRO | trait = j) *
+#'   totSkewnessCondX: a vector whose jth entry is the LRO skewness
+#'   conditional on trait = j * birthEnvVarCondX: a vector whose jth
+#'   entry is the contribution of birth environment luck to Var(LRO |
+#'   trait = j) * birthEnvSkewnessCondX: a vector whose jth entry is
+#'   the contribution of birth environment luck to LRO skewness
+#'   conditional on trait = j * birthStateVarCondX: a vector whose jth
+#'   entry is the contribution of birth state luck to Var(LRO | trait
+#'   = j) * birthStateSkewnessCondX: a vector whose jth entry is the
+#'   contribution of birth state luck to LRO skewness conditional on
+#'   trait = j * survTrajecVarCondX: a matrix whose i,jth entry
+#'   contains the contribution to Var(LRO | trait = i) from survival
+#'   trajectory luck at age j-1.  * survTrajecSkewnessCondX: a matrix
+#'   whose i,jth entry contains the contribution to LRO skewness
+#'   conditional on trait = i from survival trajectory luck at age
+#'   j-1.  * growthTrajecVarCondX: a matrix whose i,jth entry contains
+#'   the contribution to Var(LRO | trait = i) from growth trajectory
+#'   luck at age j-1.  * growthTrajecSkewnessCondX: a matrix whose
+#'   i,jth entry contains the contribution to LRO skewness conditional
+#'   on trait = i from growth trajectory luck at age j-1.  *
+#'   envTrajecVarCondX: a matrix whose i,jth entry contains the
+#'   contribution to Var(LRO | trait = i) from environment trajectory
+#'   luck at age j-1.  * envTrajecSkewnessCondX: a matrix whose i,jth
+#'   entry contains the contribution to LRO skewness conditional on
+#'   trait = i from environment trajectory luck at age j-1.  *
+#'   fecVarCondX: a matrix whose i,jth entry contains the contribution
+#'   to Var(LRO | trait = i) from fecundity luck at age j-1.  *
+#'   fecSkewnessCondX: a matrix whose i,jth entry contains the
 #'   contribution to LRO skewness conditional on trait = i from
-#'   survival trajectory luck at age j-1. 
-#' * growthTrajecVarCondX: a matrix whose i,jth entry contains the contribution
-#'   to Var(LRO | trait = i) from growth trajectory luck at age j-1.
-#' * growthTrajecSkewnessCondX: a matrix whose i,jth entry contains
-#'   the contribution to LRO skewness conditional on trait = i from
-#'   growth trajectory luck at age j-1. 
-#' * envTrajecVarCondX: a matrix whose i,jth entry contains the contribution
-#'   to Var(LRO | trait = i) from environment trajectory luck at age
-#'   j-1.
-#' * envTrajecSkewnessCondX: a matrix whose i,jth entry contains the
-#'   contribution to LRO skewness conditional on trait = i from
-#'   environment trajectory luck at age j-1. 
-#' * fecVarCondX: a matrix whose i,jth entry contains the contribution
-#'   to Var(LRO | trait = i) from fecundity luck at age j-1.
-#' * fecSkewnessCondX: a matrix whose i,jth entry contains the contribution
-#'   to LRO skewness conditional on trait = i from fecundity luck at
-#'   age j-1.
-#' * lifespanCondX: a vector whose jth entry is the age by which
-#'   survThreshold proportion of a cohort with trait j would be dead
+#'   fecundity luck at age j-1.  * lifespanCondX: a vector whose jth
+#'   entry is the age by which survThreshold proportion of a cohort
+#'   with trait j would be dead
 #' @examples
 #' PlistAllTraits = FlistAllTraits = list ()
 #' P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
@@ -884,7 +888,7 @@ partitionVarSkewnessEnvVarAndTraits = function (PlistAllTraits,
   ## tolerance for error checking.  0.001 = 0.1% tolerance
   percentTol = 0.001
 
-  mz = length (c0)
+  mz = dim(PlistAllTraits[[1]][[1]])[1]
 
   ## u0 is the stationary environmental distribution, given by the
   ## dominant eigenvector of Q
@@ -911,6 +915,14 @@ partitionVarSkewnessEnvVarAndTraits = function (PlistAllTraits,
     }
   }
 
+  ## Sanity check input
+  if (length(c0) != mz)
+    stop ("Length of c0 does not match dimension of P")
+
+  ## Sanity check input
+  if (dim(FlistAllTraits[[1]][[1]])[1] != mz)
+    stop ("P and F should have the same dimensions.")
+
   lifespanCondX = birthEnvSkewnessCondX =
     birthEnvVarCondX = birthStateSkewnessCondX =
       birthStateVarCondX = numeric (numTraits)
@@ -930,10 +942,10 @@ partitionVarSkewnessEnvVarAndTraits = function (PlistAllTraits,
     Plist = PlistAllTraits[[x]]
     Flist = FlistAllTraits[[x]]
 
-    out = getVarSkewnessPartitionsEnvVar (Plist=Plist, Flist=Flist,
-                                          Q=Q, c0=c0, maxAge=maxAge,
-                                          survThreshold=survThreshold,
-                                          Fdist=Fdist)
+    out = partitionVarSkewnessEnvVar (Plist=Plist, Flist=Flist,
+                                      Q=Q, c0=c0, maxAge=maxAge,
+                                      survThreshold=survThreshold,
+                                      Fdist=Fdist)
 
     birthEnvSkewnessCondX[x] = out$birthEnvSkewness
     survTrajecSkewnessCondX[x,] = out$survTrajecSkewness
@@ -1195,4 +1207,343 @@ partitionVarSkewnessEnvVarAndTraits = function (PlistAllTraits,
                    fecVarCondX=fecVarCondX,
                    fecSkewnessCondX=fecSkewnessCondX,
                    lifespanCondX=lifespanCondX))
+}
+
+############### Post-breeding census versions ###################
+
+#' Partitions variance and skewness of LRO for a post-breeding census
+#' 
+#' Partitions variance and skewness of lifetime reproductive output
+#' (LRO) for models without trait or environmental variation, assuming
+#' a post-breeding census.
+#'
+#' @param P The survival/growth transition matrix: P\[i,j\] is the
+#'   probability of transitioning from state j to state i.
+#' @param F The fecundity matrix: F\[i,j\] is the expected number of
+#'   state i offspring from a state j parent
+#' @param c0 A vector specifying the offspring state distribution:
+#'   c0\[j\] is the probability that an individual is born in state j
+#' @param maxAge The maximum age an individual can attain.  Optional.
+#'   The default value is 100.
+#' @param esR1 The 1st order reward matrix for the extended state
+#'   space (see Details).  Optional.  The default assumes
+#'   Poisson-distributed clutch sizes.
+#' @param esR2 The 2nd order reward matrix for the extended state
+#'   space (see Details).  Optional.  The default assumes
+#'   Poisson-distributed clutch sizes.
+#' @param esR3 The 3rd order reward matrix for the extended state
+#'   space (see Details).  Optional.  The default assumes
+#'   Poisson-distributed clutch sizes.
+#' @param bsR1 The 1st order reward matrix for the extended state
+#'   space that includes the pre-birth "ur-state" (see Details).
+#'   Optional.  The default assumes Poisson-distributed clutch sizes.
+#' @param bsR2 The 2nd order reward matrix for the extended state
+#'   space that includes the pre-birth "ur-state" (see Details).
+#'   Optional.  The default assumes Poisson-distributed clutch sizes.
+#' @param bsR3 The 3rd order reward matrix for the extended state
+#'   space that includes the pre-birth "ur-state" (see Details).
+#'   Optional.  The default assumes Poisson-distributed clutch sizes.
+#' @param survThreshold The threshold to use in determining lifespan
+#'   (see return values).  Optional.  Default value is 0.05.
+#' @param Fdist The clutch size distribution.  The recognized options
+#'   are "Poisson" and "Bernoulli".  Optional.  The default value is
+#'   "Poisson".
+#' @details A post-breeding census is assumed: reproduction happens
+#'   after survival and growth.  The details of this calculation,
+#'   including the definitions of the extended states, can be found in
+#'   Robin E. Snyder and Stephen P. Ellner.  2024.
+#'   "To prosper, live long: Understanding the sources of reproductive skew and extreme reproductive success in structured populations."
+#'   The American Naturalist 204(2) and its online supplemnt.
+#' @return A list containing the following: * birthStateVar: the
+#'   contribution to Var(LRO) from birth state luck * survTrajecVar: a
+#'   vector whose jth entry contains the contribution to Var(LRO) from
+#'   survival trajectory luck at age j-1.  * growthTrajecVar: a vector
+#'   whose jth entry contains the contribution to Var(LRO) from growth
+#'   trajectory luck at age j-1.  * fecVar: a vector whose jth entry
+#'   contains the contribution to Var(LRO) from fecundity luck at age
+#'   j-1.  * totVar: the total variance in LRO * birthStateSkewness:
+#'   the contribution to LRO skewness from birth state luck *
+#'   survTrajecSkewness: a vector whose jth entry contains the
+#'   contribution to LRO skewness from survival trajectory luck at age
+#'   j-1.  * growthTrajecSkewness: a vector whose jth entry contains
+#'   the contribution to LRO skewness from growth trajectory luck at
+#'   age j-1.  * fecSkewness: a vector whose jth entry contains the
+#'   contribution to LRO skewness from fecundity luck at age j-1.  *
+#'   totSkewness: the total skewness in LRO * lifespan: the age by
+#'   which a proportion survThreshold of a cohort will be dead
+#' @examples
+#' P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' F = matrix (0, 3, 3); F[1,] = 0:2
+#' c0 = c(1,0,0)
+#' out = partitionVarSkewnessNoEnvVarPostBreeding (P, F, c0)
+## BUG: growth trajectory lucks are zero!!
+partitionVarSkewnessNoEnvVarPostBreeding = function (P, F, c0, maxAge=100,
+            survThreshold=0.05,
+            Fdist="Poisson",
+            esR1=NULL, esR2=NULL,
+            esR3=NULL,
+            bsR1=NULL, bsR2=NULL,
+            bsR3=NULL) {
+    
+  ## tolerance for error checking.  0.001 = 0.1% tolerance
+  percentTol = 0.001
+
+  mz = dim(P)[1]
+  
+  ## Sanity check input
+  if (Fdist == "Bernoulli") {
+    if (sum(colSums(F) > 1))
+        stop("Probability of having an offspring > 1!  Columns of fecundity matrix sum to > 1 but clutch size is Bernoulli-distributed.")
+  }
+
+  ## Sanity check input
+  if (length(c0) != mz)
+    stop ("Length of c0 does not match dimension of P")
+
+  ## Sanity check input
+  if (dim(F)[1] != mz)
+    stop ("P and F should have the same dimensions.")
+
+  ## Make survival, growth, and fecundity bullet matrices
+  Sbullet = diag (colSums (P))
+  
+  ## Does not work if any stage has zero probability of survival. 
+  ## Replaced by code below that seems to deal with that issue. 
+  #Sinv = diag (1 / diag(Sbullet))
+  #Gbullet = P %*% Sinv
+  
+  Gbullet = P;  
+  for(ic in 1:ncol(Gbullet)){
+        if(Sbullet[ic,ic]>0) Gbullet[,ic]=Gbullet[,ic]/Sbullet[ic,ic]
+  }
+
+  ## Sanity check
+  epsilon = 0.00001
+  if (sum(abs(range (Gbullet%*%Sbullet-P))) > epsilon)
+    warning ("Gbullet %*% Sbullet does not equal P.")
+  
+  ## #kids isn't part of the state definition, so Fbullet = I
+  Fbullet = diag (mz)
+
+  ## create matrices for extended state space, which I will denote with
+  ## the prefix "es".
+
+  esmz = 3*mz
+  esF = esP = matrix (0, esmz, esmz)
+
+  esP[1:mz, 2*mz + 1:mz] = Fbullet
+  esP[mz + 1:mz, 1:mz] = Sbullet
+  esP[2*mz + 1:mz, mz + 1:mz] = Gbullet
+  
+  esF[1:mz, 2*mz + 1:mz] = F
+
+  ################################################################
+  ## Extended state model that includes ur-stage alpha_z.  Used for
+  ## calculating contributions from birth stage.  The "bs" before
+  ## variable names stands for "birth state."
+  ################################################################
+
+  bsmz = 1 + mz
+  ## initial state --- everybody starts off in the ur-state.
+  bsC0 = rep(0, bsmz)
+  bsC0[1] = 1
+
+  bsF = bsP = matrix (0, bsmz, bsmz)
+  ## From ur-state to birth state
+  bsP[1 + (1:mz),1] = c0
+  ## From normal state to normal state
+  bsP[1 + 1:mz, 1 + 1:mz] = P
+
+  ## You only start reproducing once you're past the ur-state.  Note
+  ## that all we need are the column sums of bsF.
+  bsF[1, 1 + 1:mz] = colSums (F)
+
+  ## set up reward matrices ###############################
+
+  if (is.null (esR1) & is.null (esR2) & is.null (esR3) &
+        is.null (bsR1) & is.null (bsR2) & is.null (bsR3)) {
+    esR1 = esR2 = esR3 = matrix (0, esmz+1, esmz+1)
+    bsR1 = bsR2 = bsR3 = matrix (0, bsmz+1, bsmz+1)
+
+    ## First moment of clutch size (Poisson)
+    for (j in 1:esmz) 
+      esR1[,j] = sum(esF[,j])
+    for (j in 1:bsmz) 
+      bsR1[,j] = sum(bsF[,j])
+
+    if (Fdist == "Poisson") {
+      ## Second moment of clutch size  
+      esR2 = esR1 + esR1^2
+      bsR2 = bsR1 + bsR1^2
+      ## Third moment of clutch size
+      esR3 = esR1+ 3*esR1*esR1 + esR1*esR1*esR1
+      bsR3 = bsR1+ 3*bsR1*bsR1 + bsR1*bsR1*bsR1
+    } else if (Fdist == "Bernoulli") {
+      esR2 = esR3 = esR1
+      bsR2 = bsR3 = bsR1
+    } else {
+      stop("Currently only supports Poisson- and Bernoulli-distributed clutch sizes.")
+    }
+  } else if (!is.null (esR1) & !is.null (esR2) & !is.null (esR3) &
+               !is.null (bsR1) & !is.null (bsR2) & !is.null (bsR3)) {
+    ## User-supplied reward matrices are fine too.
+  } else {
+    stop("Values need to be specified for all or none of esR1, esR2, esR3, bs$1, bsR2, bsR3.")
+  }
+  
+  ## Get moments conditional on init. state #########################
+
+  out = calcMoments (esP, esR1, esR2, esR3)
+  esRho1Vec = out$rho1Vec
+  esMu2Vec = out$mu2Vec
+  esSkewnessVec = out$skewnessVec
+
+  out = calcMoments (bsP, bsR1, bsR2, bsR3)
+  bsRho1Vec = out$rho1Vec
+  bsMu2Vec = out$mu2Vec
+  bsMu3Vec = out$mu3Vec
+  bsSkewnessVec = out$skewnessVec
+
+  ## Start calculating luck terms ###################################
+
+  survTrajecSkewness = growthTrajecSkewness = 
+    fecSkewness = numeric (maxAge)
+  fecUpdateSkewness = survUpdateSkewness =
+    growthUpdateSkewness =  numeric (maxAge)
+  survUpdateVar = growthUpdateVar = fecUpdateVar =
+    numeric (maxAge) 
+  survTrajecVar = growthTrajecVar = fecVar =
+    numeric (maxAge)
+  surv = numeric (maxAge)
+
+  ## for ur-state var.
+  ## expectation wrt z of Var(success | z)
+  expZVarCondZ = bsMu2Vec %*% bsC0
+  ## variance wrt z of Exp(success | z)
+  varZExpCondZ = sum(bsC0*bsRho1Vec^2) - (sum(bsC0*bsRho1Vec)^2)
+  ## Law of total variance
+  urVar = expZVarCondZ + varZExpCondZ
+  
+  justBirthStateVar = bsMu2Vec %*% bsP %*% bsC0
+  birthStateVar = urVar - justBirthStateVar
+
+  ## for ur-state skewness
+  expZMu3CondZ = bsMu3Vec %*% bsC0
+  ## 3rd moment wrt z of Exp(success | z)
+  rho3ZExpCondZ = sum(bsC0*(bsRho1Vec)^3)
+  ## 2nd moment wrt z of Exp(success | z)
+  rho2ZExpCondZ = sum(bsC0*(bsRho1Vec)^2)
+  ## 1st moment wrt z of Exp(success | z)
+  expZExpCondZ = sum(bsC0*bsRho1Vec)
+  ## 3rd central moment wrt z of Exp(success | z)
+  mu3ZExpCondZ = rho3ZExpCondZ -
+    3*expZExpCondZ*rho2ZExpCondZ +
+    2*expZExpCondZ^3
+  ## covariance wrt z of Exp(success | z) and Var(success | z)
+  covZExpVarCondZ = sum(bsC0*bsRho1Vec*bsMu2Vec) -
+    sum(bsC0*bsRho1Vec)*sum(bsC0*bsMu2Vec)
+  ## Law of total cumulance
+  urMu3 = expZMu3CondZ + mu3ZExpCondZ +
+    3*covZExpVarCondZ
+  urSkewness = urMu3 / urVar^1.5
+  
+  justBirthStateSkewness = bsSkewnessVec %*% bsP %*% bsC0
+  birthStateSkewness = urSkewness - justBirthStateSkewness
+  
+  ## Starting the age loop
+  PaC0 = c0  ## P^a c_0
+  mzZero = rep(0, mz)
+
+  ## Sanity check
+  N = solve(diag(mz) - P)
+  rho1Vec = colSums (F %*% N)
+  foo1 = esRho1Vec %*% c(c0, mzZero, mzZero)
+  foo2 = rho1Vec %*% c0
+  if ((foo1 < (1 - percentTol)*foo2) | (foo1 > (1 + percentTol)*foo2))
+    warning("Calculation of mean via esRho1Vec isn't the same as calculation of mean via rho1Vec.")
+
+  survUpdateSkewness[1] = esSkewnessVec %*%
+    c(mzZero, Sbullet %*% PaC0, mzZero)  
+  growthUpdateSkewness[1] = esSkewnessVec %*%
+    c(mzZero, mzZero, P %*% PaC0) 
+  fecUpdateSkewness[1] = esSkewnessVec %*%
+    c(P %*% PaC0, mzZero, mzZero)
+
+  survUpdateVar[1] = esMu2Vec %*% c(mzZero, Sbullet %*% PaC0, mzZero)  
+  growthUpdateVar[1] = esMu2Vec %*% c(mzZero, mzZero, P %*% PaC0) 
+  fecUpdateVar[1] = esMu2Vec %*% c(P %*% PaC0, mzZero, mzZero)
+
+  surv[1] = sum (PaC0)
+  ## a is actually age + 1, since the first year of life is age 0
+  for (a in 2:maxAge) {
+    PaC0 = P %*% PaC0
+
+    survUpdateSkewness[a] = esSkewnessVec %*% 
+      c(mzZero, Sbullet %*% PaC0, mzZero)  
+    growthUpdateSkewness[a] = esSkewnessVec %*% 
+      c(mzZero, mzZero, P %*% PaC0) 
+    fecUpdateSkewness[a] = esSkewnessVec %*% 
+      c(P %*% PaC0, mzZero, mzZero)
+
+    survUpdateVar[a] = esMu2Vec %*% c(mzZero, Sbullet %*% PaC0, mzZero)  
+    growthUpdateVar[a] = esMu2Vec %*% c(mzZero, mzZero, P %*% PaC0) 
+    fecUpdateVar[a] = esMu2Vec %*% c(P %*% PaC0, mzZero, mzZero)
+
+    ## survival trajectory skewness and var.
+    survTrajecSkewness[a] = fecUpdateSkewness[a-1] -
+      survUpdateSkewness[a]
+    survTrajecVar[a] = fecUpdateVar[a-1] - survUpdateVar[a]
+    
+    ## growth trajectory skewness and var.
+    growthTrajecSkewness[a-1] = survUpdateSkewness[a-1] -
+      growthUpdateSkewness[a-1] 
+    growthTrajecVar[a-1] = survUpdateVar[a-1] - growthUpdateVar[a-1]
+
+    ## fecundity skewness and var.
+    fecSkewness[a-1] = growthUpdateSkewness[a-1] - fecUpdateSkewness[a-1]
+    fecVar[a-1] = growthUpdateVar[a-1] - fecUpdateVar[a-1]
+    
+    surv[a] = sum(PaC0)
+  }
+
+  ## By what age is a proportion survThreshold of individuals dead?
+  lifespan = which(surv < survThreshold)[1]
+
+  ## And get the first value of survTrajecSkewness and survTrajecVar
+  survTrajecSkewness[1] = justBirthStateSkewness - survUpdateSkewness[1]
+  survTrajecVar[1] = justBirthStateVar - survUpdateVar[1]
+
+  totSurvTrajecSkewness = sum(survTrajecSkewness)
+  totGrowthTrajecSkewness = sum(growthTrajecSkewness)
+  totFecSkewness = sum(fecSkewness)
+  totSkewness = bsSkewnessVec %*% bsC0
+  ## Sanity check
+  foo = totSurvTrajecSkewness + totGrowthTrajecSkewness +
+    totFecSkewness + birthStateSkewness
+  if ((foo < (1 - percentTol)*totSkewness) |
+      (foo > (1 + percentTol)*totSkewness))
+    warning("Skewness components do not sum to total skewness as calculated by bsSkewnessVec.")
+
+  totSurvTrajecVar = sum(survTrajecVar)
+  totGrowthTrajecVar = sum(growthTrajecVar)
+  totFecVar = sum(fecVar)
+  totVar = bsMu2Vec %*% bsC0
+  ## Sanity check
+  foo = totSurvTrajecVar + totGrowthTrajecVar +
+      totFecVar + birthStateVar
+  if ((foo < (1 - percentTol)*totVar) |
+      (foo > (1 + percentTol)*totVar))
+    warning("Variance components do not sum to total variance as calculated by bsMu2Vec.")
+
+  return (out=list(birthStateVar=birthStateVar,
+                   survTrajecVar=survTrajecVar,
+                   growthTrajecVar=growthTrajecVar,
+                   fecVar=fecVar,
+                   totVar=totVar,
+                   birthStateSkewness=birthStateSkewness,
+                   survTrajecSkewness=survTrajecSkewness,
+                   growthTrajecSkewness=growthTrajecSkewness,
+                   fecSkewness=fecSkewness,
+                   totSkewness=totSkewness,
+                   lifespan=lifespan))
 }

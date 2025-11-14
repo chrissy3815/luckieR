@@ -1,5 +1,5 @@
 ## partitionVarSkewnessNoEnvVar ####################
-P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+P = matrix (c(0,0.3,0, 0,0.25,0.25, 0,0,0.5), 3, 3)
 F = matrix (0, 3, 3); F[1,] = 0:2
 c0 = c(1,0,0)
 test_that("partitionVarSkewnessNoEnvVar works with Poisson dist. clutch sizes", {  
@@ -10,8 +10,7 @@ test_that("partitionVarSkewnessNoEnvVar works with Poisson dist. clutch sizes", 
   )
 })
 
-
-P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+P = matrix (c(0,0.3,0, 0,0.25,0.25, 0,0,0.5), 3, 3)
 F = matrix (0, 3, 3); F[1,] = 0.1*(0:2)
 c0 = c(1,0,0)
 test_that("partitionVarSkewnessNoEnvVar works with Bernoulli dist. clutch sizes", {  
@@ -24,8 +23,8 @@ test_that("partitionVarSkewnessNoEnvVar works with Bernoulli dist. clutch sizes"
 
 ## partitionVarSkewnessEnvVar #######################
 
-P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
-P2 = matrix (c(0, 0.2, 0, 0, 0, 0.3, 0, 0, 0.4), 3, 3)
+P1 = matrix (c(0,0.3,0, 0,0.25,0.25, 0,0,0.5), 3, 3)
+P2 = matrix (c(0,0.4,0, 0,0.2,0.2, 0,0,0.6), 3, 3)
 F1 = matrix (0, 3, 3); F1[1,] = 0:2
 F2 = matrix (0, 3, 3); F1[1,] = 0.8*(0:2)
 Plist = list (P1, P2)
@@ -38,8 +37,8 @@ test_that("partitionVarSkewnessEnvVar works with Poisson dist. clutch sizes", {
   )
 })
 
-P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
-P2 = matrix (c(0, 0.2, 0, 0, 0, 0.3, 0, 0, 0.4), 3, 3)
+P1 = matrix (c(0,0.3,0, 0,0.25,0.25, 0,0,0.5), 3, 3)
+P2 = matrix (c(0,0.4,0, 0,0.2,0.2, 0,0,0.6), 3, 3)
 F1 = matrix (0, 3, 3); F1[1,] = 0.1*(0:2)
 F2 = matrix (0, 3, 3); F1[1,] = 0.2*(0:2)
 Plist = list (P1, P2)
@@ -56,10 +55,10 @@ test_that("partitionVarSkewnessEnvVar works with Bernoulli dist. clutch sizes", 
 
 ## partitionVarSkewnessEnvVarAndTraits #######################
 PlistAllTraits = FlistAllTraits = list ()
-P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+P1 = matrix (c(0,0.3,0, 0,0.25,0.25, 0,0,0.5), 3, 3)
 P2 = 0.9*P1
 PlistAllTraits[[1]] = list (P1, P2)
-P1 = matrix (c(0, 0.5, 0, 0, 0, 0.2, 0, 0, 0.7), 3, 3)
+P1 = matrix (c(0,0.4,0, 0,0.2,0.2, 0,0,0.6), 3, 3)
 P2 = 0.9*P1
 PlistAllTraits[[2]] = list (P1, P2)
 F1 = matrix (0, 3, 3); F1[1,] = 0:2
@@ -80,10 +79,10 @@ test_that("partitionVarSkewnessEnvVarAndTraits works with Poisson-dist. clutch s
 })
 
 PlistAllTraits = FlistAllTraits = list ()
-P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+P1 = matrix (c(0,0.3,0, 0,0.25,0.25, 0,0,0.5), 3, 3)
 P2 = 0.9*P1
 PlistAllTraits[[1]] = list (P1, P2)
-P1 = matrix (c(0, 0.5, 0, 0, 0, 0.2, 0, 0, 0.7), 3, 3)
+P1 = matrix (c(0,0.4,0, 0,0.2,0.2, 0,0,0.6), 3, 3)
 P2 = 0.9*P1
 PlistAllTraits[[2]] = list (P1, P2)
 F1 = matrix (0, 3, 3); F1[1,] = 0.1*(0:2)
@@ -106,10 +105,32 @@ test_that("partitionVarSkewnessEnvVarAndTraits works with Bernoulli-dist. clutch
   )
 })
 
+## partitionVarSkewnessNoEnvVarPostBreeding ####################
+P = matrix (c(0,0.3,0, 0,0.25,0.25, 0,0,0.5), 3, 3)
+F = matrix (0, 3, 3); F[1,] = 0:2
+c0 = c(1,0,0)
+test_that("partitionVarSkewnessNoEnvVarPostBreeding works with Poisson dist. clutch sizes", {  
+  expect_snapshot (
+      partitionVarSkewnessNoEnvVar (P, F, c0)
+  )
+})
+
+P = matrix (c(0,0.3,0, 0,0.25,0.25, 0,0,0.5), 3, 3)
+F = matrix (0, 3, 3); F[1,] = 0.1*(0:2)
+c0 = c(1,0,0)
+test_that("partitionVarSkewnessNoEnvVarPostBreeding works with Bernoulli dist. clutch sizes", {  
+  expect_snapshot (
+      partitionVarSkewnessNoEnvVar (P, F, c0, maxAge=40,
+                                    survThreshold=0.01,
+                                    Fdist="Bernoulli")
+  )
+})
+
+
 ## Sanity check comparisons
 ## ###########################################
 
-P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+P = matrix (c(0,0.3,0, 0,0.25,0.25, 0,0,0.5), 3, 3)
 F = matrix (0, 3, 3); F[1,] = 0:2
 c0 = c(1,0,0)
 Plist = list (P, P)
