@@ -103,6 +103,69 @@ mk_B = function (F, maxKids=20, Fdist="Poisson") {
   return (B)
 }
 
+## For post-breeding census models
+## NOT NEEDED AFTER STEVE'S RESPONSE ON 11/19.  PROB. DELETE ############
+if (FALSE) {
+  mk_BArray = function (M, F, maxKids=20, Fdist="Poisson") {
+    bigmz = ncol(F)
+    surv = colSums(M); die = 1 - surv
+    zeroMass = c(1, rep(0, maxKids))
+    B = array (0, dim=c(maxKids+1, bigmz, bigmz))
+    if (Fdist == "Poisson") {
+      for (zp in 1:bigmz) {
+        for (z in 1:bigmz)
+          B[,zp, z] =
+            ifelse(surv[z] == 0, 0,
+                   die[z]*zeroMass +
+                   surv[z]*dpois (0:maxKids, lambda=sum(F[,zp]/surv[z])))
+      }
+    } else if (Fdist == "Bernoulli") {
+      for (zp in 1:bigmz) {
+        for (z in 1:bigmz)
+          B[, zp, z] =
+            ifelse (surv[z] == 0, 0,
+                    die[z]*zeroMass +
+                    surv[z]*dbinom (0:maxKids, size=1, prob=sum(F[,z])/surv[z]))
+      }
+    } else {
+      stop ("mk_BArray: I don't recognize that option for Fdist.\n")
+    }
+
+    return (B)
+  }
+}
+#### END PROB. DELETE ###############################
+
+## For post-breeding census models
+mk_BPostBreeding = function (M, F, maxKids=20, Fdist="Poisson") {
+  bigmz = ncol(F)
+  surv = colSums(M); die = 1 - surv
+  zeroMass = c(1, rep(0, maxKids))
+  B = matrix (0, maxKids+1, bigmz)
+  if (Fdist == "Poisson") {
+    for (z in 1:bigmz)
+      if (surv[z] == 0) {
+        B[,z] = rep(0, maxKids+1); B[1,z] = 1
+      } else {
+        B[,z] = die[z]*zeroMass +
+          surv[z]*dpois (0:maxKids, lambda=sum(F[,z]/surv[z]))
+      }
+  }
+  else if (Fdist == "Bernoulli") {
+    for (z in 1:bigmz)
+      if (surv[z] == 0) {
+        B[, z] = rep (0, maxKids+1); B[1,z] = 1
+      } else {
+        B[,z] = die[z]*zeroMass +
+          surv[z]*dbinom (0:maxKids, size=1, prob=sum(F[,z])/surv[z])
+      }
+  } else {
+    stop ("mk_BPostBreeding: I don't recognize that option for Fdist.\n")
+  }
+  
+  return (B)
+}
+
 ######################################################################
 # Function to take B and M matrices, and compute the transition 
 # probabilities from size-class i and j total kids, to all size classes
@@ -271,3 +334,33 @@ makeM = function (fastMatrixList, slowMatrix) {
   return (M)
 }
 
+## Debugging: Try this for post-breeding? #############
+p_xTPostBreeding <- function(l, i, j, B, M) {
+  bigmz <- ncol(M); maxKids <- nrow(B) - 1;
+  newKids <- (l-j); 
+  if((newKids < 0) | (newKids > maxKids)) {
+    return(rep(0, bigmz))
+  }else{
+    return (M[,i] * B[newKids+1,i])
+  }
+}
+
+make_AxTPostBreeding <- function(B, M, mT) {
+  bigmz=ncol(M); Kvals=array(0,c(bigmz,mT,bigmz,mT));  
+  for(z in 1:bigmz){ # initial size
+    for(k in 1:mT){ # initial T 
+      for(kp in 1:(mT-1)){ # final T
+        Kvals[,kp,z,k] = p_xTPostBreeding (kp, z, k, B, M)
+      }
+      for (zp in 1:bigmz)
+        ## make last kids class absorbing
+        Kvals[zp,mT,z,k] = M[zp,z] - sum(Kvals[zp,,z,k])
+    }
+  }
+  ## make kids-class mT absorbing: stay there with prob=1
+  Kvals[1:bigmz,1:mT,1:bigmz,mT] <- 0; 
+  Kvals[1:bigmz,mT,1:bigmz,mT] <- M; 
+  A <- Kvals; dim(A) <- c(bigmz*mT,bigmz*mT); 
+
+  return(list(A=A,K=Kvals)) 
+}  
