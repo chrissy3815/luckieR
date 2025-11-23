@@ -140,6 +140,7 @@ if (FALSE) {
 mk_BPostBreeding = function (M, F, maxKids=20, Fdist="Poisson") {
   bigmz = ncol(F)
   surv = colSums(M); die = 1 - surv
+  fecCondSurv = colSums(F) / surv
   zeroMass = c(1, rep(0, maxKids))
   B = matrix (0, maxKids+1, bigmz)
   if (Fdist == "Poisson") {
