@@ -63,14 +63,14 @@ A = out$A
 mzA = bigmz*mT
 ##  K = out$K
 
-## Create a survival probability vector 
-surv = apply (A, 2, sum);  die = 1-surv; 
+## Create a survival probability vector
+surv = apply (A, 2, sum);  die = 1-surv;
 
 ## And the fundamental matrix of esA
 fundA <- solve(diag(ncol(A)) - A)
 
 ## Make omega
-omega = matrix(0, nrow(A), ncol(A)); 
+omega = matrix(0, nrow(A), ncol(A));
 
 for (j in 1:ncol(fundA))
   omega[,j] = die*fundA[,j]
@@ -85,7 +85,7 @@ distAtDeath = matrix (distAtDeath, nrow=bigmz)
 ## apply (distAtDeath, 1, sum) gets the correct distribution of states
 ## at death, but distKidsAtDeath isn't what I expect.  I expect
 ## Pr(surv. to reproduce)*dpois(0:5, lambda=1) + Pr(don't
-## survive)*Kronecker_delta(x = 0) = 
+## survive)*Kronecker_delta(x = 0) =
 ## 0.5*dpois(0:5, lambda=1) + 0.5*c(1, rep(0, 5)).  (I made up that
 ## Kronecker delta function.)
 distKidsAtDeath = apply (distAtDeath, 2, sum)
@@ -105,14 +105,14 @@ if (FALSE) {
   A = out$A
   mzA = mz*mT
 
-  ## Create a survival probability vector 
-  surv = apply (A, 2, sum);  die = 1-surv; 
+  ## Create a survival probability vector
+  surv = apply (A, 2, sum);  die = 1-surv;
 
   ## And the fundamental matrix of esA
   fundA <- solve(diag(ncol(A)) - A)
 
   ## Make omega
-  omega = matrix(0, nrow(A), ncol(A)); 
+  omega = matrix(0, nrow(A), ncol(A));
 
   for (j in 1:ncol(fundA))
     omega[,j] = die*fundA[,j]
