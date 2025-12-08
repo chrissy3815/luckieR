@@ -17,17 +17,19 @@
 #' @param maxAge The maximum attainable age
 #' @param percentileCutoff A value between 0 and 1.  Calculations are
 #'   performed for values of LRO out to this percentile.  Optional.
-#'   The default value is 0.99. 
+#'   The default value is 0.99.
 #' @param Fdist The clutch size distribution.  The recognized options
 #'   are "Poisson" and "Bernoulli".  Optional.  The default value is
 #'   "Poisson".
+#'
 #' @details Assumes a pre-breeding census (reproduction happens before
 #'   survival and growth).  The details of this calculation can be
-#'   found in Robin E. Snyder and Stephen P. Ellner. 
+#'   found in Robin E. Snyder and Stephen P. Ellner.
 #'   2024. "To prosper, live long: Understanding the sources of
 #'   reproductive skew and extreme reproductive success in structured
 #'   populations."  The American Naturalist 204(2),
-#'   https://doi.org/10.1086/730557 and its online supplement. 
+#'   https://doi.org/10.1086/730557 and its online supplement.
+#'
 #' @return Returns a list containing the following:
 #' * probLifespanCondR: A matrix whose \[i,j\]th entry is the
 #'   probability that an individual with LRO = i-1 will have a
@@ -42,6 +44,8 @@
 #'   equal to maxKidsIndex-1.
 #' * normalSurvProb: A vector whose jth entry is the unconditional
 #'   probability of surviving j years (i.e. until age j-1).
+#' @export
+#'
 #' @examples
 #' P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' P2 = matrix (c(0, 0.2, 0, 0, 0, 0.3, 0, 0, 0.4), 3, 3)
@@ -63,7 +67,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
 
   mT = maxClutchSize + 1
   mA = maxAge + 1
-  
+
   mz = dim(Plist[[1]])[1]
   numEnv = dim(Q)[1]
   bigmz = numEnv*mz
@@ -100,7 +104,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
   B = mk_B (F, maxClutchSize, Fdist)
 
   ## Construct A, the transition matrix for a (number of kids) x stage x
-  ## env. model.   
+  ## env. model.
   out = make_AxT (B, M, mT)
   A = out$A
   mzA = bigmz*mT
@@ -144,7 +148,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
     }
   }
   ## If you have #kids index = mT, you stay there.
-  for (z in 1:bigmz) 
+  for (z in 1:bigmz)
     Fbullet[(mT-1)*bigmz + z, (mT-1)*bigmz + z] = 1
 
   ## Qbullet updates env.
@@ -155,7 +159,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
     }
   }
   ## Qbullet is the same for each number of kids
-  for (k in 1:mT) 
+  for (k in 1:mT)
     Qbullet[(k-1)*bigmz + 1:bigmz, (k-1)*bigmz + 1:bigmz] = smallQbullet
 
   ## Gbullet updates stage
@@ -166,7 +170,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
     G = Plist[[q]] %*% Sinv
     smallGbullet[(q-1)*mz + 1:mz, (q-1)*mz + 1:mz] = G
   }
-  for (k in 1:mT) 
+  for (k in 1:mT)
     Gbullet[(k-1)*bigmz + 1:bigmz, (k-1)*bigmz + 1:bigmz] = smallGbullet
 
   ## sanity check
@@ -180,7 +184,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
   ## stop partway through a time step.  Our new prefix is es to
   ## indicate this additional extension.  ("es" = "extended space")
   ####################################################################
-  
+
   esmzA = 4*mzA
 
   ##esbigF = esA = matrix (0, esmzA, esmzA)
@@ -195,14 +199,14 @@ distLifespanCondR2 = function (Plist, Flist, Q,
   ## comes before survival and growth?
   ##################################################################
 
-  ## Create a survival probability vector 
-  surv = apply (esA, 2, sum);  die = 1-surv; 
+  ## Create a survival probability vector
+  surv = apply (esA, 2, sum);  die = 1-surv;
 
   ## And the fundamental matrix of esA
   fundesA <- solve(diag(ncol(esA))-esA)
 
   ## Make omega
-  omega = matrix(0,nrow(fundesA),ncol(fundesA)); 
+  omega = matrix(0,nrow(fundesA),ncol(fundesA));
 
   for(j in 1:ncol(fundesA))
     omega[,j] = die*fundesA[,j]
@@ -216,11 +220,11 @@ distLifespanCondR2 = function (Plist, Flist, Q,
   ## distAtDeath = matrix(distAtDeath, nrow=bigmz) # state matrix
   ## distKidsAtDeath = apply(distAtDeath, 2, sum)[1:mT]
   distAtDeath = array (distAtDeath, dim=c(bigmz, mT, 4)) # state
-                                       # matrix
+  # matrix
   distKidsAtDeath = apply (distAtDeath, 2, sum)
 
   ## What threshold number of kids represents the 99th %ile of the LRO
-  ## distribution? 
+  ## distribution?
   cumDistKidsAtDeath = cumsum (distKidsAtDeath)
   R90 = which (cumDistKidsAtDeath > 0.9)[1]
   R99 = which (cumDistKidsAtDeath > 0.99)[1]
@@ -268,7 +272,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
     transientStates = c(1:cutoff, mzA + 1:cutoff, 2*mzA + 1:cutoff,
                         3*mzA + 1:cutoff)
     out = makeCondKernel (esA, transientStates)
-   ## condEsA = out$MCond
+    ## condEsA = out$MCond
     probThresholdOrMore[k+1,] = out$q2Extended
 
     probSuccessCondZ[k,] =
@@ -276,20 +280,20 @@ distLifespanCondR2 = function (Plist, Flist, Q,
     probSuccess[k] = probSuccessCondZ[k,] %*% extendedInit
 
     message ("Pr(success) = ", probSuccess[k])
-    
+
     condEsA = matrix (0, esmzA, esmzA)
     ## For any starting state with #kids > threshold, probSuccessCondZ
     ## is zero and I think condEsA should be zero too.  Only do the
     ## following for z s.t. probSuccessCondZ > 0.
     for (j in transientStates)
       condEsA[,j] = esA[,j] * probSuccessCondZ[k,] /
-        probSuccessCondZ[k,j]
+      probSuccessCondZ[k,j]
 
     ## Useful later
     condEsA4 = condEsA %*% condEsA %*% condEsA %*% condEsA
 
     ## Initial distribution conditional on having LRO = exactly
-    ## kidsIndexThreshold-1 
+    ## kidsIndexThreshold-1
     initCondSuccess =
       probSuccessCondZ[k,] * extendedInit
     initCondSuccess = initCondSuccess / sum(initCondSuccess)
@@ -315,7 +319,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
 
   meanLifespanCondR = sdLifespanCondR = CVLifespanCondR =
     numeric (RCutoff+1)
-  
+
   for (k in 1:(RCutoff+1)) {
     meanLifespanCondR[k] = sum((1:mA)*probLifespanCondR[k,])
     varLifespanCondR = sum((1:mA)^2*probLifespanCondR[k,]) -
@@ -336,7 +340,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
   probRCondLifespan = matrix (0, mA, RCutoff+1)
   for (a in 1:mA)
     probRCondLifespan[a,] = jointProbLifespanR[,a] / distLifespan[a]
-  
+
   return (list(probLifespanCondR=probLifespanCondR,
                distKidsAtDeath=distKidsAtDeath,
                sdLifespanCondR=sdLifespanCondR,
@@ -346,39 +350,37 @@ distLifespanCondR2 = function (Plist, Flist, Q,
 
 #' Distribution of lifespan conditional on LRO
 #'
-#' Calculates the distribution of lifespan conditional on LRO in the
-#' presence of environmental variation, assuming a post-breeding
-#' census.
+#' Calculates the distribution of lifespan conditional on LRO in the presence of
+#' environmental variation, assuming a post-breeding census.
 #'
 #' @param Plist A list of survival/growth transition matrices.
-#'   Plist\[\[q\]\]\[i,j\] is the probability of transitioning from
-#'   state j to state i in environment q.
-#' @param Flist A list of fecundity matrices.  Flist\[\[q\]\]\[i,j\]
-#'   is the expected number of state i offspring from a state j parent
-#'   in environment q
-#' @param Q The environment transition matrix.  Q\[i,j\] is the
-#'   probability of transitioning from environment j to environment i.
-#' @param c0 A vector specifying the offspring state distribution:
-#'   c0\[j\] is the probability that an individual is born in state j
+#'   Plist\[\[q\]\]\[i,j\] is the probability of transitioning from state j to
+#'   state i in environment q.
+#' @param Flist A list of fecundity matrices.  Flist\[\[q\]\]\[i,j\] is the
+#'   expected number of state i offspring from a state j parent in environment q
+#' @param Q The environment transition matrix.  Q\[i,j\] is the probability of
+#'   transitioning from environment j to environment i.
+#' @param c0 A vector specifying the offspring state distribution: c0\[j\] is
+#'   the probability that an individual is born in state j
 #' @param maxClutchSize The maximum clutch size to consider
 #' @param maxAge The maximum attainable age
-#' @param percentileCutoff A value between 0 and 1.  Calculations are
-#'   performed for values of LRO out to this percentile.  Optional.
-#'   The default value is 0.99. 
-#' @param Fdist The clutch size distribution.  The recognized options
-#'   are "Poisson" and "Bernoulli".  Optional.  The default value is
-#'   "Poisson".
-#' @details Assumes a post-breeding census (reproduction happens after
-#'   survival and growth).  The details of this calculation can be
-#'   found in Robin E. Snyder and Stephen P. Ellner. 
-#'   2024. "To prosper, live long: Understanding the sources of
-#'   reproductive skew and extreme reproductive success in structured
-#'   populations."  The American Naturalist 204(2),
-#'   https://doi.org/10.1086/730557 and its online supplement. 
+#' @param percentileCutoff A value between 0 and 1.  Calculations are performed
+#'   for values of LRO out to this percentile.  Optional. The default value is
+#'   0.99.
+#' @param Fdist The clutch size distribution.  The recognized options are
+#'   "Poisson" and "Bernoulli".  Optional.  The default value is "Poisson".
+#'
+#' @details Assumes a post-breeding census (reproduction happens after survival
+#'   and growth).  The details of this calculation can be found in Robin E.
+#'   Snyder and Stephen P. Ellner. 2024. "To prosper, live long: Understanding
+#'   the sources of reproductive skew and extreme reproductive success in
+#'   structured populations."  The American Naturalist 204(2),
+#'   https://doi.org/10.1086/730557 and its online supplement.
+#'
 #' @return Returns a list containing the following:
 #' * probLifespanCondR: A matrix whose \[i,j\]th entry is the
-#'   probability that an individual with LRO = i-1 will have a
-#'   lifespan of j years (i.e. age j-1).
+#'   probability that an individual with LRO = i-1 will have a lifespan of j
+#'   years (i.e. age j-1).
 #' * distKidsAtDeath: A vector whose jth entry is the probability of
 #'   having an LRO of j-1.
 #' * sdLifespanCondR: A vector whose jth entry is the standard
@@ -389,6 +391,8 @@ distLifespanCondR2 = function (Plist, Flist, Q,
 #'   equal to maxKidsIndex-1.
 #' * normalSurvProb: A vector whose jth entry is the unconditional
 #'   probability of surviving j years (i.e. until age j-1).
+#' @export
+#'
 #' @examples
 #' P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' P2 = matrix (c(0, 0.2, 0, 0, 0, 0.3, 0, 0, 0.4), 3, 3)
@@ -401,7 +405,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
 #' maxClutchSize = 20
 #' maxAge=20
 #' out = distLifespanCondR2PostBreeding (Plist, Flist, Q, c0,
-#'   maxClutchSize, maxAge) 
+#'   maxClutchSize, maxAge)
 distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
                                            c0, maxClutchSize, maxAge,
                                            percentileCutoff = 0.99,
@@ -411,7 +415,7 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
 
   mT = maxClutchSize + 1
   mA = maxAge + 1
-  
+
   mz = dim(Plist[[1]])[1]
   numEnv = dim(Q)[1]
   bigmz = numEnv*mz
@@ -499,7 +503,7 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
     }
   }
   ## If you have #kids index = mT, you stay there.
-  for (z in 1:bigmz) 
+  for (z in 1:bigmz)
     Fbullet[(mT-1)*bigmz + z, (mT-1)*bigmz + z] = 1
 
   ## Qbullet updates env.
@@ -510,7 +514,7 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
     }
   }
   ## Qbullet is the same for each number of kids
-  for (k in 1:mT) 
+  for (k in 1:mT)
     Qbullet[(k-1)*bigmz + 1:bigmz, (k-1)*bigmz + 1:bigmz] = smallQbullet
 
   ## Gbullet updates stage
@@ -521,7 +525,7 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
     G = Plist[[q]] %*% Sinv
     smallGbullet[(q-1)*mz + 1:mz, (q-1)*mz + 1:mz] = G
   }
-  for (k in 1:mT) 
+  for (k in 1:mT)
     Gbullet[(k-1)*bigmz + 1:bigmz, (k-1)*bigmz + 1:bigmz] = smallGbullet
 
   ## sanity check
@@ -529,13 +533,13 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
   if (sum(abs(range(Qbullet %*% Fbullet %*%  Gbullet %*% Sbullet - A)))
       > epsilon)
     warning("Qbullet %*% Fbullet %*% Gbullet %*% Sbullet differs substantially from A")
-  
+
   ####################################################################
   ## Now make the additionally extended space matrix that allows us to
   ## stop partway through a time step.  Our new prefix is es to
   ## indicate this additional extension.  ("es" = "extended space")
   ####################################################################
-  
+
   esmzA = 4*mzA
 
   ##esbigF = esA = matrix (0, esmzA, esmzA)
@@ -550,14 +554,14 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
   ## comes before survival and growth?
   ##################################################################
 
-  ## Create a survival probability vector 
-  surv = apply (esA, 2, sum);  die = 1-surv; 
+  ## Create a survival probability vector
+  surv = apply (esA, 2, sum);  die = 1-surv;
 
   ## And the fundamental matrix of esA
   fundesA <- solve(diag(ncol(esA))-esA)
 
   ## Make omega
-  omega = matrix(0,nrow(fundesA),ncol(fundesA)); 
+  omega = matrix(0,nrow(fundesA),ncol(fundesA));
 
   for(j in 1:ncol(fundesA))
     omega[,j] = die*fundesA[,j]
@@ -571,11 +575,11 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
   ## distAtDeath = matrix(distAtDeath, nrow=bigmz) # state matrix
   ## distKidsAtDeath = apply(distAtDeath, 2, sum)[1:mT]
   distAtDeath = array (distAtDeath, dim=c(bigmz, mT, 4)) # state
-                                       # matrix
+  # matrix
   distKidsAtDeath = apply (distAtDeath, 2, sum)
 
   ## What threshold number of kids represents the 99th %ile of the LRO
-  ## distribution? 
+  ## distribution?
   cumDistKidsAtDeath = cumsum (distKidsAtDeath)
   R90 = which (cumDistKidsAtDeath > 0.9)[1]
   R99 = which (cumDistKidsAtDeath > 0.99)[1]
@@ -630,20 +634,20 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
     probSuccess[k] = probSuccessCondZ[k,] %*% extendedInit
 
     message ("Pr(success) = ", probSuccess[k])
-    
+
     condEsA = matrix (0, esmzA, esmzA)
     ## For any starting state with #kids > threshold, probSuccessCondZ
     ## is zero and I think condEsA should be zero too.  Only do the
     ## following for z s.t. probSuccessCondZ > 0.
     for (j in transientStates)
       condEsA[,j] = esA[,j] * probSuccessCondZ[k,] /
-        probSuccessCondZ[k,j]
+      probSuccessCondZ[k,j]
 
     ## Useful later
     condEsA4 = condEsA %*% condEsA %*% condEsA %*% condEsA
 
     ## Initial distribution conditional on having LRO = exactly
-    ## kidsIndexThreshold-1 
+    ## kidsIndexThreshold-1
     initCondSuccess =
       probSuccessCondZ[k,] * extendedInit
     initCondSuccess = initCondSuccess / sum(initCondSuccess)
@@ -669,7 +673,7 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
 
   meanLifespanCondR = sdLifespanCondR = CVLifespanCondR =
     numeric (RCutoff+1)
-  
+
   for (k in 1:(RCutoff+1)) {
     meanLifespanCondR[k] = sum((1:mA)*probLifespanCondR[k,])
     varLifespanCondR = sum((1:mA)^2*probLifespanCondR[k,]) -
@@ -690,7 +694,7 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
   probRCondLifespan = matrix (0, mA, RCutoff+1)
   for (a in 1:mA)
     probRCondLifespan[a,] = jointProbLifespanR[,a] / distLifespan[a]
-  
+
   return (list(probLifespanCondR=probLifespanCondR,
                distKidsAtDeath=distKidsAtDeath,
                sdLifespanCondR=sdLifespanCondR,
@@ -712,25 +716,11 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
 
 #' Distribution of lifetime reproductive output
 #'
-#' Calculates the distribution of lifetime reproductive output (LRO)
-#' the presence of environmental variation.  Assumes a pre-breeding
-#' census (reproductiion happens before survival and growth).
-#' @param Plist A list of survival/growth transition matrices.
-#'   Plist\[\[q\]\]\[i,j\] is the probability of transitioning from
-#'   state j to state i in environment q.
-#' @param Flist A list of fecundity matrices.  Flist\[\[q\]\]\[i,j\]
-#'   is the expected number of state i offspring from a state j parent
-#'   in environment q
-#' @param Q The environment transition matrix.  Q\[i,j\] is the
-#'   probability of transitioning from environment j to environment i.
-#' @param c0 A vector specifying the offspring state distribution:
-#'   c0\[j\] is the probability that an individual is born in state j
-#' @param maxClutchSize The maximum clutch size to consider
-#' @param maxLRO The maximum LRO to consider
-#' @param Fdist The clutch size distribution.  The recognized options
-#'   are "Poisson" and "Bernoulli".  Optional.  The default value is
-#'   "Poisson".
-#' @details Called by probTraitCondLRO.
+#' Calculates the distribution of lifetime reproductive output (LRO) the
+#' presence of environmental variation.  Assumes a pre-breeding census
+#' (reproductiion happens before survival and growth).
+#'
+#' Called by probTraitCondLRO.
 #'
 #' It is also possible to calculate the distribution of LRO
 #' by cross-classifying states by stage and number of offspring
@@ -746,7 +736,25 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
 #' Guide to the Integral Projection Model, by Stephen P. Ellner, Dylan
 #' Z. Childs and Mark Rees, ed. 1, 2015.)  However, this implicitly assumes
 #' that reproduction  happens after survival and growth, i.e. a
-#' post-breeding census. 
+#' post-breeding census.
+#'
+#' @param Plist A list of survival/growth transition matrices.
+#'   Plist\[\[q\]\]\[i,j\] is the probability of transitioning from state j to
+#'   state i in environment q.
+#' @param Flist A list of fecundity matrices.  Flist\[\[q\]\]\[i,j\] is the
+#'   expected number of state i offspring from a state j parent in environment q
+#' @param Q The environment transition matrix.  Q\[i,j\] is the probability of
+#'   transitioning from environment j to environment i.
+#' @param c0 A vector specifying the offspring state distribution: c0\[j\] is
+#'   the probability that an individual is born in state j
+#' @param maxClutchSize The maximum clutch size to consider
+#' @param maxLRO The maximum LRO to consider
+#' @param Fdist The clutch size distribution.  The recognized options are
+#'   "Poisson" and "Bernoulli".  Optional.  The default value is "Poisson".
+#'
+#' @return Distribution blah blah
+#' @export
+#'
 #' @examples
 #' P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' P2 = matrix (c(0, 0.2, 0, 0, 0, 0.3, 0, 0, 0.4), 3, 3)
@@ -766,7 +774,7 @@ calcDistLRO = function (Plist, Flist, Q,
   percentTol = 0.001
 
   mT = maxLRO + 1
-  
+
   mz = dim(Plist[[1]])[1]
   numEnv = dim(Q)[1]
   bigmz = numEnv*mz
@@ -802,7 +810,7 @@ calcDistLRO = function (Plist, Flist, Q,
   B = mk_B (F, maxClutchSize, Fdist)
 
   ## Construct A, the transition matrix for a (number of kids) x stage x
-  ## env. model.   
+  ## env. model.
   out = make_AxT (B, M, mT)
   message ("calcDistLRO: Making A...")
   A = out$A
@@ -843,7 +851,7 @@ calcDistLRO = function (Plist, Flist, Q,
     }
   }
   ## If you have #kids index = mT, you stay there.
-  for (z in 1:bigmz) 
+  for (z in 1:bigmz)
     Fbullet[(mT-1)*bigmz + z, (mT-1)*bigmz + z] = 1
 
   ## Mbullet updates everything else
@@ -859,7 +867,7 @@ calcDistLRO = function (Plist, Flist, Q,
       Mbullet[(k-1)*bigmz + 1:bigmz, (k-1)*bigmz + 1:bigmz] = M
   }
 
-  
+
   ## sanity check
   epsilon = 0.00001
   if (sum(abs(range(Mbullet %*% Fbullet - A))) > epsilon)
@@ -878,21 +886,21 @@ calcDistLRO = function (Plist, Flist, Q,
   esA = matrix (0, esmzA, esmzA)
   esA[mzA + 1:mzA, 1:mzA] = Fbullet
   esA[1:mzA, mzA + 1:mzA] = Mbullet
-  
+
   ##################################################################
   ## What is the distribution of #kids at death when reproduction
   ## comes before survival and growth?
   ##################################################################
 
-  ## Create a survival probability vector 
-  surv = apply (esA, 2, sum);  die = 1-surv; 
+  ## Create a survival probability vector
+  surv = apply (esA, 2, sum);  die = 1-surv;
 
   ## And the fundamental matrix of esA
   message ("calcDistLRO: calculating fundamental matrix...\n")
   fundesA <- solve(diag(ncol(esA))-esA)
 
   ## Make omega
-  omega = matrix(0,nrow(fundesA),ncol(fundesA)); 
+  omega = matrix(0,nrow(fundesA),ncol(fundesA));
 
   for(j in 1:ncol(fundesA))
     omega[,j] = die*fundesA[,j]
@@ -907,7 +915,7 @@ calcDistLRO = function (Plist, Flist, Q,
   distAtDeath = array (distAtDeath, dim=c(bigmz, mT, 2)) # state matrix
   distKidsAtDeath = apply (distAtDeath, 2, sum)
 
-  return (distKidsAtDeath) 
+  return (distKidsAtDeath)
 }
 
 #' Distribution of a trait conditional on LRO
@@ -917,7 +925,7 @@ calcDistLRO = function (Plist, Flist, Q,
 #' @param PlistAllTraits A list of lists of survival/growth transition
 #'   matrices. Plist\[\[x\]\]\[\[q\]\]\[i,j\] is the probability of
 #'   transitioning from state j to state i in environment q when an
-#'   individual has trait x. 
+#'   individual has trait x.
 #' @param FlistAllTraits A list of lists of fecundity  matrices.
 #'   Flist\[\[x\]\]\[\[q\]\]\[i,j\] is the expected number of state i
 #'   offspring from a state j, trait x parent in environment q.
@@ -933,11 +941,13 @@ calcDistLRO = function (Plist, Flist, Q,
 #' @param Fdist The clutch size distribution.  The recognized options
 #'   are "Poisson" and "Bernoulli".  Optional.  The default value is
 #'   "Poisson".
+#'
 #' @details The details of this calculation can be found in Robin
 #' E. Snyder and Stephen P. Ellner.  2018.  "Pluck or Luck: Does Trait
 #' Variation or Chance Drive Variation in Lifetime Reproductive
 #' Success?"  The American Naturalist 191(4).  DOI:
-#' 10.1086/696125  
+#' 10.1086/696125
+#'
 #' @return A list containing the following:
 #' * probXCondR: a matrix whose i,jth component is the probability
 #' that the trait has the jth value given that LRO = i-1
@@ -945,6 +955,8 @@ calcDistLRO = function (Plist, Flist, Q,
 #' that LRO = j-1
 #' * probRCondX: A matrix whose i,jth entry is the probability that
 #' LRO = i-1 given that the trait takes the jth value.
+#' @export
+#'
 #' @examples
 #' PlistAllTraits = FlistAllTraits = list ()
 #' P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
@@ -998,7 +1010,7 @@ probTraitCondLRO = function (PlistAllTraits, FlistAllTraits, Q,
   probRCondX = matrix (0, mT, numTraits)
   ## P(trait value | LRO)
   probXCondR = matrix (0, mT, numTraits)
-  
+
   for (x in 1:numTraits) {
     cat ("Trait", x, "...\n")
     Plist = PlistAllTraits[[x]]
@@ -1019,7 +1031,7 @@ probTraitCondLRO = function (PlistAllTraits, FlistAllTraits, Q,
   ## Get joint probability P(R, X)
   probRAndX = matrix (0, mT, numTraits)
   for (i in 1:numTraits)
-    ## joint probability P(R, X) = P(R | X) P(X).  
+    ## joint probability P(R, X) = P(R | X) P(X).
     probRAndX[,i] = probRCondX[,i] * traitDist[i]
 
   ## Marginalize over X to get P(R)

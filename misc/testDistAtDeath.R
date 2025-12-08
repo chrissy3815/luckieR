@@ -119,14 +119,14 @@ if (TRUE) {
   A = out$A
   mzA = mz*mT
 
-  ## Create a survival probability vector 
-  surv = apply (A, 2, sum);  die = 1-surv; 
+  ## Create a survival probability vector
+  surv = apply (A, 2, sum);  die = 1-surv;
 
   ## And the fundamental matrix of esA
   fundA <- solve(diag(ncol(A)) - A)
 
   ## Make omega
-  omega = matrix(0, nrow(A), ncol(A)); 
+  omega = matrix(0, nrow(A), ncol(A));
 
   for (j in 1:ncol(fundA))
     omega[,j] = die*fundA[,j]

@@ -1,32 +1,43 @@
 #' Convert a matrix to a vector
 #'
 #' Converts a matrix to a vector by stacking columns
+#'
 #' @param nmat The matrix to be converted
+#'
 #' @return The vectorized form of the matrix
+#' @export
+#'
 #' @examples
 #' foo = matrix (1:4, 2, 2)
 #' vec (foo)
-vec <- function(nmat) matrix(nmat,ncol=1) 
+vec <- function(nmat){
+  matrix(nmat,ncol=1)
+}
 
 #' Convert a vector to a matrix
 #'
-#' Converts a vector to a matrix with user-defined dimensions. 
+#' Converts a vector to a matrix with user-defined dimensions.
+#'
 #' @param nvec The vector to be turned into a matrix
 #' @param nrow The number of rows in the matrix.  Either nrow or ncol
 #'   must be specified, but not both.
 #' @param ncol The number of columns in the matrix.  Either nrow or ncol
 #'   must be specified, but not both.
+#'
 #' @return The matrix form of the vector
+#' @export
+#'
 #' @details If the vector has length N and the desired number of rows
 #'   or columns is M, then N must be evenly divisible by M.  The
 #'   matrix is filled by columns.
+#'
 #' @examples
 #' foo = 1:6
 #' unvec (foo, nrow=2)
 #' unvec (foo, ncol=2)
-unvec <- function(nvec,nrow=NULL,ncol=NULL){ 
-	if(is.null(nrow)) return(matrix(nvec,ncol=ncol)); 
-	if(is.null(ncol)) return(matrix(nvec,nrow=nrow)); 
+unvec <- function(nvec,nrow=NULL,ncol=NULL){
+	if(is.null(nrow)) return(matrix(nvec,ncol=ncol));
+	if(is.null(ncol)) return(matrix(nvec,nrow=nrow));
 }
 
 #' Convert 4-d array to matrix
@@ -34,8 +45,12 @@ unvec <- function(nvec,nrow=NULL,ncol=NULL){
 #' Converts a 4-d transition array, such as the K array produced by
 #' make_AxT, to a cross-classified transition matrix ("megamatrix"),
 #' such as the A matrix produced by make_AxT
+#'
 #' @param A4 The 4-d transition array
+#'
 #' @return The cross-classified transition matrix
+#' @export
+#'
 #' @seealso unfold, make_AxT
 #' @examples
 #' M = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
@@ -54,9 +69,13 @@ flatten <- function(A4) {
 #'
 #' Converts a cross-classified transition matrix ("megamatrix") to a
 #' 4-d transition array, such as the K array produced by make_AxT
+#'
 #' @param A2 The megamatrix to be transformed
 #' @param dim A vector containing the dimensions of the array to be returned
+#'
 #' @return The transition array
+#' @export
+#'
 #' @seealso flatten, make_AxT
 #' @examples
 #' M = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
@@ -67,23 +86,26 @@ flatten <- function(A4) {
 #' A = out$A
 #' K = unfold (A, dim=c(3,6,3,6)  ## should equal out$K
 unfold <- function(A2,dim) {
-    dim(A2) <- dim; 
+    dim(A2) <- dim;
     return(A2)
-} 
+}
 
 #' Make B matrix
 #'
 #' Calculates B, the clutch size distribution matrix
-#' @param maxKids The maximum clutch size.  Optional, with a default
-#'   value of 20.
-#' @param F the fecundity matrix.  F\[i,j\] is the expected number of
-#' size i offspring from a size j parent.
-#' @param Fdist the clutch size distribution.  Currently supported
-#'   values are "Poisson" and "Bernoulli."  Optional, with a default
-#'   value of "Poisson".
-#' @return The clutch size distribution matrix B, where
-#'   B\[i,j\] is the probability that a size j parent produces i-1
-#'   offspring in a single reproductive bout
+#'
+#' @param maxKids The maximum clutch size.  Optional, with a default value of
+#'   20.
+#' @param F the fecundity matrix.  F\[i,j\] is the expected number of size i
+#'   offspring from a size j parent.
+#' @param Fdist the clutch size distribution.  Currently supported values are
+#'   "Poisson" and "Bernoulli."  Optional, with a default value of "Poisson".
+#'
+#' @return The clutch size distribution matrix B, where B\[i,j\] is the
+#'   probability that a size j parent produces i-1 offspring in a single
+#'   reproductive bout
+#' @export
+#'
 #' @examples
 #' F = matrix (0, 3, 3); F[1,] = 0.1*(0:2)
 #' out = mk_B (F, Fdist="Bernoulli")
@@ -163,18 +185,18 @@ mk_BPostBreeding = function (M, F, maxKids=20, Fdist="Poisson") {
   } else {
     stop ("mk_BPostBreeding: I don't recognize that option for Fdist.\n")
   }
-  
+
   return (B)
 }
 
 ######################################################################
-# Function to take B and M matrices, and compute the transition 
+# Function to take B and M matrices, and compute the transition
 # probabilities from size-class i and j total kids, to all size classes
 # and l total kids. This returns a vector of zeros if (l-j) is < 0
-# or above the assumed maxnumber of kids per year,  ncol(B) - 1. 
+# or above the assumed maxnumber of kids per year,  ncol(B) - 1.
 ######################################################################
 #' Helper function used for calculating size x #kids transition
-#' matrices 
+#' matrices
 #'
 #' Function to take clutch size distribution matrix (B) and survival
 #' and growth or survival and growth and environment transition matrix
@@ -203,7 +225,7 @@ mk_BPostBreeding = function (M, F, maxKids=20, Fdist="Poisson") {
 #' p_xT (5, 2, 3, B, M)
 p_xT <- function(l, i, j, B, M) {
   bigmz <- ncol(M); maxKids <- nrow(B)-1;
-  newKids <- (l-j); 
+  newKids <- (l-j);
   if((newKids < 0) | (newKids > maxKids)) {
     return(rep(0, bigmz))
   }else{
@@ -214,8 +236,8 @@ p_xT <- function(l, i, j, B, M) {
 ##############################################################################
 ## Function to make the 2D iteration matrix A for a size-kids model
 ## based on the M and B matrices summarizing a size-structured
-## IPM. Apart from B and M the only input is mT, dimension for T 
-## (so range of T is 0 to mT-1). The 4-D iteration array K is also returned. 
+## IPM. Apart from B and M the only input is mT, dimension for T
+## (so range of T is 0 to mT-1). The 4-D iteration array K is also returned.
 ##
 ## Iteration matrix is modified so individuals who get to the maximum
 ## values of T in the matrix stay there, but continue to grow/shrink/die
@@ -224,7 +246,7 @@ p_xT <- function(l, i, j, B, M) {
 #' Make the size x \#kids transition matrix
 #'
 #' Makes the 2-dim iteration matrix A for a size x \#kids model, where
-#' \#kids is the total number of offspring to date.  
+#' \#kids is the total number of offspring to date.
 #' @param B The clutch size distribution matrix, where B\[m,n\] is the
 #'   probability that a size n parent produces m-1 offspring in a
 #'   single reproductive bout
@@ -234,7 +256,7 @@ p_xT <- function(l, i, j, B, M) {
 #'   probability of transitioning from state j to state i.
 #' @param mT The dimension of the \#kids part of the 4-d array.
 #' I.e. the maximum \#kids is mT-1.
-#' @details Called by distLifespanCondR2 and calcDistLRO.  
+#' @details Called by distLifespanCondR2 and calcDistLRO.
 #' @return A list containing
 #' * A: The 2-dim transition matrix for states cross-classified by size
 #' (or stage or...) and total number of offspring so far
@@ -249,9 +271,9 @@ p_xT <- function(l, i, j, B, M) {
 #' mT = 20
 #' out = make_AxT (B, M, mT)
 make_AxT <- function(B, M, mT) {
-  bigmz=ncol(M); Kvals=array(0,c(bigmz,mT,bigmz,mT));  
+  bigmz=ncol(M); Kvals=array(0,c(bigmz,mT,bigmz,mT));
   for(z in 1:bigmz){ # initial size
-    for(k in 1:mT){ # initial T 
+    for(k in 1:mT){ # initial T
       for(kp in 1:(mT-1)){ # final T
         Kvals[,kp,z,k]=p_xT(kp,z,k,B,M)
       }
@@ -261,12 +283,12 @@ make_AxT <- function(B, M, mT) {
     }
   }
   ## make kids-class mT absorbing: stay there with prob=1
-  Kvals[1:bigmz,1:mT,1:bigmz,mT] <- 0; 
-  Kvals[1:bigmz,mT,1:bigmz,mT] <- M; 
-  A <- Kvals; dim(A) <- c(bigmz*mT,bigmz*mT); 
+  Kvals[1:bigmz,1:mT,1:bigmz,mT] <- 0;
+  Kvals[1:bigmz,mT,1:bigmz,mT] <- M;
+  A <- Kvals; dim(A) <- c(bigmz*mT,bigmz*mT);
 
-  return(list(A=A,K=Kvals)) 
-}  
+  return(list(A=A,K=Kvals))
+}
 
 ############################################################################
 ## Function to make megamatrix from a list of "fast" matrices
@@ -312,11 +334,11 @@ make_AxT <- function(B, M, mT) {
 #' Q = matrix (1/2, 2, 2)
 #' M = makeM (Plist, Q)
 #' bigF = makeM(Flist, Q)
-makeM = function (fastMatrixList, slowMatrix) {  
+makeM = function (fastMatrixList, slowMatrix) {
   dimSlow = dim(slowMatrix)[1]
   dimFast = dim(fastMatrixList[[1]])[1]
 
-  if (length(fastMatrixList) != dimSlow) 
+  if (length(fastMatrixList) != dimSlow)
     stop("makeM: There must be a fast matrix for each state in the slow matrix.\n")
     if (dim(slowMatrix)[2] != dimSlow)
     stop ("makeM: Matrices must be square.\n")
@@ -324,7 +346,7 @@ makeM = function (fastMatrixList, slowMatrix) {
     stop ("makeM: Matrices must be square.\n")
 
   M = matrix (NA, dimFast*dimSlow, dimFast*dimSlow)
-  
+
   for (i in 1:dimSlow) {
     for (j in 1:dimSlow) {
       M[(i-1)*dimFast + 1:dimFast, (j-1)*dimFast + 1:dimFast] =
@@ -338,7 +360,7 @@ makeM = function (fastMatrixList, slowMatrix) {
 ## Debugging: Try this for post-breeding? #############
 p_xTPostBreeding <- function(l, i, j, B, M) {
   bigmz <- ncol(M); maxKids <- nrow(B) - 1;
-  newKids <- (l-j); 
+  newKids <- (l-j);
   if((newKids < 0) | (newKids > maxKids)) {
     return(rep(0, bigmz))
   }else{
@@ -347,9 +369,9 @@ p_xTPostBreeding <- function(l, i, j, B, M) {
 }
 
 make_AxTPostBreeding <- function(B, M, mT) {
-  bigmz=ncol(M); Kvals=array(0,c(bigmz,mT,bigmz,mT));  
+  bigmz=ncol(M); Kvals=array(0,c(bigmz,mT,bigmz,mT));
   for(z in 1:bigmz){ # initial size
-    for(k in 1:mT){ # initial T 
+    for(k in 1:mT){ # initial T
       for(kp in 1:(mT-1)){ # final T
         Kvals[,kp,z,k] = p_xTPostBreeding (kp, z, k, B, M)
       }
@@ -359,9 +381,9 @@ make_AxTPostBreeding <- function(B, M, mT) {
     }
   }
   ## make kids-class mT absorbing: stay there with prob=1
-  Kvals[1:bigmz,1:mT,1:bigmz,mT] <- 0; 
-  Kvals[1:bigmz,mT,1:bigmz,mT] <- M; 
-  A <- Kvals; dim(A) <- c(bigmz*mT,bigmz*mT); 
+  Kvals[1:bigmz,1:mT,1:bigmz,mT] <- 0;
+  Kvals[1:bigmz,mT,1:bigmz,mT] <- M;
+  A <- Kvals; dim(A) <- c(bigmz*mT,bigmz*mT);
 
-  return(list(A=A,K=Kvals)) 
-}  
+  return(list(A=A,K=Kvals))
+}
