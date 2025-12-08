@@ -1,13 +1,22 @@
+## Finally works!!  12/8/25
 rm(list=ls(all=TRUE)); graphics.off();
-## Juveniles mature to adult 1 with prob. 0.5 and die otherwise.
-## Adult 1 matures to adult 2 with prob. 0.5 and dies otherwise.
-## There is no survival in adult 2.
-## P1 = matrix (c(0,0.5, 0,0), 2, 2)
+## Newborns mature to juveniles with prob. 0.5 and die otherwise.
+## Juveniles mature to adults with prob. 0.5 and die otherwise.
+## There is no adult survival.
+## In the language of Kendall et al.'s "Persistent problems in the
+## construction of matrix population models," Fig. 2, sigma_N = G_J =
+## 0.5.  P_j = sigma_A = 0.
 P1 = matrix (c(0,0.5,0, 0,0,0.5, 0,0,0), 3, 3)
-## If you lived to be an adult 1, you have a mean of 1 offspring.
-## F1 = matrix (c(0,0, 0.5,0), 2, 2)
+## If you lived to be an adult 1, you have a mean of 1 offspring. 
+## In the language of Kendall et al.'s "Persistent problems in the
+## construction of matrix population models," Fig. 2, b_A = 1.
 F1 = matrix (c(0,0,0, 0.5,0,0, 0,0,0), 3, 3)
-## LRO dist. should be 0.25*dpois(0:5, 1) + (1 - 0.25)*c(1, rep(0, 5))
+## LRO dist.: You live to become an adult (and therefore attempt
+## reproduction) with probability 0.5^2 = 0.25 and die before
+## attempting reproduction with probability 1 - 0.25 = 0.75.  The LRO
+## distribution is therefore a weight of 0.75 at R = 0 plus
+## 0.25*Pois(lambda=1) = (1 - 0.25)*c(1, rep(0, 5)) + 0.25*dpois(0:5,
+## 1)
 Plist = list (P1, P1)
 Flist = list (F1, F1)
 Q = matrix (1/2, 2, 2)
@@ -36,7 +45,9 @@ if (Fdist == "Bernoulli") {
            q, " sum to > 1 but clutch size is Bernoulli-distributed.")
 }
 
-if (FALSE) {
+## Making a 2nd environment with the same demographics --- leave this
+## complication aside for now.
+if (TRUE) {  
   ## u0 is the stationary environmental distribution, given by the
   ## dominant eigenvector of Q
   u0 = eigen(Q)$vectors[,1]
@@ -96,17 +107,18 @@ if (FALSE) {
   distKidsAtDeath = distKidsAtDeath / sum(distKidsAtDeath)
 }
 
-if (TRUE) {
   ## Without the fake 2nd environment #######
-
+if (TRUE) {
   ## B[i,j] is the probability that a class-j individual has i-1 kids.
   ## We assume Poisson-distributed number of offspring.
   ## The columns of B should sum to 1 and they do.
   if (TRUE) {
     B = mk_BPostBreeding (P1, F1, maxClutchSize, Fdist)
   } else {
-    ## Do this by hand, just to test my intuition.  Yeah, I suck.  Still
-    ## comes up with everyone having no kids.
+    ## Do this by hand, because the way we make A, B should be the
+    ## clutch size distribution conditional on surviving to
+    ## reproduction.  Yeah, I suck.  Still comes up with everyone
+    ## having no kids.
     B = matrix (0, maxClutchSize+1, mz)
     B[1,1] = 1 ## stage 1 has no kids
     B[1,3] = 1 ## Neither does stage 3

@@ -158,20 +158,23 @@ if (FALSE) {
 }
 #### END PROB. DELETE ###############################
 
-## For post-breeding census models
+## For post-breeding census models.  Given the way we make A, the size
+## x #kids transition matrix, the columns of B need to be the clutch
+## size distribution conditional on surviving to reproduce.
 mk_BPostBreeding = function (M, F, maxKids=20, Fdist="Poisson") {
   bigmz = ncol(F)
   surv = colSums(M); die = 1 - surv
-  fecCondSurv = colSums(F) / surv
-  zeroMass = c(1, rep(0, maxKids))
+  ## fecCondSurv = colSums(F) / surv
+  ## zeroMass = c(1, rep(0, maxKids))
   B = matrix (0, maxKids+1, bigmz)
   if (Fdist == "Poisson") {
     for (z in 1:bigmz)
       if (surv[z] == 0) {
         B[,z] = rep(0, maxKids+1); B[1,z] = 1
       } else {
-        B[,z] = die[z]*zeroMass +
-          surv[z]*dpois (0:maxKids, lambda=sum(F[,z]/surv[z]))
+        ## B[,z] = die[z]*zeroMass +
+        ## surv[z]*dpois (0:maxKids, lambda=)
+        B[,z] = dpois (0:maxKids, lambda=sum(F[,z]/surv[z]))
       }
   }
   else if (Fdist == "Bernoulli") {
@@ -179,8 +182,9 @@ mk_BPostBreeding = function (M, F, maxKids=20, Fdist="Poisson") {
       if (surv[z] == 0) {
         B[, z] = rep (0, maxKids+1); B[1,z] = 1
       } else {
-        B[,z] = die[z]*zeroMass +
-          surv[z]*dbinom (0:maxKids, size=1, prob=sum(F[,z])/surv[z])
+       ## B[,z] = die[z]*zeroMass +
+        ## surv[z]*dbinom (0:maxKids, size=1, prob=sum(F[,z])/surv[z])
+        B[,z] = dbinom (0:maxKids, size=1, prob=sum(F[,z]/surv[z]))
       }
   } else {
     stop ("mk_BPostBreeding: I don't recognize that option for Fdist.\n")
