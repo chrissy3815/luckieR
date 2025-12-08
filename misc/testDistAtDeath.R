@@ -9,14 +9,14 @@ rm(list=ls(all=TRUE)); graphics.off();
 P1 = matrix (c(0,0.5,0, 0,0,0.5, 0,0,0), 3, 3)
 ## If you lived to be an adult 1, you have a mean of 1 offspring. 
 ## In the language of Kendall et al.'s "Persistent problems in the
-## construction of matrix population models," Fig. 2, b_A = 1.
-F1 = matrix (c(0,0,0, 0.5,0,0, 0,0,0), 3, 3)
+## construction of matrix population models," Fig. 2, b_A = 0.8.
+F1 = matrix (c(0,0,0, 0.4,0,0, 0,0,0), 3, 3)
 ## LRO dist.: You live to become an adult (and therefore attempt
 ## reproduction) with probability 0.5^2 = 0.25 and die before
 ## attempting reproduction with probability 1 - 0.25 = 0.75.  The LRO
 ## distribution is therefore a weight of 0.75 at R = 0 plus
 ## 0.25*Pois(lambda=1) = (1 - 0.25)*c(1, rep(0, 5)) + 0.25*dpois(0:5,
-## 1)
+## 0.8)
 Plist = list (P1, P1)
 Flist = list (F1, F1)
 Q = matrix (1/2, 2, 2)
@@ -97,14 +97,12 @@ if (TRUE) {
   ## Get distribution of states at death
   distAtDeath = omega %*% matrix(distAtBirth, ncol=1)  # state vector
   distAtDeath = matrix (distAtDeath, nrow=bigmz)
-  ## apply (distAtDeath, 1, sum) gets the correct distribution of states
-  ## at death, but distKidsAtDeath isn't what I expect.  I expect
-  ## Pr(surv. to reproduce)*dpois(0:5, lambda=1) + Pr(don't
-  ## survive)*Kronecker_delta(x = 0) = 
-  ## 0.5*dpois(0:5, lambda=1) + 0.5*c(1, rep(0, 5)).  (I made up that
-  ## Kronecker delta function.)
   distKidsAtDeath = apply (distAtDeath, 2, sum)
   distKidsAtDeath = distKidsAtDeath / sum(distKidsAtDeath)
+
+  distKidsAtDeathLuckieR = calcDistLROPostBreeding (Plist, Flist, Q,
+                                                    c0, maxClutchSize,
+                                                    "Poisson")
 }
 
   ## Without the fake 2nd environment #######
@@ -122,7 +120,7 @@ if (TRUE) {
     B = matrix (0, maxClutchSize+1, mz)
     B[1,1] = 1 ## stage 1 has no kids
     B[1,3] = 1 ## Neither does stage 3
-    B[,2] = dpois(0:maxClutchSize, lambda=1)
+    B[,2] = dpois(0:maxClutchSize, lambda=0.8)
   }
 
   ## Construct A, the transition matrix for a (number of kids) x stage x
@@ -152,14 +150,16 @@ if (TRUE) {
   distAtDeath = matrix (distAtDeath, nrow=mz)
   ## We get the same answer that we do with 2 env.
   distKidsAtDeath2 = apply (distAtDeath, 2, sum)
-  ## my sense of what distKidsAtDeath should be
-  myDistKidsAtDeath = 0.75*c(1, rep(0,5)) +
-    0.25*dpois(0:5, 1)
   ## my sense of what distAtDeath should be.  Mine sums to 1 and so
   ## does distAtDeath, but distAtDeath has more mass at stage 3, zero
-  ## kids. 
+  ## kids.
   myDistAtDeath = matrix (0, 3, maxClutchSize+1)
   myDistAtDeath[1,] = 0.5*c(1, rep(0,5))
   myDistAtDeath[2,] = 0.25*c(1, rep(0,5))
-  myDistAtDeath[3,] = 0.25*dpois(0:5, 1)
+    if (Fdist == "Poisson") {
+      myDistAtDeath[3,] = 0.25*dpois(0:5, 0.8)
+    } else if (Fdist == "Bernoulli") {
+      myDistAtDeath[3,] = 0.25*dbinom(0:5, prob=0.8, size=1)
+    }
+  myDistKidsAtDeath = apply (myDistAtDeath, 2, sum)
 }

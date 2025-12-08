@@ -125,42 +125,34 @@ mk_B = function (F, maxKids=20, Fdist="Poisson") {
   return (B)
 }
 
-## For post-breeding census models
-## NOT NEEDED AFTER STEVE'S RESPONSE ON 11/19.  PROB. DELETE ############
-if (FALSE) {
-  mk_BArray = function (M, F, maxKids=20, Fdist="Poisson") {
-    bigmz = ncol(F)
-    surv = colSums(M); die = 1 - surv
-    zeroMass = c(1, rep(0, maxKids))
-    B = array (0, dim=c(maxKids+1, bigmz, bigmz))
-    if (Fdist == "Poisson") {
-      for (zp in 1:bigmz) {
-        for (z in 1:bigmz)
-          B[,zp, z] =
-            ifelse(surv[z] == 0, 0,
-                   die[z]*zeroMass +
-                   surv[z]*dpois (0:maxKids, lambda=sum(F[,zp]/surv[z])))
-      }
-    } else if (Fdist == "Bernoulli") {
-      for (zp in 1:bigmz) {
-        for (z in 1:bigmz)
-          B[, zp, z] =
-            ifelse (surv[z] == 0, 0,
-                    die[z]*zeroMass +
-                    surv[z]*dbinom (0:maxKids, size=1, prob=sum(F[,z])/surv[z]))
-      }
-    } else {
-      stop ("mk_BArray: I don't recognize that option for Fdist.\n")
-    }
-
-    return (B)
-  }
-}
-#### END PROB. DELETE ###############################
-
 ## For post-breeding census models.  Given the way we make A, the size
 ## x #kids transition matrix, the columns of B need to be the clutch
 ## size distribution conditional on surviving to reproduce.
+#' Make B matrix for a post-breeding census
+#'
+#' Calculates B, the clutch size distribution matrix, for a
+#' post-breeding census
+#'
+#' @param maxKids The maximum clutch size.  Optional, with a default value of
+#'   20.
+#' @param F the fecundity matrix.  F\[i,j\] is the expected number of size i
+#'   offspring from a size j parent.
+#' @param M The state transition matrix.  States can be a single
+#'   quantity, such as size or life history stage, or can be
+#'   cross-classified, such as size x environment.  M\[i,j\] is the
+#'   probability of transitioning from state j to state i.
+#' @param Fdist the clutch size distribution.  Currently supported values are
+#'   "Poisson" and "Bernoulli."  Optional, with a default value of "Poisson".
+#'
+#' @return The clutch size distribution matrix B, where B\[i,j\] is the
+#'   probability that a size j parent produces i-1 offspring in a single
+#'   reproductive bout
+#' @export
+#'
+#' @examples
+#' F = matrix (c(0,0,0, 0.5,0,0, 0,0,0), 3, 3)
+#' M = matrix (c(0,0.5,0, 0,0,0.5, 0,0,0), 3, 3)
+#' out = mk_BPostBreeding (M, F, maxClutchSize, Fdist="Bernoulli")
 mk_BPostBreeding = function (M, F, maxKids=20, Fdist="Poisson") {
   bigmz = ncol(F)
   surv = colSums(M); die = 1 - surv

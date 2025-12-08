@@ -752,7 +752,7 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
 #' @param Fdist The clutch size distribution.  The recognized options are
 #'   "Poisson" and "Bernoulli".  Optional.  The default value is "Poisson".
 #'
-#' @return Distribution blah blah
+#' @return @return The distribution of lifetime reproductive output
 #' @export
 #'
 #' @examples
@@ -914,6 +914,138 @@ calcDistLRO = function (Plist, Flist, Q,
   distAtDeath = omega %*% matrix(distAtBirth, ncol=1)  # state vector
   distAtDeath = array (distAtDeath, dim=c(bigmz, mT, 2)) # state matrix
   distKidsAtDeath = apply (distAtDeath, 2, sum)
+
+  return (distKidsAtDeath)
+}
+
+########################################################################
+## calculates the distribution of LRO (#kids at death) in the presence
+## of environmental variation, assuming that reproduction happens
+## after survival and growth.  This uses the math in the IPM Book,
+## which effectively assumes that survival (and growth) happens first.
+## B[i,j] is the probability of a parent of size j having i-1
+## offspring, conditional on having survived to reproduce.  If B is
+## not provided, then the code constructs B according to the clutch
+## size distribution specified by Fdist.
+########################################################################
+
+#' Distribution of lifetime reproductive output
+#'
+#' Calculates the distribution of lifetime reproductive output (LRO) the
+#' presence of environmental variation.  Assumes a post-breeding census
+#' (reproductiion happens after survival and growth).
+#'
+#' Called by probTraitCondLROPostBreeding.
+#'
+#' This function calculates the distribution of LRO by
+#' cross-classifying states by stage and number of offspring produced
+#' so far and calculating the state distribution at death.  If s(z')
+#' is the survival probability for cross-classified state z', M(z', z)
+#' is the probability of transitioning from cross-classified state z
+#' to cross-classified state z', and N is the fundamental matrix for
+#' M: N = (I - M)^\{-1\}, then the state distribution at death,
+#' conditional on starting in state z, is (1 - s(z')) * N(z', z),
+#' where * denotes a Hadamard product (element-by-element
+#' multiplication, not matrix multiplication).  (See, e.g., eq. 3.2.8
+#' in Data-driven Modeling of Structured Populations: A Practical
+#' Guide to the Integral Projection Model, by Stephen P. Ellner, Dylan
+#' Z. Childs and Mark Rees, ed. 1, 2015.)  This method implicitly
+#' assumes that reproduction happens after survival and growth, i.e. a
+#' post-breeding census.
+#'
+#' @param Plist A list of survival/growth transition matrices.
+#'   Plist\[\[q\]\]\[i,j\] is the probability of transitioning from state j to
+#'   state i in environment q.
+#' @param Flist A list of fecundity matrices.  Flist\[\[q\]\]\[i,j\] is the
+#'   expected number of state i offspring from a state j parent in environment q
+#' @param Q The environment transition matrix.  Q\[i,j\] is the probability of
+#'   transitioning from environment j to environment i.
+#' @param c0 A vector specifying the offspring state distribution: c0\[j\] is
+#'   the probability that an individual is born in state j
+#' @param maxClutchSize The maximum clutch size to consider
+#' @param Fdist The clutch size distribution.  The recognized options are
+#'   "Poisson" and "Bernoulli".  Optional.  The default value is "Poisson".
+#'
+#' @return The distribution of lifetime reproductive output
+#' @export
+#'
+#' @examples
+#' P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' P2 = matrix (c(0, 0.2, 0, 0, 0, 0.3, 0, 0, 0.4), 3, 3)
+#' F1 = matrix (0, 3, 3); F1[1,] = 0:2
+#' F2 = matrix (0, 3, 3); F1[1,] = 0.8*(0:2)
+#' Plist = list (P1, P2)
+#' Flist = list (F1, F2)
+#' Q = matrix (1/2, 2, 2)
+#' c0 = c(1,0,0)
+#' maxClutchSize = 10
+#' out = calcDistLROPostBreeding (Plist, Flist, Q, c0, maxClutchSize)
+calcDistLROPostBreeding = function (Plist, Flist, Q,
+                                    c0, maxClutchSize,
+                                    Fdist="Poisson") {
+  mz = dim(Plist[[1]])[1]
+  numEnv = dim(Q)[1]
+  bigmz = numEnv*mz
+  mT = maxClutchSize + 1
+
+  ## Sanity check input
+  if (Fdist == "Bernoulli") {
+    for (q in 1:numEnv)
+      if (sum(colSums(Flist[[q]]) > 1))
+        stop("Probability of having an offspring > 1!  Columns of fecundity matrix in environment ",
+             q, " sum to > 1 but clutch size is Bernoulli-distributed.")
+  }
+
+  ## u0 is the stationary environmental distribution, given by the
+  ## dominant eigenvector of Q
+  u0 = eigen(Q)$vectors[,1]
+  u0 = u0 / sum(u0)
+
+  ## m0 is the stationary state cross-classified by size and
+  ## environment
+  m0 = matrix (outer (c0, as.vector(u0)), bigmz, 1)
+
+  ## Define megamatrices M and F
+  F = M = matrix (0, bigmz, bigmz)
+  for (i in 1:numEnv) {
+    for (j in 1:numEnv) {
+      M[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Plist[[j]]*Q[i,j]
+      F[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Flist[[j]]*Q[i,j]
+    }
+  }
+
+  ## B[i,j] is the probability that a class-j individual has i-1 kids.
+  ## The columns of B should sum to 1.
+  B = mk_BPostBreeding (M, F, maxClutchSize, Fdist)
+
+  ## Construct A, the transition matrix for a (number of kids) x stage x
+  ## env. model.
+  out = make_AxT (B, M, mT)
+  message ("calcDistLRO: Making A...")
+  A = out$A
+  mzA = bigmz*mT
+  ## Create a survival probability vector 
+  surv = apply (A, 2, sum);  die = 1-surv; 
+
+  ## And the fundamental matrix of esA
+  message ("calcDistLRO: Calculating the fundamental matrix of A...")
+  fundA <- solve(diag(ncol(A)) - A)
+
+  ## Make omega
+  omega = matrix(0, nrow(A), ncol(A)); 
+
+  for (j in 1:ncol(fundA))
+    omega[,j] = die*fundA[,j]
+
+  distAtBirth = matrix(0, bigmz, mT)
+  distAtBirth[,1] = m0  ## Everyone starts off with zero kids at the
+  ## beginning of the time step
+
+  ## Get distribution of states at death
+  distAtDeath = omega %*% matrix(distAtBirth, ncol=1)  # state vector
+  distAtDeath = matrix (distAtDeath, nrow=bigmz)
+  distKidsAtDeath = apply (distAtDeath, 2, sum)
+  distKidsAtDeath = distKidsAtDeath / sum(distKidsAtDeath)
 
   return (distKidsAtDeath)
 }
