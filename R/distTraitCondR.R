@@ -757,7 +757,8 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
 #' @param Fdist The clutch size distribution.  The recognized options are
 #'   "Poisson" and "Bernoulli".  Optional.  The default value is "Poisson".
 #'
-#' @return @return The distribution of lifetime reproductive output
+#' @return The distribution of lifetime reproductive output
+#' @importFrom Matrix bdiag
 #' @export
 #'
 #' @examples
@@ -990,7 +991,7 @@ calcDistLRO = function (Plist, Flist, Q,
 #' maxClutchSize = 10
 #' maxLRO = 30
 #' out = calcDistLROPostBreeding (Plist, Flist, Q, c0, maxClutchSize,
-#'   maxLRO) 
+#'   maxLRO)
 calcDistLROPostBreeding = function (Plist, Flist, Q,
                                     c0, maxClutchSize, maxLRO,
                                     Fdist="Poisson") {
@@ -1039,15 +1040,15 @@ calcDistLROPostBreeding = function (Plist, Flist, Q,
   message ("calcDistLRO: Making A...")
   A = out$A
   mzA = bigmz*mT
-  ## Create a survival probability vector 
-  surv = apply (A, 2, sum);  die = 1-surv; 
+  ## Create a survival probability vector
+  surv = apply (A, 2, sum);  die = 1-surv;
 
   ## And the fundamental matrix of esA
   message ("calcDistLRO: Calculating the fundamental matrix of A...")
   fundA <- solve(diag(ncol(A)) - A)
 
   ## Make omega
-  omega = matrix(0, nrow(A), ncol(A)); 
+  omega = matrix(0, nrow(A), ncol(A));
 
   for (j in 1:ncol(fundA))
     omega[,j] = die*fundA[,j]
