@@ -1,0 +1,288 @@
+Welcome to STAGECOACH!
+
+     STAGECOACH is a FORTRAN 77 program which calculates a number of measures 
+for the analysis of population projection matrices.  These include stage-based
+parameters such as the complete eigenvalue spectrum (including complex 
+eigenvalues),  right and left eigenvectors (i.e., stable stage distribution 
+and reproductive value), and sensitivity and elasticity matrices for the 
+dominant eigenvalue (see Caswell 1989).   STAGECOACH also computes the 
+parameters necessary for an age-based description of a stage-structured 
+population (Cochran and Ellner 1992): the discrete survivorship function, lx; 
+maternity function, fx; mean age at maturity; net reproductive rate, R0; the 
+stable age distribution; age-specific reproductive value Vx/V1; generation 
+time;  age distribution and mean age of residence for each stage-class; 
+expected remaining lifespan for individuals in each stage-class;  and total 
+lifespan conditional on reaching a given stage-class.
+     STAGECOACH is one of the working programs used to generate the examples 
+in Cochran and Ellner (1992). Individuals who know how to program in  
+MATLAB [The MathWorks, Natick, Massachusettes, USA], GAUSS [Aptech Systems, 
+Kent, Washington, USA], or other matrix languages, may find 
+those environments better suited to their needs. STAGECOACH 
+does not require a knowledge of FORTRAN. In its current form it only requires 
+that the data be entered in the correct order, form (i.e., decimal, integer), 
+and lines. This archive also includes a compiled version 
+     The STAGECOACH package consists of:  this welcome document(STGCCH.txt), 
+the source code(STGCCH.for), two sample data files (caswell.dat, cochran.dat), 
+and the corresponding output files (caswell.rst, cochran.rst), and a compiled
+version for Wintel PCs (Pentium-compatible CPU, Windows 95/98/NT), stgcch.exe. 
+For other platforms you will need to compile stgcch.for using an f77 compiler. 
+
+     Compatibility:  STAGECOACH was written on a Macintosh SE/30 using 
+the Absoft MacFortran II ANSI FORTRAN 77 compiler [Absoft, Rochester Hills, 
+Michigan, USA], and has also compiled without modification on SUN f77 (UNIX) and
+MS Fortran 5.0 and higher (DOS/Windows) compilers. Other compilers may 
+require modest revisions. The following is a nonexhaustive list of potential 
+incompatibilities:
+     1.  File naming conventions:  The input data file is named STGCCH.dat and the results are 
+	 written to a file named STGCCH.rst. You may rename these files according to the conventions 
+	 required by your operating system.
+     2.  Input and output conventions:  The source code is written so that all data are read 
+	 from a text file (STGCCH.dat), which is treated as input/output device 8.  If another convention 
+	is used, the lines of code
+
+       OPEN(8,FILE="STGCCH.dat")
+       REWIND(8)
+
+should be removed and all statements containing the command READ(8,*) should 
+be altered to reflect the new convention.  The source code also writes the 
+output to a text file (STGCCH.rst), which is treated as input/output device 4.
+In most hardware and software configurations this allows the output to be 
+opened by a word processor. 
+     If you encounter difficulties running STAGECOACH, please notify the 
+authors by email (COCHRAN@alpha.nsula.edu,ellner@stat.ncsu.edu), stating the hardware, 
+compiler, problem, and solution if you found one.
+
+SAMPLE DATA FILES AND OUTPUT
+To test your installation of STAGECOACH, make a copy of cochran.dat and
+rename it stgcch.dat, and then run stgcch.exe. This will produce an output
+file, stgcch.rst, that should be identical to cochran.rst. Now do the
+same with caswell.dat. 
+
+THE PROGRAM
+     Data:  In order to use STAGECOACH, you must be able to partition your 
+transition matrix A into three components:  P (survival), B (births), and F 
+(fission).  (See Cochran and Ellner 1992.)  In particular, the sum of the 
+entries in each column of the P matrix must be less than or equal to 1.  In 
+this version of the program, the entries in the P matrix may be entered as 
+probabilities or as frequency data.   In its present form, STAGECOACH can 
+handle transition matrices of dimension up to 70 x 70.
+
+The first line of a data file is a label for the data
+set, which may be up to 32 characters in length. For the Caswell example
+in caswell.dat, the first line is
+
+Caswell field A, reduced stage
+
+The rest of the input is unformatted. In FORTRAN 77, an unformatted read
+statement only requires that entries be separated by at least one space.  If
+more than 80 characters and spaces are used to complete a "line" of input (i.e., a 
+single read statement), the program will automatically move to the next line
+of the data set.  (A single entry cannot be split between two lines of the data
+set.) 
+     The second line of input establishes the form of the data set, the form of 
+the output, and limits on the number of time steps for iterative calculations. The
+first four entries are related to the form of the data set.  The first integer is the
+number of stage classes (between 1 and 70); the second
+is the number of fate classes (the number of stage classes 
+plus one for death); the third is the number of replicate projection matrices.  
+In the Caswell (1989) example there were 6 stage classes, 7 fate classes and 
+one matrix.  The fourth integer indicates whether the data is given as 
+probabilities (decimal form) or frequencies (integer form).  In the Caswell 
+example, the data is given as probabilities, so the fourth integer is 1.  
+     The next four entries affect the form of the output.  The fifth integer 
+indicates whether fecundities should be expressed in raw numbers (1) or 
+newborn equivalents (0).  The sixth integer sets an upper limit on the number 
+of time steps for which the stable age distribution, lx, fx, and the age-
+specific reproductive value should be calculated. (The maximum number of time 
+steps is this integer times 10.)  In the Caswell example, this integer is 5, 
+making the limit 50 time steps. The seventh entry is a lower limit on the 
+value of lx.  Calculation of lx, fx, and Vx/V1 will stop once lx is less than 
+this value.  In the Caswell example, this value is 10**-16.  (Because lx may 
+grow without bound when the C matrix is not convergent, limits on both the 
+maximum number of time steps and the minimum value of lx are necessary to 
+prevent an infinite loop.)  The final integer determines whether marker 
+statements should be written to the screen.  To view such information, enter 
+1; to suppress this information, enter 0.
+     In the Caswell example the second line is:
+
+ 6  7  1 1 1   5 .1D-15      1 
+
+     P matrix as probabilities:  If the P matrix is entered as 
+probabilities, each row of the matrix is read as double precision decimal 
+numbers.  In the Caswell example, there are 6 entries in each row of the P 
+matrix, so each row takes up only one line.  In general, when the entries in 
+the first row of the matrix have been exhausted, the second row begins on the 
+next line of the data set.
+     Data on births follow the P matrix.  The next line of input consists of 
+two integers.   The first integer is the number of nonzero entries in the B 
+matrix.  If there are no births, this entry should be zero.  The second 
+integer is the number of birth classes (i.e., types of newborns).  Again, if 
+there are no births, this entry should be zero.  For the Caswell example there 
+were 4 nonzero entries and 4 birth classes:
+
+ 4  4
+
+     The next line lists the newborn classes.  In the Caswell example the 4 
+newborn classes were classes 1, 3, 4, and 5:
+
+ 1  3  4  5
+
+     Each nonzero entry in the B matrix is listed on a separate line.  This 
+information is an integer for the birth class, an integer for the parent's 
+class, and a fecundity:
+
+ 1  6 0.322D3
+
+     The birth matrix is followed by the fission matrix.  The first line of 
+input is an integer.  If fission does not occur, enter zero and the data set 
+is complete.  If fission does occur, the nonzero entries in the F matrix are 
+entered in the same format as the nonzero entries in the B matrix. 
+
+     P matrix as frequencies:  In the Cochran (1986) example, the entries 
+in the P matrix were computed from frequency data on a single population in a 
+single year.  This is indicated by entering a zero for the fourth integer
+on the second line of the data file:
+
+ 8  9  1 0 1  10 .1D-15      0 
+
+Each line of frequency input represents one column of the P matrix.  For 
+instance, line 3 of the Cochran example is the number of individuals  in stage 
+class 1 at time t.  Each entry represents the number of these individuals in 
+each fate class at time t.  The first entry is fate class 1 (= stage class 1), 
+the second entry is fate class 2 (= stage class 2), the eighth entry is fate 
+class 8 (= stage class 8) and the last entry is fate class 9 (= death).  Once 
+again, if more than one line of data is used for this line of input, the next 
+line of input begins on a new line of the data set.
+     The birth and fission matrices are entered as in the previous example.  
+Notice that the Cochran example has nonzero entries in the fission matrix.
+
+     Assumptions and exceptions:  STAGECOACH has the same assumptions as 
+Cochran and Ellner (1992).  In particular, it requires that (1) the original 
+transition matrix A has a dominant eigenvalue, (2) at stable stage 
+distribution some individuals are born with positive reproductive value, and 
+(3) C, the sum of the survival and fission matrix is convergent.  If (1) or 
+(2) are not satisfied, the program may fail (due to underflow, overflow or 
+division by zero) or may produce spurious results.  If (3) is not satisfied, a 
+warning is given and calculations dependent on the convergence of C are 
+bypassed.  These include net reproductive rate, generation time, and mean age 
+of residence.  If C is not convergent, lx may grow without bound.  C is not 
+convergent in the Cochran example.
+
+     Numerical methods:  STAGECOACH incorporates the public domain package 
+EISPACK [Applied Mathematics Division, Argonne National Laboratory, Argonne, 
+Illinois, USA] to compute the eigenvalue spectra and corresponding 
+eigenvectors for a number of matrices.  EISPACK first balances a matrix, 
+reduces it to Hessenberg form, then finds the eigenvalues and eigenvectors.  
+(If you are interested in the mathematical details of the linear algebra and 
+numerical analysis involved, see, for example, Burden and Faires (1989) or 
+Press, et al. (1989).)  EISPACK requires double precision arithmetic.  
+Matrices larger than 99 x 99 require that the code be modified.  (The details 
+appear as comment statements in the EISPACK source code.)  EISPACK also alters 
+the matrix being analyzed, requiring an additional array to store the matrix 
+if it is required for a later calculation.  Whenever possible, calculations 
+are grouped to reduce the number of matrix multiplications and inversions and 
+to reduce the need for additional large storage arrays.  Calculations are 
+output as they are completed, rather than in the order presented in Cochran 
+and Ellner (1992), to reduce storage needs.
+     STAGECOACH uses Gaussian elimination with partial pivoting to solve 
+systems of equations and to invert matrices.  LU-decomposition is the 
+preferred numerical technique for this operation (see Press et al. 1989) and 
+users may wish to replace the subroutine GAUSS with one for LU-decomposition.  
+However, with the types and sizes of matrices normally analyzed in demography, 
+Gaussian elimination should prove adequate.
+
+     Reducing storage requirements:  STAGECOACH handles transition 
+matrices of size up to 70 rows by 70 columns.  The size of some arrays may be 
+reduced, if necessary, to reduce the amount of storage required.  The minimum 
+size for the arrays B, D, E, F, P,and S is (NS,NS) or (13,13), whichever is 
+larger--all must have the same size.  For the vectors BJ, EIG, EIGL, G, N, X, 
+YT, YV, and Z the minimum dimension is the number of stage classes, NS.  The 
+matrix C must have the same first dimension as matrix B (i.e., NS or 13) and 
+the second dimension must be double the first dimension.  The array IT has 
+size (NS,NF). The vectors LF and LX have a fixed size of 20 rows.
+
+  
+     Output:  The first lines of output are an attribution statement.  Next 
+comes a printout of the data set:  1) the size and label data; 2) the survival 
+matrix; 3) the nonzero entries in the birth matrix; and 4) the fission matrix, 
+if there are any nonzero entries.  If the matrix C = P + F is not convergent, 
+a warning appears following the fission matrix.  This is followed by the 
+complete transition matrix A = P + B + F. 
+     The next section involves the eigenvalues and eigenvectors of A.  The 
+complete right eigenvalue spectrum of A is listed first, as complex numbers 
+enclosed in parentheses.  When the matrix A has a pair of complex eigenvalues, 
+they are complex conjugates and are listed consecutively.  The order of the 
+eigenvalues determines the order of the eigenvectors, which follow in rows.  
+If the k-th eigenvalue is real, the k-th row contains its eigenvector; if the 
+k-th eigenvector is complex with positive imaginary part, row k contains the 
+real part of its associated eigenvector and row k+1 contains the imaginary 
+part.  The k+1-st eigenvector is the complex conjugate of the k-th 
+eigenvector, and is not listed.  The dominant eigenvalue and its corresponding 
+right eigenvector scaled to sum to 1 (i.e., the stable stage distribution) is 
+listed separately.  The complete left eigenvalue spectrum (that is, the 
+eigenvalues and eigenvectors of A transpose) follows, in the same form.  The 
+right and left eigenvalues of a matrix are identical; however, left 
+eigenvalues are listed separately since EISPACK may generate them in a 
+different order from the right eigenvalues.  The dominant eigenvalue and its 
+left eigenvector (i.e., the stage-specific reproductive value) scaled to sum 
+to 1 completes the listing of eigenvalues and eigenvectors.
+     The eigenvalue sensitivity and elasticity matrices are given next, with 
+each row beginning with the row number.  This completes the basic stage-
+specific description of the model.
+     The measures from Cochran and Ellner (1992) are arranged according to 
+computational similarity.  References are to equation numbers in the paper.  
+Standard deviations are given, rather than variances.  Unless otherwise noted, 
+age at birth (first census) equals 1.  The first measure computed is yi, "mean 
+age in stage class i", Eq. 23.  This is followed by the population generation 
+time, Abar , the mean age of parents of offspring produced at stable stage 
+distribution (Eq. 26).  The stable age distribution (Eq. 31) is calculated in 
+groups of 10 years.  Computation continues until the sum of the entries is 
+greater than 1 - .2 x 10**(-10) or the maximum number of time steps is 
+reached.  
+     The expected number of years until death, L(j), (Eq. 3) is listed for 
+each stage class.  This is followed by the expected number of years required 
+to reach stage j from stage i (Eq. 9).  A value of -1 indicates that stage j 
+is not reachable from stage i (i.e., there is no path from stage j to stage i 
+in the matrix Di).  A value of 0 is given for the (i,i) entry (i.e., the 
+individual is already in stage i).  Note that, in the conventions of Cochran 
+and Ellner (1992), the value of the (i,i) entry is 1 (i.e., the "time" 
+necessary for a newborn of class i to reach class i equals the age at the 
+first census, which is 1).  "Total lifespan" is the expected age at death (Eq. 
+6), the sum of the previous two entries (actually the sum of these entries + 
+1, to correctly include the age at birth).
+     The lifespan calculations are followed by lx, the survivorship function 
+(Eq. 2), fx, the maternity function (Eq. 13), and the age-specific 
+reproductive value Vx/V1 (Eq. 32) which are calculated individually for each 
+newborn type, 10 time steps at once.  These are followed by the population 
+averages of lx, fx, and Vx/V1 (Table 2 and Eq. 33) for the same 10 time steps.  
+Calculations continue (in groups of 10) until the value of the population lx 
+at the last time step is less than TLX, or until 10*MAX10 time steps have been 
+calculated.  Note that if C is not convergent, lx may grow without bound.  The 
+net reproductive rate for each newborn type, R0 (Eq. 18), follows (if C is 
+convergent), along with the population average (Table 2).  
+     Residence ages in each state are given for each newborn type (Si, Eq. 29) 
+along with a population average (Table 2).  A value of 0 indicates that state i
+cannot be reached by newborns of type j.  "Mean time to first passage" is the
+expected time for an average individual to leave stage class i.  Finally, the 
+probability of reaching maturity and the expected age at maturity for each
+newborn type (Eq. 15), and the population average (Table 2) are given.
+
+ 
+References
+
+Burden, R. L. and J. D. Faires.  1989.  Numerical Analysis, 4th edition.  PSW-
+     Kent Publishing Company, Boston, Massachusettes, USA.
+Caswell, H.  1989.  Matrix population models.  Sinauer Associates, Sunderland,
+     Massachusettes, USA.
+Cochran, M. E.  1986.  Consequences of pollination by chance in the pink 
+     lady's-slipper, Cypripedium acaule.  Ph. D. dissertation.  The
+     University of Tennessee, Knoxville, Tennessee, USA.
+Cochran, M. E. and S. Ellner.  1992.  Simple methods for calculating age-based
+     life history parameters for stage-structured populations.  Ecological 
+     Monographs 62:345-364.
+Press, W. H., B. P. Flannery, S. A. Teukolsky, and W. T. Vetterling.  1992.  
+     Numerical recipes in Fortran, 2nd edition. Cambridge University Press, 
+     Cambridge.
+
+
+
