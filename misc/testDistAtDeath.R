@@ -24,13 +24,14 @@ Q = matrix (1/2, 2, 2)
 c0 = c(1,0,0)
 maxClutchSize = 5
 maxAge=3
+maxLRO = 5
 Fdist = "Poisson"
-source ("distTraitCondR.R")
-source ("megamatrixFunctions.R")
-source ("partitioningUtilities.R")
+source ("../R/distTraitCondR.R")
+source ("../R/megamatrixFunctions.R")
+source ("../R/partitioningUtilities.R")
 source ("~/luckCalculations/Utilities.R")
 
-mT = maxClutchSize + 1
+mT = maxLRO + 1
 mA = maxAge + 1
 
 mz = dim(Plist[[1]])[1]
@@ -102,7 +103,7 @@ if (TRUE) {
 
   distKidsAtDeathLuckieR = calcDistLROPostBreeding (Plist, Flist, Q,
                                                     c0, maxClutchSize,
-                                                    "Poisson")
+                                                    maxLRO, "Poisson")
 }
 
   ## Without the fake 2nd environment #######

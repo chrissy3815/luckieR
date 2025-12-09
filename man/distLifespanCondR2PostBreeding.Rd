@@ -10,6 +10,7 @@ distLifespanCondR2PostBreeding(
   Q,
   c0,
   maxClutchSize,
+  maxLRO,
   maxAge,
   percentileCutoff = 0.99,
   Fdist = "Poisson"
@@ -30,6 +31,8 @@ transitioning from environment j to environment i.}
 the probability that an individual is born in state j}
 
 \item{maxClutchSize}{The maximum clutch size to consider}
+
+\item{maxLRO}{The maximum LRO to consider}
 
 \item{maxAge}{The maximum attainable age}
 
@@ -79,8 +82,9 @@ Plist = list (P1, P2)
 Flist = list (F1, F2)
 Q = matrix (1/2, 2, 2)
 c0 = c(1,0,0)
-maxClutchSize = 20
+maxClutchSize = 12
 maxAge=20
+maxLRO = 30
 out = distLifespanCondR2PostBreeding (Plist, Flist, Q, c0,
-  maxClutchSize, maxAge)
+  maxClutchSize, maxLRO, maxAge)
 }

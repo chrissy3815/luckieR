@@ -28,7 +28,7 @@ the probability that an individual is born in state j}
 "Poisson" and "Bernoulli".  Optional.  The default value is "Poisson".}
 }
 \value{
-Distribution blah blah
+@return The distribution of lifetime reproductive output
 }
 \description{
 Calculates the distribution of lifetime reproductive output (LRO) the

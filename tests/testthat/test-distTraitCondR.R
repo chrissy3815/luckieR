@@ -9,7 +9,8 @@ Q = matrix (1/2, 2, 2)
 c0 = c(1,0,0)
 test_that("distLifespanCondR2 works with Poisson dist. clutch sizes", {  
   expect_snapshot (
-      distLifespanCondR2 (Plist, Flist, Q, c0, maxClutchSize=20,
+      distLifespanCondR2 (Plist, Flist, Q, c0, maxClutchSize=12,
+                          maxLRO=20,
                           maxAge=20) 
   )
 })
@@ -24,7 +25,9 @@ Q = matrix (1/2, 2, 2)
 c0 = c(1,0,0)
 test_that("distLifespanCondR2 works with Bernoulli dist. clutch sizes", {  
   expect_snapshot (
-      distLifespanCondR2 (Plist, Flist, Q, c0, maxClutchSize=1, maxAge=20,
+      distLifespanCondR2 (Plist, Flist, Q, c0, maxClutchSize=1,
+                          maxAge=12,
+                          maxLRO=20,
                           percentileCutoff=0.95,
                           Fdist="Bernoulli")
   )
@@ -39,15 +42,16 @@ Q = matrix (1/2, 2, 2)
 ##c0 = c(1,0)
 c0 = c(1,0,0)
 maxClutchSize = 5
+maxLRO=5
 maxAge=3
-correctLRODist = (1 - 0.25)*c(1, rep(0, maxClutchSize)) +
-  0.25*dpois(0:maxClutchSize,0.8)
+correctLRODist = (1 - 0.25)*c(1, rep(0, maxLRO)) +
+  0.25*dpois(0:maxLRO,0.8)
 ## Correct for truncating the clutch size
-correctLRODist[maxClutchSize+1] = 1 - sum(correctLRODist[1:maxClutchSize])
+correctLRODist[maxLRO+1] = 1 - sum(correctLRODist[1:maxLRO])
 
 test_that("calcDistLRO works with Poisson-dist. clutch sizes", {  
   expect_equal (
-      calcDistLROPostBreeding (Plist, Flist, Q, c0, maxClutchSize),
+      calcDistLROPostBreeding (Plist, Flist, Q, c0, maxClutchSize,maxLRO),
       correctLRODist
   )
 })
@@ -60,7 +64,7 @@ correctLRODist[maxClutchSize+1] = 1 - sum(correctLRODist[1:maxClutchSize])
 test_that("calcDistLRO works with Poisson-dist. clutch sizes", {  
   expect_equal (
       calcDistLROPostBreeding (Plist, Flist, Q, c0, maxClutchSize,
-                               "Bernoulli"),
+                               maxLRO, "Bernoulli"),
       correctLRODist
   )
 })
