@@ -14,6 +14,7 @@
 #' @param c0 A vector specifying the offspring state distribution:
 #'   c0\[j\] is the probability that an individual is born in state j
 #' @param maxClutchSize The maximum clutch size to consider
+#' @param maxLRO The maximum LRO to consider
 #' @param maxAge The maximum attainable age
 #' @param percentileCutoff A value between 0 and 1.  Calculations are
 #'   performed for values of LRO out to this percentile.  Optional.
@@ -55,17 +56,19 @@
 #' Flist = list (F1, F2)
 #' Q = matrix (1/2, 2, 2)
 #' c0 = c(1,0,0)
-#' maxClutchSize = 20
+#' maxClutchSize = 12
+#' maxLRO = 30
 #' maxAge=20
-#' out = distLifespanCondR2 (Plist, Flist, Q, c0, maxClutchSize, maxAge)
+#' out = distLifespanCondR2 (Plist, Flist, Q, c0, maxClutchSize,
+#'   maxLRO, maxAge)
 distLifespanCondR2 = function (Plist, Flist, Q,
-                               c0, maxClutchSize, maxAge,
+                               c0, maxClutchSize, maxLRO, maxAge,
                                percentileCutoff = 0.99,
                                Fdist="Poisson") {
   ## tolerance for error checking.  0.001 = 0.1% tolerance
   percentTol = 0.001
 
-  mT = maxClutchSize + 1
+  mT = maxLRO + 1
   mA = maxAge + 1
 
   mz = dim(Plist[[1]])[1]
@@ -363,6 +366,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
 #' @param c0 A vector specifying the offspring state distribution: c0\[j\] is
 #'   the probability that an individual is born in state j
 #' @param maxClutchSize The maximum clutch size to consider
+#' @param maxLRO The maximum LRO to consider
 #' @param maxAge The maximum attainable age
 #' @param percentileCutoff A value between 0 and 1.  Calculations are performed
 #'   for values of LRO out to this percentile.  Optional. The default value is
@@ -402,18 +406,19 @@ distLifespanCondR2 = function (Plist, Flist, Q,
 #' Flist = list (F1, F2)
 #' Q = matrix (1/2, 2, 2)
 #' c0 = c(1,0,0)
-#' maxClutchSize = 20
+#' maxClutchSize = 12
 #' maxAge=20
+#' maxLRO = 30
 #' out = distLifespanCondR2PostBreeding (Plist, Flist, Q, c0,
-#'   maxClutchSize, maxAge)
+#'   maxClutchSize, maxLRO, maxAge)
 distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
-                                           c0, maxClutchSize, maxAge,
+                                           c0, maxClutchSize, maxLRO, maxAge,
                                            percentileCutoff = 0.99,
                                            Fdist="Poisson") {
   ## tolerance for error checking.  0.001 = 0.1% tolerance
   percentTol = 0.001
 
-  mT = maxClutchSize + 1
+  mT = maxLRO + 1
   mA = maxAge + 1
 
   mz = dim(Plist[[1]])[1]
@@ -983,14 +988,16 @@ calcDistLRO = function (Plist, Flist, Q,
 #' Q = matrix (1/2, 2, 2)
 #' c0 = c(1,0,0)
 #' maxClutchSize = 10
-#' out = calcDistLROPostBreeding (Plist, Flist, Q, c0, maxClutchSize)
+#' maxLRO = 30
+#' out = calcDistLROPostBreeding (Plist, Flist, Q, c0, maxClutchSize,
+#'   maxLRO) 
 calcDistLROPostBreeding = function (Plist, Flist, Q,
-                                    c0, maxClutchSize,
+                                    c0, maxClutchSize, maxLRO,
                                     Fdist="Poisson") {
   mz = dim(Plist[[1]])[1]
   numEnv = dim(Q)[1]
   bigmz = numEnv*mz
-  mT = maxClutchSize + 1
+  mT = maxLRO + 1
 
   ## Sanity check input
   if (Fdist == "Bernoulli") {
@@ -1158,6 +1165,135 @@ probTraitCondLRO = function (PlistAllTraits, FlistAllTraits, Q,
     probRCondX[,x] = calcDistLRO (Plist, Flist, Q,
                                   c0, maxClutchSize, maxLRO,
                                   Fdist)
+  }
+  ## Sanity check
+  epsilon = 0.00001
+  foo1 = colSums(probRCondX)
+  foo2 = rep (1, ncol(probRCondX))
+  if (max(abs(range (foo1 - foo2))) > epsilon)
+    warning ("Columns of probRCondX should sum to 1 and they don't.")
+
+  ## Now use Bayes thm to get P(X | R). ################
+
+  ## Get joint probability P(R, X)
+  probRAndX = matrix (0, mT, numTraits)
+  for (i in 1:numTraits)
+    ## joint probability P(R, X) = P(R | X) P(X).
+    probRAndX[,i] = probRCondX[,i] * traitDist[i]
+
+  ## Marginalize over X to get P(R)
+  probR = apply (probRAndX, 1, sum)
+  if (abs(sum(probR) - 1) > epsilon)
+    warning ("Pr(R) does not sum to 1.")
+
+  ## Condition on R
+  for (x in 1:numTraits)
+    probXCondR[,x] = probRAndX[,x]/probR
+
+  return (list(probXCondR=probXCondR,
+               probR=probR, probRCondX=probRCondX))
+}
+
+#' Distribution of a trait conditional on LRO
+#'
+#' Calculates Prob(X | R), where X is a trait value and R is lifetime
+#' reproductive output (LRO), for a post-breeding census model.
+#' @param PlistAllTraits A list of lists of survival/growth transition
+#'   matrices. Plist\[\[x\]\]\[\[q\]\]\[i,j\] is the probability of
+#'   transitioning from state j to state i in environment q when an
+#'   individual has trait x.
+#' @param FlistAllTraits A list of lists of fecundity  matrices.
+#'   Flist\[\[x\]\]\[\[q\]\]\[i,j\] is the expected number of state i
+#'   offspring from a state j, trait x parent in environment q.
+#' @param Q The environment transition matrix.  Q\[i,j\] is the
+#'   probability of transitioning from environment j to environment
+#'   i.
+#' @param c0 A vector specifying the offspring state distribution:
+#'   c0\[j\] is the probability that an individual is born in state j
+#' @param maxClutchSize The maximum clutch size to consider
+#' @param maxLRO The maximum LRO to consider
+#' @param traitDist A vector whose jth entry is the unconditional
+#' probability that the trait takes on the jth value
+#' @param Fdist The clutch size distribution.  The recognized options
+#'   are "Poisson" and "Bernoulli".  Optional.  The default value is
+#'   "Poisson".
+#'
+#' @details The details of this calculation can be found in Robin
+#' E. Snyder and Stephen P. Ellner.  2018.  "Pluck or Luck: Does Trait
+#' Variation or Chance Drive Variation in Lifetime Reproductive
+#' Success?"  The American Naturalist 191(4).  DOI:
+#' 10.1086/696125
+#'
+#' @return A list containing the following:
+#' * probXCondR: a matrix whose i,jth component is the probability
+#' that the trait has the jth value given that LRO = i-1
+#' * probR: A vector whose jth entry is the unconditional probability
+#' that LRO = j-1
+#' * probRCondX: A matrix whose i,jth entry is the probability that
+#' LRO = i-1 given that the trait takes the jth value.
+#' @export
+#'
+#' @examples
+#' PlistAllTraits = FlistAllTraits = list ()
+#' P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' P2 = 0.9*P1
+#' PlistAllTraits[[1]] = list (P1, P2)
+#' P1 = matrix (c(0, 0.5, 0, 0, 0, 0.2, 0, 0, 0.7), 3, 3)
+#' P2 = 0.9*P1
+#' PlistAllTraits[[2]] = list (P1, P2)
+#' F1 = matrix (0, 3, 3); F1[1,] = 0:2
+#' F2 = 0.8*F1
+#' FlistAllTraits[[1]] = list (F1, F2)
+#' F1 = matrix (0, 3, 3); F1[1,] = 0.9*(0:2)
+#' F2 = 1.1*F1
+#' FlistAllTraits[[2]] = list (F1, F2)
+#' Q = matrix (1/2, 2, 2)
+#' c0 = c(1,0,0)
+#' traitDist = rep(0.5, 2)
+#' out = probTraitCondLROPostBreeding (PlistAllTraits, FlistAllTraits, Q,
+#'       c0, maxClutchSize=10, maxLRO=15, traitDist)
+probTraitCondLROPostBreeding = function (PlistAllTraits, FlistAllTraits, Q,
+                             c0, maxClutchSize, maxLRO,
+                             traitDist,
+                             Fdist="Poisson") {
+  numTraits = length (PlistAllTraits)
+  mT = maxLRO + 1
+
+  ## u0 is the stationary environmental distribution, given by the
+  ## dominant eigenvector of Q
+  u0 = eigen(Q)$vectors[,1]
+  u0 = u0 / sum(u0)
+
+  mz = dim(PlistAllTraits[[1]][[1]])[1]
+  numEnv = dim(Q)[1]
+  bigmz = numEnv*mz
+
+  ## Sanity check input
+  if (Fdist == "Bernoulli") {
+    for (x in 1:numTraits) {
+      for (q in 1:numEnv)
+        if (sum(colSums(FlistAllTraits[[x]][[q]]) > 1))
+          stop("Probability of having an offspring > 1!  Columns of fecundity matrix in environment ",
+               q, " with trait ", x," sum to > 1 but clutch size is Bernoulli-distributed.")
+    }
+  }
+
+  ## m0 is the stationary state cross-classified by size and
+  ## environment
+  m0 = matrix (outer (c0, as.vector(u0)), bigmz, 1)
+
+  ## P(LRO | trait value) for each trait value
+  probRCondX = matrix (0, mT, numTraits)
+  ## P(trait value | LRO)
+  probXCondR = matrix (0, mT, numTraits)
+
+  for (x in 1:numTraits) {
+    cat ("Trait", x, "...\n")
+    Plist = PlistAllTraits[[x]]
+    Flist = FlistAllTraits[[x]]
+    probRCondX[,x] = calcDistLROPostBreeding (Plist, Flist, Q,
+                                              c0, maxClutchSize, maxLRO,
+                                              Fdist)
   }
   ## Sanity check
   epsilon = 0.00001
