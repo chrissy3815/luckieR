@@ -1,9 +1,11 @@
 Package: luckieR
 Title: Calculations for Luck (Individual Stochasticity) in Structured Population Models
 Version: 0.0.0.9000
-Authors@R: 
-    person("Robin", "Snyder", , "first.last@example.com", role = c("aut", "cre"),
-    person("Christina", "Hernandez", "christinahernan@gmail.com", role=c("aut", "cre")))
+Authors@R: c(
+    person("Robin", "Snyder", , "first.last@example.com", role = c("aut", "cre")),
+    person("Christina", "Hernandez", , "christinahernan@gmail.com", role=c("aut"))
+    )
+Maintainer: Christina Hernandez <christinahernan@gmail.com>
 Description: What the package does (one paragraph).
 License: MIT + file LICENSE
 Encoding: UTF-8

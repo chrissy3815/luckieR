@@ -410,6 +410,7 @@ partitionVarSkewnessNoEnvVar = function (P, F, c0, maxAge=100,
 #'   entry contains the contribution to LRO skewness from fecundity luck at age
 #'   j-1.  * totSkewness: the total skewness in LRO * lifespan: the age by which
 #'   a proportion survThreshold of a cohort will be dead
+#' @importFrom Matrix bdiag
 #' @export
 #'
 #' @examples
@@ -907,6 +908,7 @@ partitionVarSkewnessEnvVar = function (Plist, Flist, Q, c0,
 #'   at age j-1.
 #' * lifespanCondX: a vector whose jth entry is the age by which
 #'   survThreshold proportion of a cohort with trait j would be dead
+#' @importFrom Matrix bdiag
 #' @export
 #'
 #' @examples
@@ -1694,6 +1696,7 @@ partitionVarSkewnessNoEnvVarPostBreeding = function (P, F, c0, maxAge=100,
 #' * totSkewness: the total skewness in LRO
 #' * lifespan: the age by which a proportion survThreshold of a
 #'   cohort will be dead
+#' @importFrom Matrix bdiag
 #' @export
 #'
 #' @examples
