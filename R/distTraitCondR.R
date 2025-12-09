@@ -809,6 +809,10 @@ calcDistLRO = function (Plist, Flist, Q,
   ## The columns of B should sum to 1.
   B = mk_B (F, maxClutchSize, Fdist)
 
+  ## Let user decide if the level of eviction is acceptable
+  message("calcDistLRO: checking clutch size distribution sums.  min(colSums(B)) = ",
+          min(colSums(B)), "and would ideally be 1.\n")
+
   ## Construct A, the transition matrix for a (number of kids) x stage x
   ## env. model.
   out = make_AxT (B, M, mT)
@@ -1017,6 +1021,10 @@ calcDistLROPostBreeding = function (Plist, Flist, Q,
   ## B[i,j] is the probability that a class-j individual has i-1 kids.
   ## The columns of B should sum to 1.
   B = mk_BPostBreeding (M, F, maxClutchSize, Fdist)
+
+  ## Let user decide if the level of eviction is acceptable
+  message("calcDistLRO: checking clutch size distribution sums.  min(colSums(B)) = ",
+          min(colSums(B)), "and would ideally be 1.\n")
 
   ## Construct A, the transition matrix for a (number of kids) x stage x
   ## env. model.
