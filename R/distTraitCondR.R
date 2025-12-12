@@ -235,7 +235,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
   R99 = which (cumDistKidsAtDeath > 0.99)[1]
   RCutoff = which (cumDistKidsAtDeath > percentileCutoff)[1]
   if (RCutoff > maxClutchSize)
-    stop ("RCutoff = ", RCutoff, "but maxClutchSize = ", maxClutchSize, "\n")
+    stop ("RCutoff = ", RCutoff, "but maxLRO = ", maxLRO, "\n")
 
   probLifespanCondR = matrix (0, RCutoff+2, mA)
   probThresholdOrMore = matrix (0, RCutoff+2, esmzA)
@@ -451,7 +451,7 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
   
   ## B[i,j] is the probability that a class-j individual has i-1 kids.
   ## We assume Poisson-distributed number of offspring.
-  ## The columns of B should sum to 1 and they do.
+  ## The columns of B should sum to 1.
   B = mk_BPostBreeding (M, F, maxClutchSize, Fdist)
   
   ## Construct A, the transition matrix for a (number of kids) x stage x
@@ -466,8 +466,8 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
   R90 = which (cumDistKidsAtDeath > 0.9)[1]
   R99 = which (cumDistKidsAtDeath > 0.99)[1]
   RCutoff = which (cumDistKidsAtDeath > percentileCutoff)[1]
-  if (RCutoff > maxClutchSize)
-    stop ("RCutoff = ", RCutoff, "but maxClutchSize = ", maxClutchSize, "\n")
+  if (RCutoff > maxLRO)
+    stop ("RCutoff = ", RCutoff, "but maxLRO = ", maxLRO, "\n")
 
   probLifespanCondR = matrix (0, RCutoff+2, mA)
   probThresholdOrMore = matrix (0, RCutoff+2, mzA)
@@ -1312,7 +1312,7 @@ distLifespanCondR2NoEnv = function (P, F, c0, maxClutchSize,
 #' maxAge=20
 #' maxLRO = 30
 #' out = distLifespanCondR2PostBreedingNoEnv (P, F, c0, maxClutchSize,
-#'   maxLRO, maxAge) 
+#'   maxLRO, maxAge)
 distLifespanCondR2PostBreedingNoEnv = function (P, F,
                                            c0, maxClutchSize, maxLRO, maxAge,
                                            percentileCutoff = 0.99,
@@ -1492,7 +1492,7 @@ calcDistLROPostBreedingNoEnv = function (P, F, c0, maxClutchSize, maxLRO,
 #' P2 = matrix (c(0, 0.5, 0, 0, 0, 0.2, 0, 0, 0.7), 3, 3)
 #' Plist = list(P1, P2)
 #' F1 = matrix (0, 3, 3); F1[1,] = 0:2
-#' F2 = matrix (0, 3, 3); F1[1,] = 0.9*(0:2)
+#' F2 = matrix (0, 3, 3); F2[1,] = 0.9*(0:2)
 #' Flist = list (F1, F2)
 #' c0 = c(1,0,0)
 #' traitDist = rep(0.5, 2)
@@ -1514,5 +1514,79 @@ probTraitCondLRONoEnv = function (PlistAllTraits, FlistAllTraits,
 
   out = probTraitCondLRO (PlistAllTraits, FlistAllTraits, Q,
                           c0, maxClutchSize=10, maxLRO=15, traitDist)
+  return (out)
+}
+
+#' Distribution of a trait conditional on LRO
+#'
+#' Calculates Prob(X | R), where X is a trait value and R is lifetime
+#' reproductive output (LRO), for a post-breeding census model in the
+#' absence of environmental variation
+#' @param PlistAllTraits A list of lists of survival/growth transition
+#'   matrices. Plist\[\[x\]\]\[\[q\]\]\[i,j\] is the probability of
+#'   transitioning from state j to state i in environment q when an
+#'   individual has trait x.
+#' @param FlistAllTraits A list of lists of fecundity  matrices.
+#'   Flist\[\[x\]\]\[\[q\]\]\[i,j\] is the expected number of state i
+#'   offspring from a state j, trait x parent in environment q.
+#' @param Q The environment transition matrix.  Q\[i,j\] is the
+#'   probability of transitioning from environment j to environment
+#'   i.
+#' @param c0 A vector specifying the offspring state distribution:
+#'   c0\[j\] is the probability that an individual is born in state j
+#' @param maxClutchSize The maximum clutch size to consider
+#' @param maxLRO The maximum LRO to consider
+#' @param traitDist A vector whose jth entry is the unconditional
+#' probability that the trait takes on the jth value
+#' @param Fdist The clutch size distribution.  The recognized options
+#'   are "Poisson" and "Bernoulli".  Optional.  The default value is
+#'   "Poisson".
+#'
+#' @details The details of this calculation can be found in Robin
+#' E. Snyder and Stephen P. Ellner.  2018.  "Pluck or Luck: Does Trait
+#' Variation or Chance Drive Variation in Lifetime Reproductive
+#' Success?"  The American Naturalist 191(4).  DOI:
+#' 10.1086/696125
+#'
+#' @return A list containing the following:
+#' * probXCondR: a matrix whose i,jth component is the probability
+#' that the trait has the jth value given that LRO = i-1
+#' * probR: A vector whose jth entry is the unconditional probability
+#' that LRO = j-1
+#' * probRCondX: A matrix whose i,jth entry is the probability that
+#' LRO = i-1 given that the trait takes the jth value.
+#' @export
+#'
+#' @examples
+#' P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' P2 = matrix (c(0, 0.5, 0, 0, 0, 0.2, 0, 0, 0.7), 3, 3)
+#' PlistAllTraits = list (P1, P2)
+#' F1 = matrix (0, 3, 3); F1[1,] = 0:2
+#' F2 = matrix (0, 3, 3); F2[1,] = 0.9*(0:2)
+#' FlistAllTraits = list (F1, F2)
+#' c0 = c(1,0,0)
+#' traitDist = rep(0.5, 2)
+#' out = probTraitCondLROPostBreedingNoEnv (PlistAllTraits, FlistAllTraits, Q,
+#'       c0, maxClutchSize=10, maxLRO=15, traitDist)
+probTraitCondLROPostBreedingNoEnv =
+  function (PlistAllTraits, FlistAllTraits, 
+            c0, maxClutchSize, maxLRO,
+            traitDist,
+            Fdist="Poisson") {
+
+  P1list = list(Plist[[1]])
+  P2list = list(Plist[[2]])
+  PlistAllTraits = list(P1list, P2list)
+  
+  F1list = list(Flist[[1]])
+  F2list = list(Flist[[2]])
+  FlistAllTraits = list (F1list, F2list)
+
+  Q = matrix (1, 1, 1)
+
+  out = probTraitCondLROPostBreeding (PlistAllTraits, FlistAllTraits, Q,
+                                      c0, maxClutchSize=10, maxLRO=15,
+                                      traitDist)
+
   return (out)
 }
