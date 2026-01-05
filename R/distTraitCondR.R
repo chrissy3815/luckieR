@@ -331,7 +331,12 @@ distLifespanCondR2 = function (Plist, Flist, Q,
     meanLifespanCondR[k] = sum((1:mA)*probLifespanCondR[k,])
     varLifespanCondR = sum((1:mA)^2*probLifespanCondR[k,]) -
       meanLifespanCondR[k]^2
-    sdLifespanCondR[k] = sqrt(varLifespanCondR)
+    if (abs(varLifespanCondR) < 1.0e-8) {
+      ## Don't let sd be NaN if var is some miniscule negative number.
+      sdLifespanCondR[k] = 0
+    } else {
+      sdLifespanCondR[k] = sqrt(varLifespanCondR)
+    }
     CVLifespanCondR[k] = sdLifespanCondR[k] / meanLifespanCondR[k]
   }
 
@@ -563,7 +568,12 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
     meanLifespanCondR[k] = sum((1:mA)*probLifespanCondR[k,])
     varLifespanCondR = sum((1:mA)^2*probLifespanCondR[k,]) -
       meanLifespanCondR[k]^2
-    sdLifespanCondR[k] = sqrt(varLifespanCondR)
+    if (abs(varLifespanCondR) < 1.0e-8) {
+      ## Don't let sd be NaN if var is some miniscule negative number.
+      sdLifespanCondR[k] = 0
+    } else {
+      sdLifespanCondR[k] = sqrt(varLifespanCondR)
+    }
     CVLifespanCondR[k] = sdLifespanCondR[k] / meanLifespanCondR[k]
   }
 
