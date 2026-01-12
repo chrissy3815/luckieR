@@ -447,6 +447,110 @@ makePCondBreedDef3 = function (P, F, c0) {
   return (out)
 }
 
+#' Utility function for calculating a kernel conditional on having LRO
+#' meeting or exceeding a threshold
+#'
+#' Calculates the transition kernel conditional on producing at least
+#'   threshold offspring over the course of a life, as well as related
+#'   quantites.
+#' @param M the unconditional survival/growth transition matrix.
+#'   M\[i,j\] is the probability of surviving and transitioning from
+#'   state j to state i.
+#' @param F the fecundity matrix.  F\[i,j\] is the expected number of
+#'   size i offspring from a size j parent.
+#' @param threshold the number of offspring LRO should meet or exceed
+#' @param m0 the state distribution of offspring
+#' @param maxLRO the maximum LRO is consider.  Optional, with a
+#'   default value of 12.
+#' @param maxClutchSize the maximum number of offspring born in one
+#'   reproductive bout.  Optional, with a default value of 12.
+#' @param Fdist the clutch size distribution.  Currently supported values are
+#'   "Poisson" and "Bernoulli."  Optional, with a default value of "Poisson".
+#'
+#' @return A list containing the following.  All matrices and vectors
+#'   are defined over an extended size distribution: if there are n
+#'   sizes/stages, states 1--n are those sizes with no offspring yet,
+#'   states n+1--2n are those sizes with the first offspring
+#'   produced in the current year, and states 2n+1--3n are those sizes
+#'   having produced at least one offspring in some past year.  See
+#'   Details.
+#' * ACondSucceed: the a size x #kids or size x env x #kids transition
+#'   matrix conditional on reaching the LRO threshold before dying
+#' * probSucceedCondZ: a vector whose jth entry is the probability
+#'   of reaching the threshold before dying, conditional on beginning
+#'   in size/stage j 
+#' * m0CondSucceed: the offspring state distribution conditional
+#'   on reaching the offspring reaching the threshold before dying.
+#' @export
+#'
+#' @details To do this calculation, we extend the state space so that
+#'   number of offspring is added to the state definition, and all
+#'   outputs are given for this extended state space.  For
+#'   example, if the original state space was (size 1, size 2),
+#'   the new state space is (size 1, 0 offspring; size 2, 0 offspring;
+#'   size 1, 1 offspring; size 2, 1 offspring, ...) up to #offspring =
+#'   maxLRO.  
+#' @examples
+#' M = 
+#' threshold = 2
+#' m0 = c(1, 0, 0)
+#' out = 
+makeMCondLROThreshold = function (M, F, threshold, m0, maxLRO=12,
+                                  maxClutchSize=12, Fdist="Poisson") {
+  bigmz = dim(M)[1]
+
+  ## Sanity check input
+  if (Fdist == "Bernoulli") {
+    if (sum(colSums(F) > 1))
+      stop("Probability of having an offspring > 1!  Columns of fecundity matrix sum to > 1 but clutch size is Bernoulli-distributed.")
+  }
+
+  ## Sanity check input
+  if (length(m0) != bigmz)
+    stop ("Length of m0 does not match dimension of M")
+
+  ## Sanity check input
+  if (dim(F)[1] != bigmz)
+    stop ("M and F should have the same dimensions.")
+  
+  ## B[i,j] is the probability that a class-j individual has i-1 kids.
+  ## We assume Poisson-distributed number of offspring.
+  ## The columns of B should sum to 1.
+  B = mk_B (F, maxClutchSize, Fdist)
+  message ("The column sums of B have a range of", range(colSums(B)),
+           " and we hope these are close to 1.\n")
+
+  ## Construct A, the transition matrix for a (number of kids) x stage x
+  ## env. model.
+  mT = maxLRO + 1
+  out = make_AxT (B, M, mT)
+  A = out$A
+  mzA = bigmz*mT
+  message ("Finished making A.\n")
+
+  ## a0 is the initial state cross-classified by size and environment
+  ## and #kids
+  a0 = rep (0, mzA)
+  a0[1:bigmz] = m0
+  
+  transientStates = 1:(bigmz*threshold)
+  out = makeCondKernel (A, transientStates)
+  ACondSucceed = out$MCond
+  probSucceedCondZ = out$q2Extended
+  probSucceed = sum(probSucceedCondZ * a0)
+
+  ## Joint probability of starting in state z and hitting the threshold
+  jointProbSucceedAndZ = a0 * probSucceedCondZ
+  ## Initial state conditional on hitting the threshold
+  a0CondSucceed = jointProbSucceedAndZ / probSucceed
+
+  return (out = list(ACondSucceed=ACondSucceed,
+                     probSucceedCondZ=probSucceedCondZ,
+                     probSucceed=probSucceed,
+                     a0CondSucceed=a0CondSucceed))
+}
+
+
 ## Useful for getting modal time to first reproduction when states are
 ## defined by reproductive status.
 getModalTimeToHitState = function (absorbingStates,

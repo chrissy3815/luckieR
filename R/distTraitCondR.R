@@ -683,7 +683,7 @@ calcDistLRO = function (Plist, Flist, Q,
 
   ## Let user decide if the level of eviction is acceptable
   message("calcDistLRO: checking clutch size distribution sums.  min(colSums(B)) = ",
-          min(colSums(B)), "and would ideally be 1.\n")
+          round(min(colSums(B)), digits=3), " and would ideally be 1.\n")
 
   ## Construct A, the transition matrix for a (number of kids) x stage x
   ## env. model.
