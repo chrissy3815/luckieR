@@ -33,5 +33,6 @@ post-breeding census
 \examples{
 F = matrix (c(0,0,0, 0.5,0,0, 0,0,0), 3, 3)
 M = matrix (c(0,0.5,0, 0,0,0.5, 0,0,0), 3, 3)
+maxClutchSize=10
 out = mk_BPostBreeding (M, F, maxClutchSize, Fdist="Bernoulli")
 }

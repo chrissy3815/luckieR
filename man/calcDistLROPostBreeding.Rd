@@ -71,6 +71,5 @@ Q = matrix (1/2, 2, 2)
 c0 = c(1,0,0)
 maxClutchSize = 10
 maxLRO = 30
-out = calcDistLROPostBreeding (Plist, Flist, Q, c0, maxClutchSize,
-  maxLRO)
+out = calcDistLROPostBreeding(Plist, Flist, Q, c0, maxClutchSize, maxLRO)
 }

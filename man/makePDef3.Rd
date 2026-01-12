@@ -33,7 +33,7 @@ offspring ("definition 3").
 \examples{
 P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 F = matrix (0, 3, 3); F[1,] = 0:2
-out = makePCondBreedDef3 (P, F)
+out = makePDef3 (P, F)
 }
 \seealso{
 \link{makePCondBreedDef3}, which calls this function

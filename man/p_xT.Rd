@@ -8,11 +8,11 @@ matrices}
 p_xT(l, i, j, B, M)
 }
 \arguments{
-\item{l}{the value of total \#kids in the next time step}
+\item{l}{the value of total #kids in the next time step}
 
 \item{i}{the current state}
 
-\item{j}{the current total \#kids}
+\item{j}{the current total #kids}
 
 \item{B}{The clutch size distribution matrix, where B[m,n] is the
 probability that a size n parent produces m-1 offspring in a

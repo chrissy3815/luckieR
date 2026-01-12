@@ -25,7 +25,7 @@ B = mk_B (F, Fdist="Bernoulli")
 mT = 6
 out = make_AxT (B, M, mT)
 A = out$A
-K = unfold (A, dim=c(3,6,3,6)  ## should equal out$K
+K = unfold (A, dim=c(3,6,3,6))  ## should equal out$K
 }
 \seealso{
 flatten, make_AxT

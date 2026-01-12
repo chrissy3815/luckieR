@@ -57,9 +57,9 @@ unvec <- function(nvec,nrow=NULL,ncol=NULL){
 #' F = matrix (0, 3, 3); F[1,] = 0.1*(0:2)
 #' B = mk_B (F, Fdist="Bernoulli")
 #' mT = 6
-#' out = make_AxT (B, M, mT)
+#' out = make_AxT(B, M, mT)
 #' K = out$K
-#' A = flatten (out$K) ## should equal out$A
+#' A = flatten(out$K) ## should equal out$A
 flatten <- function(A4) {
 	dim(A4)<-rep(sqrt(length(A4)),2)
 	return(A4)
@@ -84,7 +84,7 @@ flatten <- function(A4) {
 #' mT = 6
 #' out = make_AxT (B, M, mT)
 #' A = out$A
-#' K = unfold (A, dim=c(3,6,3,6)  ## should equal out$K
+#' K = unfold (A, dim=c(3,6,3,6))  ## should equal out$K
 unfold <- function(A2,dim) {
     dim(A2) <- dim;
     return(A2)
@@ -152,6 +152,7 @@ mk_B = function (F, maxKids=20, Fdist="Poisson") {
 #' @examples
 #' F = matrix (c(0,0,0, 0.5,0,0, 0,0,0), 3, 3)
 #' M = matrix (c(0,0.5,0, 0,0,0.5, 0,0,0), 3, 3)
+#' maxClutchSize=10
 #' out = mk_BPostBreeding (M, F, maxClutchSize, Fdist="Bernoulli")
 mk_BPostBreeding = function (M, F, maxKids=20, Fdist="Poisson") {
   bigmz = ncol(F)
@@ -198,9 +199,9 @@ mk_BPostBreeding = function (M, F, maxKids=20, Fdist="Poisson") {
 #' and growth or survival and growth and environment transition matrix
 #' (M), and compute the transition probabilities from size-class i and
 #' j total kids, to all size classes and l total kids.
-#' @param l the value of total \#kids in the next time step
+#' @param l the value of total #kids in the next time step
 #' @param i the current state
-#' @param j the current total \#kids
+#' @param j the current total #kids
 #' @param B The clutch size distribution matrix, where B\[m,n\] is the
 #'   probability that a size n parent produces m-1 offspring in a
 #'   single reproductive bout
@@ -239,10 +240,10 @@ p_xT <- function(l, i, j, B, M) {
 ## values of T in the matrix stay there, but continue to grow/shrink/die
 #############################################################################
 
-#' Make the size x \#kids transition matrix
+#' Make the size x #kids transition matrix
 #'
-#' Makes the 2-dim iteration matrix A for a size x \#kids model, where
-#' \#kids is the total number of offspring to date.
+#' Makes the 2-dim iteration matrix A for a size x #kids model, where
+#' #kids is the total number of offspring to date.
 #' @param B The clutch size distribution matrix, where B\[m,n\] is the
 #'   probability that a size n parent produces m-1 offspring in a
 #'   single reproductive bout
@@ -250,8 +251,8 @@ p_xT <- function(l, i, j, B, M) {
 #'   quantity, such as size or life history stage, or can be
 #'   cross-classified, such as size x environment.  M\[i,j\] is the
 #'   probability of transitioning from state j to state i.
-#' @param mT The dimension of the \#kids part of the 4-d array.
-#' I.e. the maximum \#kids is mT-1.
+#' @param mT The dimension of the #kids part of the 4-d array.
+#' I.e. the maximum #kids is mT-1.
 #' @details Called by distLifespanCondR2 and calcDistLRO.
 #' @return A list containing
 #' * A: The 2-dim transition matrix for states cross-classified by size
@@ -260,12 +261,14 @@ p_xT <- function(l, i, j, B, M) {
 #' #kids, current size, current #kids).  K is modified so individuals
 #' who get to the maximum values of #kids in the matrix stay there,
 #' but continue to grow/shrink/die.
+#' @export
+#'
 #' @examples
 #' M = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' F = matrix (0, 3, 3); F[1,] = 0:2
 #' B = mk_B (F)
 #' mT = 20
-#' out = make_AxT (B, M, mT)
+#' out = make_AxT(B, M, mT)
 make_AxT <- function(B, M, mT) {
   bigmz=ncol(M); Kvals=array(0,c(bigmz,mT,bigmz,mT));
   for(z in 1:bigmz){ # initial size
@@ -320,6 +323,8 @@ make_AxT <- function(B, M, mT) {
 #'   env. 2, stage 1, ...), then environment is the slow state and
 #'   slowMatrix is the environment transition matrix.
 #' @return M, the transition matrix for the cross-classified state
+#' @export
+#'
 #' @examples
 #' P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' P2 = matrix (c(0, 0.2, 0, 0, 0, 0.3, 0, 0, 0.4), 3, 3)

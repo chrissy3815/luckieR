@@ -440,11 +440,11 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
   ## dominant eigenvector of Q
   u0 = eigen(Q)$vectors[,1]
   u0 = u0 / sum(u0)
-  
+
   ## m0 is the stationary state cross-classified by size and
   ## environment
   m0 = matrix (outer (c0, as.vector(u0)), bigmz, 1)
-  
+
   ## Define megamatrices M and F
   F = M = matrix (0, bigmz, bigmz)
   for (i in 1:numEnv) {
@@ -453,18 +453,18 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
       F[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Flist[[j]]*Q[i,j]
     }
   }
-  
+
   ## B[i,j] is the probability that a class-j individual has i-1 kids.
   ## We assume Poisson-distributed number of offspring.
   ## The columns of B should sum to 1.
   B = mk_BPostBreeding (M, F, maxClutchSize, Fdist)
-  
+
   ## Construct A, the transition matrix for a (number of kids) x stage x
   ## env. model.
   out = make_AxT (B, M, mT)
   A = out$A
   mzA = bigmz*mT
-  
+
   ## What threshold number of kids represents the 99th %ile of the LRO
   ## distribution?
   cumDistKidsAtDeath = cumsum (distKidsAtDeath)
@@ -555,7 +555,7 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
   ## Sanity check: passes if maxAge is large enough
   foo1 = apply (probLifespanCondR, 1, sum)
   foo2 = rep (1, nrow(probLifespanCondR))
-  
+
   if (max(abs(range(foo1 - foo2))) > epsilon)
     ##warning ("Rows of probLifespanCondR should sum to 1 and they
     ##don't.")
@@ -625,6 +625,7 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
 #'
 #' @return The distribution of lifetime reproductive output
 #' @importFrom Matrix bdiag
+#' @importFrom stats dpois dbinom
 #' @export
 #'
 #' @examples
@@ -845,8 +846,7 @@ calcDistLRO = function (Plist, Flist, Q,
 #' c0 = c(1,0,0)
 #' maxClutchSize = 10
 #' maxLRO = 30
-#' out = calcDistLROPostBreeding (Plist, Flist, Q, c0, maxClutchSize,
-#'   maxLRO)
+#' out = calcDistLROPostBreeding(Plist, Flist, Q, c0, maxClutchSize, maxLRO)
 calcDistLROPostBreeding = function (Plist, Flist, Q,
                                     c0, maxClutchSize, maxLRO,
                                     Fdist="Poisson") {
@@ -925,7 +925,7 @@ calcDistLROPostBreeding = function (Plist, Flist, Q,
 #'
 #' Calculates Prob(X | R), where X is a trait value and R is lifetime
 #' reproductive output (LRO) in the presence of environmental
-#' variation. 
+#' variation.
 #' @param PlistAllTraits A list of lists of survival/growth transition
 #'   matrices. Plist\[\[x\]\]\[\[q\]\]\[i,j\] is the probability of
 #'   transitioning from state j to state i in environment q when an
@@ -1198,7 +1198,7 @@ probTraitCondLROPostBreeding = function (PlistAllTraits, FlistAllTraits, Q,
 #'   state j to state i.
 #' @param F The fecundity matrix.  F\[i,j\]
 #'   is the expected number of state i offspring from a state j
-#'   parent. 
+#'   parent.
 #' @param c0 A vector specifying the offspring state distribution:
 #'   c0\[j\] is the probability that an individual is born in state j
 #' @param maxClutchSize The maximum clutch size to consider
@@ -1260,7 +1260,7 @@ distLifespanCondR2NoEnv = function (P, F, c0, maxClutchSize,
   Plist = list (P)
   Flist = list (F)
   Q = matrix (1, 1, 1)
-  
+
   out = distLifespanCondR2 (Plist, Flist, Q,
                             c0, maxClutchSize, maxLRO, maxAge,
                             percentileCutoff, Fdist)
@@ -1278,7 +1278,7 @@ distLifespanCondR2NoEnv = function (P, F, c0, maxClutchSize,
 #'   state j to state i.
 #' @param F The fecundity matrix.  F\[i,j\]
 #'   is the expected number of state i offspring from a state j
-#'   parent. 
+#'   parent.
 #' @param c0 A vector specifying the offspring state distribution: c0\[j\] is
 #'   the probability that an individual is born in state j
 #' @param maxClutchSize The maximum clutch size to consider
@@ -1374,7 +1374,7 @@ distLifespanCondR2PostBreedingNoEnv = function (P, F,
 #'   state j to state i.
 #' @param F The fecundity matrix.  F\[i,j\]
 #'   is the expected number of state i offspring from a state j
-#'   parent. 
+#'   parent.
 #' @param c0 A vector specifying the offspring state distribution: c0\[j\] is
 #'   the probability that an individual is born in state j
 #' @param maxClutchSize The maximum clutch size to consider
@@ -1432,7 +1432,7 @@ calcDistLRONoEnv = function (P, F, c0, maxClutchSize, maxLRO,
 #'   state j to state i.
 #' @param F The fecundity matrix.  F\[i,j\]
 #'   is the expected number of state i offspring from a state j
-#'   parent. 
+#'   parent.
 #' @param c0 A vector specifying the offspring state distribution: c0\[j\] is
 #'   the probability that an individual is born in state j
 #' @param maxClutchSize The maximum clutch size to consider
@@ -1465,7 +1465,7 @@ calcDistLROPostBreedingNoEnv = function (P, F, c0, maxClutchSize, maxLRO,
 #'
 #' Calculates Prob(X | R), where X is a trait value and R is lifetime
 #' reproductive output (LRO) in the absence of environmental
-#' variation. 
+#' variation.
 #' @param Plist A list of lists of survival/growth transition
 #'   matrices. Plist\[\[x\]\]\[i,j\] is the probability of
 #'   transitioning from state j to state i when an individual has trait x.
@@ -1515,7 +1515,7 @@ probTraitCondLRONoEnv = function (PlistAllTraits, FlistAllTraits,
   P1list = list(Plist[[1]])
   P2list = list(Plist[[2]])
   PlistAllTraits = list(P1list, P2list)
-  
+
   F1list = list(Flist[[1]])
   F2list = list(Flist[[2]])
   FlistAllTraits = list (F1list, F2list)
@@ -1579,7 +1579,7 @@ probTraitCondLRONoEnv = function (PlistAllTraits, FlistAllTraits,
 #' out = probTraitCondLROPostBreedingNoEnv (PlistAllTraits, FlistAllTraits, Q,
 #'       c0, maxClutchSize=10, maxLRO=15, traitDist)
 probTraitCondLROPostBreedingNoEnv =
-  function (PlistAllTraits, FlistAllTraits, 
+  function (PlistAllTraits, FlistAllTraits,
             c0, maxClutchSize, maxLRO,
             traitDist,
             Fdist="Poisson") {
@@ -1587,7 +1587,7 @@ probTraitCondLROPostBreedingNoEnv =
   P1list = list(Plist[[1]])
   P2list = list(Plist[[2]])
   PlistAllTraits = list(P1list, P2list)
-  
+
   F1list = list(Flist[[1]])
   F2list = list(Flist[[2]])
   FlistAllTraits = list (F1list, F2list)

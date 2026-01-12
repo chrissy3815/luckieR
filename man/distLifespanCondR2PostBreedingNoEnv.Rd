@@ -79,5 +79,5 @@ maxClutchSize = 12
 maxAge=20
 maxLRO = 30
 out = distLifespanCondR2PostBreedingNoEnv (P, F, c0, maxClutchSize,
-  maxLRO, maxAge) 
+  maxLRO, maxAge)
 }

@@ -303,7 +303,7 @@ calcMoments = function (M, R1, R2, R3) {
 #' @examples
 #' P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' F = matrix (0, 3, 3); F[1,] = 0:2
-#' out = makePCondBreedDef3 (P, F)
+#' out = makePDef3 (P, F)
 makePDef3 = function (P, F) {
   ## The number of original states
   mz = dim(P)[1]
@@ -372,12 +372,12 @@ makePDef3 = function (P, F) {
 #' DOI: https://doi.org/10.1086/712874.  It assumes that a breeder is
 #' an individual who has produced at least one offspring
 #' ("definition 3").
+#' @seealso [makePDef3], which this function calls
 #' @examples
 #' P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' F = matrix (0, 3, 3); F[1,] = 0:2
 #' c0 = c(1,0,0)
 #' out = makePCondBreedDef3 (P, F, c0)
-#' @seealso [makePDef3], which this function calls
 makePCondBreedDef3 = function (P, F, c0) {
   ## The number of original states
   mz = dim(P)[1]
@@ -478,7 +478,7 @@ makePCondBreedDef3 = function (P, F, c0) {
 #'   matrix conditional on reaching the LRO threshold before dying
 #' * probSucceedCondZ: a vector whose jth entry is the probability
 #'   of reaching the threshold before dying, conditional on beginning
-#'   in size/stage j 
+#'   in size/stage j
 #' * m0CondSucceed: the offspring state distribution conditional
 #'   on reaching the offspring reaching the threshold before dying.
 #' @export
@@ -489,12 +489,13 @@ makePCondBreedDef3 = function (P, F, c0) {
 #'   example, if the original state space was (size 1, size 2),
 #'   the new state space is (size 1, 0 offspring; size 2, 0 offspring;
 #'   size 1, 1 offspring; size 2, 1 offspring, ...) up to #offspring =
-#'   maxLRO.  
+#'   maxLRO.
 #' @examples
-#' M = 
+#' M = matrix(0.1, 3, 3)
+#' F = matrix(0, 3, 3); F[1,] = 0:2
 #' threshold = 2
 #' m0 = c(1, 0, 0)
-#' out = 
+#' out = makeMCondLROThreshold(M, F, threshold, m0)
 makeMCondLROThreshold = function (M, F, threshold, m0, maxLRO=12,
                                   maxClutchSize=12, Fdist="Poisson") {
   bigmz = dim(M)[1]
@@ -512,7 +513,7 @@ makeMCondLROThreshold = function (M, F, threshold, m0, maxLRO=12,
   ## Sanity check input
   if (dim(F)[1] != bigmz)
     stop ("M and F should have the same dimensions.")
-  
+
   ## B[i,j] is the probability that a class-j individual has i-1 kids.
   ## We assume Poisson-distributed number of offspring.
   ## The columns of B should sum to 1.
@@ -532,7 +533,7 @@ makeMCondLROThreshold = function (M, F, threshold, m0, maxLRO=12,
   ## and #kids
   a0 = rep (0, mzA)
   a0[1:bigmz] = m0
-  
+
   transientStates = 1:(bigmz*threshold)
   out = makeCondKernel (A, transientStates)
   ACondSucceed = out$MCond
