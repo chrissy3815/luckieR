@@ -2,7 +2,7 @@
 % Please edit documentation in R/megamatrixFunctions.R
 \name{make_AxT}
 \alias{make_AxT}
-\title{Make the size x \#kids transition matrix}
+\title{Make the size x #kids transition matrix}
 \usage{
 make_AxT(B, M, mT)
 }
@@ -16,8 +16,8 @@ quantity, such as size or life history stage, or can be
 cross-classified, such as size x environment.  M[i,j] is the
 probability of transitioning from state j to state i.}
 
-\item{mT}{The dimension of the \#kids part of the 4-d array.
-I.e. the maximum \#kids is mT-1.}
+\item{mT}{The dimension of the #kids part of the 4-d array.
+I.e. the maximum #kids is mT-1.}
 }
 \value{
 A list containing
@@ -31,8 +31,8 @@ but continue to grow/shrink/die.
 }
 }
 \description{
-Makes the 2-dim iteration matrix A for a size x \#kids model, where
-\#kids is the total number of offspring to date.
+Makes the 2-dim iteration matrix A for a size x #kids model, where
+#kids is the total number of offspring to date.
 }
 \details{
 Called by distLifespanCondR2 and calcDistLRO.
@@ -42,5 +42,5 @@ M = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 F = matrix (0, 3, 3); F[1,] = 0:2
 B = mk_B (F)
 mT = 20
-out = make_AxT (B, M, mT)
+out = make_AxT(B, M, mT)
 }

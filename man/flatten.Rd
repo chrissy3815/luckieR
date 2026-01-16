@@ -22,9 +22,9 @@ M = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 F = matrix (0, 3, 3); F[1,] = 0.1*(0:2)
 B = mk_B (F, Fdist="Bernoulli")
 mT = 6
-out = make_AxT (B, M, mT)
+out = make_AxT(B, M, mT)
 K = out$K
-A = flatten (out$K) ## should equal out$A
+A = flatten(out$K) ## should equal out$A
 }
 \seealso{
 unfold, make_AxT
