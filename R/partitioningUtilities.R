@@ -195,13 +195,13 @@ makeCondFailureKernel = function (M, transientStates) {
 #'   R3 should be size n+1 x n+1.
 #'
 #' @return A list containing
-#' * rho1Vec: A vector whose jth entry gives the expected lifetime
+#' * rho1Vec: A 1xn matrix whose jth entry gives the expected lifetime
 #'   reward for a trajectory starting in state j
-#' * mu2Vec: A vector whose jth entry gives the central 2nd moment
+#' * mu2Vec: A 1xn matrix whose jth entry gives the central 2nd moment
 #'   (variance) of lifetime reward for a trajectory starting in state j
-#' * mu3Vec: A vector whose jth entry gives the central 3rd moment of
+#' * mu3Vec: A 1xn matrix whose jth entry gives the central 3rd moment of
 #'   lifetime reward for a trajectory starting in state j
-#' * skewnessVec: A vector whose jth entry gives the skewness (3rd
+#' * skewnessVec: A 1xn matrix whose jth entry gives the skewness (3rd
 #'   central moment / variance^3/2) of lifetime reward for a trajectory starting
 #'   in state j
 #' @export
