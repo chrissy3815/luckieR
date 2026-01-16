@@ -544,11 +544,6 @@ meantime <- function(P){
   ##  P: Survival matrix P                                                  ##
   ##  Return Value/s:                                                       ##
   ##  The average time to reach stage i from stage j                        ##
-  ##  Author/s:                                                             ##
-  ##  Dr. Stephen Ellner                                                    ##
-  ##  Dr. Simone Blomberg                                                   ##
-  ##  Erin Souder                                                           ##
-  ##  Date: 03/01/2023                                                      ##
   ############################################################################
   
   if(!is.matrix(P)) {stop("This is not a matrix")}
