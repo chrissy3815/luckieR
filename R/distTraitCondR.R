@@ -1031,7 +1031,7 @@ probTraitCondLRO = function (PlistAllTraits, FlistAllTraits, Q,
   if (max(abs(range (foo1 - foo2))) > epsilon)
     ## warning ("Columns of probRCondX should sum to 1 and they
     ## don't.")
-    cat ("Columns of probRCondX should sum to 1 and they don't.")
+    message ("Columns of probRCondX should sum to 1 and they don't.")
 
   ## Now use Bayes thm to get P(X | R). ################
 
@@ -1497,15 +1497,6 @@ calcDistLROPostBreedingNoEnv = function (Pmat, Fmat, c0, maxClutchSize, maxLRO,
 probTraitCondLRONoEnv = function (PlistAllTraits, FlistAllTraits,
                                   c0, maxClutchSize, maxLRO,
                                   traitDist,
-                                  Fdist="Poisson") {
-  P1list = list(Plist[[1]])
-  P2list = list(Plist[[2]])
-  PlistAllTraits = list(P1list, P2list)
-
-  F1list = list(Flist[[1]])
-  F2list = list(Flist[[2]])
-  FlistAllTraits = list (F1list, F2list)
-
   Q = matrix (1, 1, 1)
 
   out = probTraitCondLRO (PlistAllTraits, FlistAllTraits, Q,
@@ -1566,14 +1557,6 @@ probTraitCondLROPostBreedingNoEnv =
             c0, maxClutchSize, maxLRO,
             traitDist,
             Fdist="Poisson") {
-
-  P1list = list(Plist[[1]])
-  P2list = list(Plist[[2]])
-  PlistAllTraits = list(P1list, P2list)
-
-  F1list = list(Flist[[1]])
-  F2list = list(Flist[[2]])
-  FlistAllTraits = list (F1list, F2list)
 
   Q = matrix (1, 1, 1)
 
