@@ -40,8 +40,8 @@ Called by make_AxT
 }
 \examples{
 M = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
-F = matrix (0, 3, 3); F[1,] = 0:2
-B = mk_B (F)
+Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
+B = mk_B (Fmat)
 p_xT (5, 2, 3, B, M)
 }
 \seealso{

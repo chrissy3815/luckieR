@@ -4,14 +4,14 @@
 \alias{calcDistLRONoEnv}
 \title{Distribution of lifetime reproductive output}
 \usage{
-calcDistLRONoEnv(P, F, c0, maxClutchSize, maxLRO, Fdist = "Poisson")
+calcDistLRONoEnv(Pmat, Fmat, c0, maxClutchSize, maxLRO, Fdist = "Poisson")
 }
 \arguments{
-\item{P}{The survival/growth transition matrix.
-P[i,j] is the probability of transitioning from
+\item{Pmat}{The survival/growth transition matrix.
+Pmat[i,j] is the probability of transitioning from
 state j to state i.}
 
-\item{F}{The fecundity matrix.  F[i,j]
+\item{Fmat}{The fecundity matrix.  Fmat[i,j]
 is the expected number of state i offspring from a state j
 parent.}
 
@@ -51,10 +51,10 @@ that reproduction  happens after survival and growth, i.e. a
 post-breeding census.
 }
 \examples{
-P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
-F = matrix (0, 3, 3); F[1,] = 0:2
+Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 c0 = c(1,0,0)
 maxClutchSize = 10
 maxLRO=20
-out = calcDistLRONoEnv (P, F, c0, maxClutchSize, maxLRO)
+out = calcDistLRONoEnv (Pmat, Fmat, c0, maxClutchSize, maxLRO)
 }

@@ -4,13 +4,13 @@
 \alias{makePCondBreedDef3}
 \title{Utility function for calculating a kernel conditional on breeding.}
 \usage{
-makePCondBreedDef3(P, F, c0)
+makePCondBreedDef3(P, Fmat, c0)
 }
 \arguments{
 \item{P}{the survival/growth transition matrix}
 
-\item{F}{the fecundity matrix.  The clutch size of a parent of size
-j is Poisson-distributed with mean sum(F[,j]).}
+\item{Fmat}{the fecundity matrix.  The clutch size of a parent of size
+j is Poisson-distributed with mean sum(Fmat[,j]).}
 
 \item{c0}{The size/stage distribution of offspring}
 }
@@ -56,9 +56,9 @@ an individual who has produced at least one offspring
 }
 \examples{
 P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
-F = matrix (0, 3, 3); F[1,] = 0:2
+Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 c0 = c(1,0,0)
-out = makePCondBreedDef3 (P, F, c0)
+out = makePCondBreedDef3 (P, Fmat, c0)
 }
 \seealso{
 \link{makePDef3}, which this function calls

@@ -210,14 +210,14 @@ makeCondFailureKernel = function (M, transientStates) {
 #' ## Transition matrix: M\[i,j\] is the probability of transitioning
 #' ##  from state j to state i
 #' M = matrix (0.1, 3, 3)
-#' ## Fecundity matrix: F\[i,j\] is the expected number of size i offspring
+#' ## Fecundity matrix: Fmat\[i,j\] is the expected number of size i offspring
 #' ## producted in one time step for a parent of size j
-#' F = matrix (0, 3, 3)
-#' F[1,] = c(0, 1, 2)
+#' Fmat = matrix (0, 3, 3)
+#' Fmat[1,] = c(0, 1, 2)
 #' ## Clutch size is Poisson distributed
 #' R1 = matrix (0, 4, 4)
 #' for (j in 1:3)
-#'   R1[,j] = sum(F[,j])
+#'   R1[,j] = sum(Fmat[,j])
 #' R2 = R1 + R1^2
 #' R3 = R1 + R1^2 + R1^3
 #' out = calcMoments (M, R1, R2, R3)
@@ -285,7 +285,7 @@ calcMoments = function (M, R1, R2, R3) {
 #' sizes are Poisson-distributed.
 #' @param P the survival/growth transition matrix.  P\[i,j\] is the
 #' probability of surviving and transitioning from size j to size i.
-#' @param F the fecundity matrix.  F\[i,j\] is the expected number of
+#' @param Fmat the fecundity matrix.  Fmat\[i,j\] is the expected number of
 #' size i offspring from a size j parent.
 #'
 #' @return bigP the extended state transition matrix (see Details)
@@ -302,9 +302,9 @@ calcMoments = function (M, R1, R2, R3) {
 #' @seealso [makePCondBreedDef3], which calls this function
 #' @examples
 #' P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
-#' F = matrix (0, 3, 3); F[1,] = 0:2
-#' out = makePDef3 (P, F)
-makePDef3 = function (P, F) {
+#' Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
+#' out = makePDef3 (P, Fmat)
+makePDef3 = function (P, Fmat) {
   ## The number of original states
   mz = dim(P)[1]
   ## The number of transient states (the nonbreeding states)
@@ -315,7 +315,7 @@ makePDef3 = function (P, F) {
 
   ## calculate pd, the probability of producing at least one offspring
   ## in the current year.
-  b = colSums(F)
+  b = colSums(Fmat)
   pd = 1 - exp(-b)
 
   ## Make P for the extended state space Z1 \cup Z2 \cup Z3
@@ -337,8 +337,8 @@ makePDef3 = function (P, F) {
 #'   one offspring, as well as related quantites.  Assumes that the
 #'   clutch sizes are Poisson-distributed.
 #' @param P the survival/growth transition matrix
-#' @param F the fecundity matrix.  The clutch size of a parent of size
-#'   j is Poisson-distributed with mean sum(F\[,j\]).
+#' @param Fmat the fecundity matrix.  The clutch size of a parent of size
+#'   j is Poisson-distributed with mean sum(Fmat\[,j\]).
 #' @param c0 The size/stage distribution of offspring
 #'
 #' @return A list containing the following.  All matrices and vectors
@@ -375,10 +375,10 @@ makePDef3 = function (P, F) {
 #' @seealso [makePDef3], which this function calls
 #' @examples
 #' P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
-#' F = matrix (0, 3, 3); F[1,] = 0:2
+#' Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 #' c0 = c(1,0,0)
-#' out = makePCondBreedDef3 (P, F, c0)
-makePCondBreedDef3 = function (P, F, c0) {
+#' out = makePCondBreedDef3 (P, Fmat, c0)
+makePCondBreedDef3 = function (P, Fmat, c0) {
   ## The number of original states
   mz = dim(P)[1]
 
@@ -386,14 +386,14 @@ makePCondBreedDef3 = function (P, F, c0) {
   bigF = matrix (0, esmz, esmz)
 
   ##bigP=NULL;
-  bigP = makePDef3(P, F)
+  bigP = makePDef3(P, Fmat)
 
   ## expanded state space init. distribution
   bigc0 = c(c0, rep(0, 2*mz))
 
-  ## make F for the extended state space Z1 \cup Z2 \cup Z3.  Note that the
+  ## make Fmat for the extended state space Z1 \cup Z2 \cup Z3.  Note that the
   ## only non-zero entries are from Z2 and Z3 to Z1.
-  b = colSums (F)
+  b = colSums (Fmat)
   bigF[1, (mz+1):esmz] = b
 
   ## Calculate aM, the probability of going from Z1 to Z2 in one step
@@ -456,7 +456,7 @@ makePCondBreedDef3 = function (P, F, c0) {
 #' @param M the unconditional survival/growth transition matrix.
 #'   M\[i,j\] is the probability of surviving and transitioning from
 #'   state j to state i.
-#' @param F the fecundity matrix.  F\[i,j\] is the expected number of
+#' @param Fmat the fecundity matrix.  Fmat\[i,j\] is the expected number of
 #'   size i offspring from a size j parent.
 #' @param threshold the number of offspring LRO should meet or exceed
 #' @param m0 the state distribution of offspring
@@ -492,17 +492,17 @@ makePCondBreedDef3 = function (P, F, c0) {
 #'   maxLRO.
 #' @examples
 #' M = matrix(0.1, 3, 3)
-#' F = matrix(0, 3, 3); F[1,] = 0:2
+#' Fmat = matrix(0, 3, 3); Fmat[1,] = 0:2
 #' threshold = 2
 #' m0 = c(1, 0, 0)
-#' out = makeMCondLROThreshold(M, F, threshold, m0)
-makeMCondLROThreshold = function (M, F, threshold, m0, maxLRO=12,
+#' out = makeMCondLROThreshold(M, Fmat, threshold, m0)
+makeMCondLROThreshold = function (M, Fmat, threshold, m0, maxLRO=12,
                                   maxClutchSize=12, Fdist="Poisson") {
   bigmz = dim(M)[1]
 
   ## Sanity check input
   if (Fdist == "Bernoulli") {
-    if (sum(colSums(F) > 1))
+    if (sum(colSums(Fmat) > 1))
       stop("Probability of having an offspring > 1!  Columns of fecundity matrix sum to > 1 but clutch size is Bernoulli-distributed.")
   }
 
@@ -511,13 +511,13 @@ makeMCondLROThreshold = function (M, F, threshold, m0, maxLRO=12,
     stop ("Length of m0 does not match dimension of M")
 
   ## Sanity check input
-  if (dim(F)[1] != bigmz)
-    stop ("M and F should have the same dimensions.")
+  if (dim(Fmat)[1] != bigmz)
+    stop ("M and Fmat should have the same dimensions.")
 
   ## B[i,j] is the probability that a class-j individual has i-1 kids.
   ## We assume Poisson-distributed number of offspring.
   ## The columns of B should sum to 1.
-  B = mk_B (F, maxClutchSize, Fdist)
+  B = mk_B (Fmat, maxClutchSize, Fdist)
   message ("The column sums of B have a range of", range(colSums(B)),
            " and we hope these are close to 1.\n")
 
@@ -568,7 +568,7 @@ getModalTimeToHitState = function (absorbingStates,
     for (i in 1:numEnv) {
       for (j in 1:numEnv) {
         M[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Plist[[j]]*Q[i,j]
-        F[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Flist[[j]]*Q[i,j]
+        Fmat[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Flist[[j]]*Q[i,j]
       }
     }
   }
@@ -611,19 +611,19 @@ getModalTimeToFirstRepro = function (Plist, Flist, Q, m0,
   numEnv = dim(Q)[1]
   bigmz = numEnv*mz
 
-  ## Define megamatrices M and F
-  F = M = matrix (0, bigmz, bigmz)
+  ## Define megamatrices M and Fmat
+  Fmat = M = matrix (0, bigmz, bigmz)
   for (i in 1:numEnv) {
     for (j in 1:numEnv) {
       M[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Plist[[j]]*Q[i,j]
-      F[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Flist[[j]]*Q[i,j]
+      Fmat[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Flist[[j]]*Q[i,j]
     }
   }
 
   ## pb = prob. of breeding as a function of state
-  ## Assume entries of F are means of Poisson distributions, so
+  ## Assume entries of Fmat are means of Poisson distributions, so
   ## prob. of breeding is pb = 1 - exp(-mean)
-  pb = 1 - exp(-colSums (F))
+  pb = 1 - exp(-colSums (Fmat))
 
   big3mz = 3*bigmz
   bigF = matrix (0, big3mz, big3mz)
@@ -652,9 +652,9 @@ getModalTimeToFirstRepro = function (Plist, Flist, Q, m0,
   ## expanded state space init. distribution
   bigm0 = c(m0, rep(0, 2*bigmz))
 
-  ## make F for the extended state space Z1 \cup Z2 \cup Z3.  Note that the
+  ## make Fmat for the extended state space Z1 \cup Z2 \cup Z3.  Note that the
   ## only non-zero entries are from Z2 and Z3 to Z1.
-  bigF[1, Z23] = F[1,]
+  bigF[1, Z23] = Fmat[1,]
 
   ## Calculate aM, the probability of going from Z1 to Z2 in one step
   aM = apply (bigM[(bigmz+1):(2*bigmz), 1:bigmz], 2, sum)

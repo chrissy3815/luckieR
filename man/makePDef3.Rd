@@ -4,13 +4,13 @@
 \alias{makePDef3}
 \title{Utility function for calculating a kernel conditional on breeding.}
 \usage{
-makePDef3(P, F)
+makePDef3(P, Fmat)
 }
 \arguments{
 \item{P}{the survival/growth transition matrix.  P[i,j] is the
 probability of surviving and transitioning from size j to size i.}
 
-\item{F}{the fecundity matrix.  F[i,j] is the expected number of
+\item{Fmat}{the fecundity matrix.  Fmat[i,j] is the expected number of
 size i offspring from a size j parent.}
 }
 \value{
@@ -32,8 +32,8 @@ offspring ("definition 3").
 }
 \examples{
 P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
-F = matrix (0, 3, 3); F[1,] = 0:2
-out = makePDef3 (P, F)
+Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
+out = makePDef3 (P, Fmat)
 }
 \seealso{
 \link{makePCondBreedDef3}, which calls this function

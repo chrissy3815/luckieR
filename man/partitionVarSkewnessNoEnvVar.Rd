@@ -5,8 +5,8 @@
 \title{Partitions variance and skewness of LRO}
 \usage{
 partitionVarSkewnessNoEnvVar(
-  P,
-  F,
+  Pmat,
+  Fmat,
   c0,
   maxAge = 100,
   survThreshold = 0.05,
@@ -20,10 +20,10 @@ partitionVarSkewnessNoEnvVar(
 )
 }
 \arguments{
-\item{P}{The survival/growth transition matrix: P[i,j] is the probability
+\item{Pmat}{The survival/growth transition matrix: Pmat[i,j] is the probability
 of transitioning from state j to state i.}
 
-\item{F}{The fecundity matrix: F[i,j] is the expected number of state i
+\item{Fmat}{The fecundity matrix: Fmat[i,j] is the expected number of state i
 offspring from a state j parent}
 
 \item{c0}{A vector specifying the offspring state distribution: c0[j] is
@@ -91,8 +91,8 @@ of reproductive skew and extreme reproductive success in structured
 populations." The American Naturalist 204(2) and its online supplemnt.
 }
 \examples{
-P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
-F = matrix (0, 3, 3); F[1,] = 0:2
+Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 c0 = c(1,0,0)
-out = partitionVarSkewnessNoEnvVar (P, F, c0)
+out = partitionVarSkewnessNoEnvVar (Pmat, Fmat, c0)
 }

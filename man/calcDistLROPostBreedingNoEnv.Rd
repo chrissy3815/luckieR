@@ -5,8 +5,8 @@
 \title{Distribution of lifetime reproductive output}
 \usage{
 calcDistLROPostBreedingNoEnv(
-  P,
-  F,
+  Pmat,
+  Fmat,
   c0,
   maxClutchSize,
   maxLRO,
@@ -14,11 +14,11 @@ calcDistLROPostBreedingNoEnv(
 )
 }
 \arguments{
-\item{P}{The survival/growth transition matrix.
-P[i,j] is the probability of transitioning from
+\item{Pmat}{The survival/growth transition matrix.
+Pmat[i,j] is the probability of transitioning from
 state j to state i.}
 
-\item{F}{The fecundity matrix.  F[i,j]
+\item{Fmat}{The fecundity matrix.  Fmat[i,j]
 is the expected number of state i offspring from a state j
 parent.}
 
@@ -26,6 +26,8 @@ parent.}
 the probability that an individual is born in state j}
 
 \item{maxClutchSize}{The maximum clutch size to consider}
+
+\item{maxLRO}{The maximum LRO to consider}
 
 \item{Fdist}{The clutch size distribution.  The recognized options are
 "Poisson" and "Bernoulli".  Optional.  The default value is "Poisson".}
@@ -56,12 +58,12 @@ assumes that reproduction happens after survival and growth, i.e. a
 post-breeding census.
 }
 \examples{
-P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
-F = matrix (0, 3, 3); F[1,] = 0:2
+Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 Q = matrix (1/2, 2, 2)
 c0 = c(1,0,0)
 maxClutchSize = 10
 maxLRO = 30
-out = calcDistLROPostBreedingNoEnv (P, F, c0, maxClutchSize,
+out = calcDistLROPostBreedingNoEnv (Pmat, Fmat, c0, maxClutchSize,
   maxLRO)
 }

@@ -54,8 +54,8 @@ unvec <- function(nvec,nrow=NULL,ncol=NULL){
 #' @seealso unfold, make_AxT
 #' @examples
 #' M = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
-#' F = matrix (0, 3, 3); F[1,] = 0.1*(0:2)
-#' B = mk_B (F, Fdist="Bernoulli")
+#' Fmat = matrix (0, 3, 3); Fmat[1,] = 0.1*(0:2)
+#' B = mk_B (Fmat, Fdist="Bernoulli")
 #' mT = 6
 #' out = make_AxT(B, M, mT)
 #' K = out$K
@@ -79,8 +79,8 @@ flatten <- function(A4) {
 #' @seealso flatten, make_AxT
 #' @examples
 #' M = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
-#' F = matrix (0, 3, 3); F[1,] = 0.1*(0:2)
-#' B = mk_B (F, Fdist="Bernoulli")
+#' Fmat = matrix (0, 3, 3); Fmat[1,] = 0.1*(0:2)
+#' B = mk_B (Fmat, Fdist="Bernoulli")
 #' mT = 6
 #' out = make_AxT (B, M, mT)
 #' A = out$A
@@ -96,7 +96,7 @@ unfold <- function(A2,dim) {
 #'
 #' @param maxKids The maximum clutch size.  Optional, with a default value of
 #'   20.
-#' @param F the fecundity matrix.  F\[i,j\] is the expected number of size i
+#' @param Fmat the fecundity matrix.  Fmat\[i,j\] is the expected number of size i
 #'   offspring from a size j parent.
 #' @param Fdist the clutch size distribution.  Currently supported values are
 #'   "Poisson" and "Bernoulli."  Optional, with a default value of "Poisson".
@@ -107,17 +107,17 @@ unfold <- function(A2,dim) {
 #' @export
 #'
 #' @examples
-#' F = matrix (0, 3, 3); F[1,] = 0.1*(0:2)
-#' out = mk_B (F, Fdist="Bernoulli")
-mk_B = function (F, maxKids=20, Fdist="Poisson") {
-  bigmz = ncol(F)
+#' Fmat = matrix (0, 3, 3); Fmat[1,] = 0.1*(0:2)
+#' out = mk_B (Fmat, Fdist="Bernoulli")
+mk_B = function (Fmat, maxKids=20, Fdist="Poisson") {
+  bigmz = ncol(Fmat)
   B = matrix (0, maxKids+1, bigmz)
   if (Fdist == "Poisson") {
     for (z in 1:bigmz)
-      B[,z] = dpois (0:maxKids, lambda=sum(F[,z]))
+      B[,z] = dpois (0:maxKids, lambda=sum(Fmat[,z]))
   } else if (Fdist == "Bernoulli") {
     for (z in 1:bigmz)
-      B[,z] = dbinom (0:maxKids, size=1, prob=sum(F[,z]))
+      B[,z] = dbinom (0:maxKids, size=1, prob=sum(Fmat[,z]))
   } else {
     stop ("mk_B: I don't recognize that option for Fdist.\n")
   }
@@ -135,7 +135,7 @@ mk_B = function (F, maxKids=20, Fdist="Poisson") {
 #'
 #' @param maxKids The maximum clutch size.  Optional, with a default value of
 #'   20.
-#' @param F the fecundity matrix.  F\[i,j\] is the expected number of size i
+#' @param Fmat the fecundity matrix.  Fmat\[i,j\] is the expected number of size i
 #'   offspring from a size j parent.
 #' @param M The state transition matrix.  States can be a single
 #'   quantity, such as size or life history stage, or can be
@@ -150,14 +150,14 @@ mk_B = function (F, maxKids=20, Fdist="Poisson") {
 #' @export
 #'
 #' @examples
-#' F = matrix (c(0,0,0, 0.5,0,0, 0,0,0), 3, 3)
+#' Fmat = matrix (c(0,0,0, 0.5,0,0, 0,0,0), 3, 3)
 #' M = matrix (c(0,0.5,0, 0,0,0.5, 0,0,0), 3, 3)
 #' maxClutchSize=10
-#' out = mk_BPostBreeding (M, F, maxClutchSize, Fdist="Bernoulli")
-mk_BPostBreeding = function (M, F, maxKids=20, Fdist="Poisson") {
-  bigmz = ncol(F)
+#' out = mk_BPostBreeding (M, Fmat, maxClutchSize, Fdist="Bernoulli")
+mk_BPostBreeding = function (M, Fmat, maxKids=20, Fdist="Poisson") {
+  bigmz = ncol(Fmat)
   surv = colSums(M); die = 1 - surv
-  ## fecCondSurv = colSums(F) / surv
+  ## fecCondSurv = colSums(Fmat) / surv
   ## zeroMass = c(1, rep(0, maxKids))
   B = matrix (0, maxKids+1, bigmz)
   if (Fdist == "Poisson") {
@@ -167,7 +167,7 @@ mk_BPostBreeding = function (M, F, maxKids=20, Fdist="Poisson") {
       } else {
         ## B[,z] = die[z]*zeroMass +
         ## surv[z]*dpois (0:maxKids, lambda=)
-        B[,z] = dpois (0:maxKids, lambda=sum(F[,z]/surv[z]))
+        B[,z] = dpois (0:maxKids, lambda=sum(Fmat[,z]/surv[z]))
       }
   }
   else if (Fdist == "Bernoulli") {
@@ -176,8 +176,8 @@ mk_BPostBreeding = function (M, F, maxKids=20, Fdist="Poisson") {
         B[, z] = rep (0, maxKids+1); B[1,z] = 1
       } else {
        ## B[,z] = die[z]*zeroMass +
-        ## surv[z]*dbinom (0:maxKids, size=1, prob=sum(F[,z])/surv[z])
-        B[,z] = dbinom (0:maxKids, size=1, prob=sum(F[,z]/surv[z]))
+        ## surv[z]*dbinom (0:maxKids, size=1, prob=sum(Fmat[,z])/surv[z])
+        B[,z] = dbinom (0:maxKids, size=1, prob=sum(Fmat[,z]/surv[z]))
       }
   } else {
     stop ("mk_BPostBreeding: I don't recognize that option for Fdist.\n")
@@ -215,10 +215,12 @@ mk_BPostBreeding = function (M, F, maxKids=20, Fdist="Poisson") {
 #'   size k.  If l-j is < 0, the return value is a vector of zeros.
 #' @details Called by make_AxT
 #' @seealso make_AxT
+#' @export
+#'
 #' @examples
 #' M = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
-#' F = matrix (0, 3, 3); F[1,] = 0:2
-#' B = mk_B (F)
+#' Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
+#' B = mk_B (Fmat)
 #' p_xT (5, 2, 3, B, M)
 p_xT <- function(l, i, j, B, M) {
   bigmz <- ncol(M); maxKids <- nrow(B)-1;
@@ -265,8 +267,8 @@ p_xT <- function(l, i, j, B, M) {
 #'
 #' @examples
 #' M = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
-#' F = matrix (0, 3, 3); F[1,] = 0:2
-#' B = mk_B (F)
+#' Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
+#' B = mk_B (Fmat)
 #' mT = 20
 #' out = make_AxT(B, M, mT)
 make_AxT <- function(B, M, mT) {

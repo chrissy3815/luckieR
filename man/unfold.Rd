@@ -20,8 +20,8 @@ Converts a cross-classified transition matrix ("megamatrix") to a
 }
 \examples{
 M = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
-F = matrix (0, 3, 3); F[1,] = 0.1*(0:2)
-B = mk_B (F, Fdist="Bernoulli")
+Fmat = matrix (0, 3, 3); Fmat[1,] = 0.1*(0:2)
+B = mk_B (Fmat, Fdist="Bernoulli")
 mT = 6
 out = make_AxT (B, M, mT)
 A = out$A

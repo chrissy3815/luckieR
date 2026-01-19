@@ -37,10 +37,6 @@ probability that the trait takes on the jth value}
 \item{Fdist}{The clutch size distribution.  The recognized options
 are "Poisson" and "Bernoulli".  Optional.  The default value is
 "Poisson".}
-
-\item{Q}{The environment transition matrix.  Q[i,j] is the
-probability of transitioning from environment j to environment
-i.}
 }
 \value{
 A list containing the following:

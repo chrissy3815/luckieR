@@ -7,7 +7,7 @@ meeting or exceeding a threshold}
 \usage{
 makeMCondLROThreshold(
   M,
-  F,
+  Fmat,
   threshold,
   m0,
   maxLRO = 12,
@@ -20,7 +20,7 @@ makeMCondLROThreshold(
 M[i,j] is the probability of surviving and transitioning from
 state j to state i.}
 
-\item{F}{the fecundity matrix.  F[i,j] is the expected number of
+\item{Fmat}{the fecundity matrix.  Fmat[i,j] is the expected number of
 size i offspring from a size j parent.}
 
 \item{threshold}{the number of offspring LRO should meet or exceed}
@@ -70,8 +70,8 @@ maxLRO.
 }
 \examples{
 M = matrix(0.1, 3, 3)
-F = matrix(0, 3, 3); F[1,] = 0:2
+Fmat = matrix(0, 3, 3); Fmat[1,] = 0:2
 threshold = 2
 m0 = c(1, 0, 0)
-out = makeMCondLROThreshold(M, F, threshold, m0)
+out = makeMCondLROThreshold(M, Fmat, threshold, m0)
 }

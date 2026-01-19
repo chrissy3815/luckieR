@@ -4,10 +4,10 @@
 \alias{mk_B}
 \title{Make B matrix}
 \usage{
-mk_B(F, maxKids = 20, Fdist = "Poisson")
+mk_B(Fmat, maxKids = 20, Fdist = "Poisson")
 }
 \arguments{
-\item{F}{the fecundity matrix.  F[i,j] is the expected number of size i
+\item{Fmat}{the fecundity matrix.  Fmat[i,j] is the expected number of size i
 offspring from a size j parent.}
 
 \item{maxKids}{The maximum clutch size.  Optional, with a default value of
@@ -25,6 +25,6 @@ reproductive bout
 Calculates B, the clutch size distribution matrix
 }
 \examples{
-F = matrix (0, 3, 3); F[1,] = 0.1*(0:2)
-out = mk_B (F, Fdist="Bernoulli")
+Fmat = matrix (0, 3, 3); Fmat[1,] = 0.1*(0:2)
+out = mk_B (Fmat, Fdist="Bernoulli")
 }

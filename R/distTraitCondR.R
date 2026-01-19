@@ -92,19 +92,19 @@ distLifespanCondR2 = function (Plist, Flist, Q,
   ## environment
   m0 = matrix (outer (c0, as.vector(u0)), bigmz, 1)
 
-  ## Define megamatrices M and F
-  F = M = matrix (0, bigmz, bigmz)
+  ## Define megamatrices M and Fmat
+  Fmat = M = matrix (0, bigmz, bigmz)
   for (i in 1:numEnv) {
     for (j in 1:numEnv) {
       M[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Plist[[j]]*Q[i,j]
-      F[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Flist[[j]]*Q[i,j]
+      Fmat[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Flist[[j]]*Q[i,j]
     }
   }
 
   ## B[i,j] is the probability that a class-j individual has i-1 kids.
   ## We assume Poisson-distributed number of offspring.
   ## The columns of B should sum to 1 and they do.
-  B = mk_B (F, maxClutchSize, Fdist)
+  B = mk_B (Fmat, maxClutchSize, Fdist)
 
   ## Construct A, the transition matrix for a (number of kids) x stage x
   ## env. model.
@@ -129,10 +129,10 @@ distLifespanCondR2 = function (Plist, Flist, Q,
       for (z in 1:bigmz) {
         if (Fdist == "Poisson") {
           Fbullet[(i-1)*bigmz + z, (j-1)*bigmz + z] =
-            dpois (i-j, lambda=sum(F[,z]))
+            dpois (i-j, lambda=sum(Fmat[,z]))
         } else if (Fdist == "Bernoulli") {
           Fbullet[(i-1)*bigmz + z, (j-1)*bigmz + z] =
-            dbinom (i-j, prob=sum(F[,z]), size=1)
+            dbinom (i-j, prob=sum(Fmat[,z]), size=1)
         } else {
           stop ("Supported options for Fdist are 'Poisson' and 'Bernoulli'.")
         }
@@ -445,19 +445,19 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
   ## environment
   m0 = matrix (outer (c0, as.vector(u0)), bigmz, 1)
 
-  ## Define megamatrices M and F
-  F = M = matrix (0, bigmz, bigmz)
+  ## Define megamatrices M and Fmat
+  Fmat = M = matrix (0, bigmz, bigmz)
   for (i in 1:numEnv) {
     for (j in 1:numEnv) {
       M[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Plist[[j]]*Q[i,j]
-      F[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Flist[[j]]*Q[i,j]
+      Fmat[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Flist[[j]]*Q[i,j]
     }
   }
 
   ## B[i,j] is the probability that a class-j individual has i-1 kids.
   ## We assume Poisson-distributed number of offspring.
   ## The columns of B should sum to 1.
-  B = mk_BPostBreeding (M, F, maxClutchSize, Fdist)
+  B = mk_BPostBreeding (M, Fmat, maxClutchSize, Fdist)
 
   ## Construct A, the transition matrix for a (number of kids) x stage x
   ## env. model.
@@ -669,18 +669,18 @@ calcDistLRO = function (Plist, Flist, Q,
   ## environment
   m0 = matrix (outer (c0, as.vector(u0)), bigmz, 1)
 
-  ## Define megamatrices M and F
-  F = M = matrix (0, bigmz, bigmz)
+  ## Define megamatrices M and Fmat
+  Fmat = M = matrix (0, bigmz, bigmz)
   for (i in 1:numEnv) {
     for (j in 1:numEnv) {
       M[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Plist[[j]]*Q[i,j]
-      F[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Flist[[j]]*Q[i,j]
+      Fmat[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Flist[[j]]*Q[i,j]
     }
   }
 
   ## B[i,j] is the probability that a class-j individual has i-1 kids.
   ## The columns of B should sum to 1.
-  B = mk_B (F, maxClutchSize, Fdist)
+  B = mk_B (Fmat, maxClutchSize, Fdist)
 
   ## Let user decide if the level of eviction is acceptable
   message("calcDistLRO: checking clutch size distribution sums.  min(colSums(B)) = ",
@@ -707,10 +707,10 @@ calcDistLRO = function (Plist, Flist, Q,
       for (z in 1:bigmz) {
         if (Fdist == "Poisson") {
           Fbullet[(i-1)*bigmz + z, (j-1)*bigmz + z] =
-            dpois (i-j, lambda=sum(F[,z]))
+            dpois (i-j, lambda=sum(Fmat[,z]))
         } else if (Fdist == "Bernoulli") {
           Fbullet[(i-1)*bigmz + z, (j-1)*bigmz + z] =
-            dbinom (i-j, prob=sum(F[,z]), size=1)
+            dbinom (i-j, prob=sum(Fmat[,z]), size=1)
         } else {
           stop ("Supported options for Fdist are 'Poisson' and 'Bernoulli.'\n")
         }
@@ -829,6 +829,7 @@ calcDistLRO = function (Plist, Flist, Q,
 #' @param c0 A vector specifying the offspring state distribution: c0\[j\] is
 #'   the probability that an individual is born in state j
 #' @param maxClutchSize The maximum clutch size to consider
+#' @param maxLRO The maximum LRO to consider
 #' @param Fdist The clutch size distribution.  The recognized options are
 #'   "Poisson" and "Bernoulli".  Optional.  The default value is "Poisson".
 #'
@@ -872,18 +873,18 @@ calcDistLROPostBreeding = function (Plist, Flist, Q,
   ## environment
   m0 = matrix (outer (c0, as.vector(u0)), bigmz, 1)
 
-  ## Define megamatrices M and F
-  F = M = matrix (0, bigmz, bigmz)
+  ## Define megamatrices M and Fmat
+  Fmat = M = matrix (0, bigmz, bigmz)
   for (i in 1:numEnv) {
     for (j in 1:numEnv) {
       M[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Plist[[j]]*Q[i,j]
-      F[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Flist[[j]]*Q[i,j]
+      Fmat[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Flist[[j]]*Q[i,j]
     }
   }
 
   ## B[i,j] is the probability that a class-j individual has i-1 kids.
   ## The columns of B should sum to 1.
-  B = mk_BPostBreeding (M, F, maxClutchSize, Fdist)
+  B = mk_BPostBreeding (M, Fmat, maxClutchSize, Fdist)
 
   ## Let user decide if the level of eviction is acceptable
   message("calcDistLRO: checking clutch size distribution sums.  min(colSums(B)) = ",
@@ -1193,10 +1194,10 @@ probTraitCondLROPostBreeding = function (PlistAllTraits, FlistAllTraits, Q,
 #' Calculates the distribution of lifespan conditional on LRO in the
 #' absence of environmental variation.
 #'
-#' @param P The survival/growth transition matrix.
-#'   P\[i,j\] is the probability of transitioning from
+#' @param Pmat The survival/growth transition matrix.
+#'   Pmat\[i,j\] is the probability of transitioning from
 #'   state j to state i.
-#' @param F The fecundity matrix.  F\[i,j\]
+#' @param Fmat The fecundity matrix.  Fmat\[i,j\]
 #'   is the expected number of state i offspring from a state j
 #'   parent.
 #' @param c0 A vector specifying the offspring state distribution:
@@ -1237,15 +1238,15 @@ probTraitCondLROPostBreeding = function (PlistAllTraits, FlistAllTraits, Q,
 #' @export
 #'
 #' @examples
-#' P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
-#' F = matrix (0, 3, 3); F[1,] = 0:2
+#' Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 #' c0 = c(1,0,0)
 #' maxClutchSize = 12
 #' maxLRO = 30
 #' maxAge=20
-#' out = distLifespanCondR2NoEnv (P, F, c0, maxClutchSize,
+#' out = distLifespanCondR2NoEnv (Pmat, Fmat, c0, maxClutchSize,
 #'   maxLRO, maxAge)
-distLifespanCondR2NoEnv = function (P, F, c0, maxClutchSize,
+distLifespanCondR2NoEnv = function (Pmat, Fmat, c0, maxClutchSize,
                                    maxLRO, maxAge,
                                    percentileCutoff=0.99,
                                    Fdist="Poisson") {
@@ -1257,8 +1258,8 @@ distLifespanCondR2NoEnv = function (P, F, c0, maxClutchSize,
              q, " sum to > 1 but clutch size is Bernoulli-distributed.")
   }
 
-  Plist = list (P)
-  Flist = list (F)
+  Plist = list (Pmat)
+  Flist = list (Fmat)
   Q = matrix (1, 1, 1)
 
   out = distLifespanCondR2 (Plist, Flist, Q,
@@ -1273,10 +1274,10 @@ distLifespanCondR2NoEnv = function (P, F, c0, maxClutchSize,
 #' Calculates the distribution of lifespan conditional on LRO in the presence of
 #' environmental variation, assuming a post-breeding census.
 #'
-#' @param P The survival/growth transition matrix.
-#'   P\[i,j\] is the probability of transitioning from
+#' @param Pmat The survival/growth transition matrix.
+#'   Pmat\[i,j\] is the probability of transitioning from
 #'   state j to state i.
-#' @param F The fecundity matrix.  F\[i,j\]
+#' @param Fmat The fecundity matrix.  Fmat\[i,j\]
 #'   is the expected number of state i offspring from a state j
 #'   parent.
 #' @param c0 A vector specifying the offspring state distribution: c0\[j\] is
@@ -1315,15 +1316,15 @@ distLifespanCondR2NoEnv = function (P, F, c0, maxClutchSize,
 #' @export
 #'
 #' @examples
-#' P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
-#' F = matrix (0, 3, 3); F[1,] = 0:2
+#' Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 #' c0 = c(1,0,0)
 #' maxClutchSize = 12
 #' maxAge=20
 #' maxLRO = 30
-#' out = distLifespanCondR2PostBreedingNoEnv (P, F, c0, maxClutchSize,
+#' out = distLifespanCondR2PostBreedingNoEnv (Pmat, Fmat, c0, maxClutchSize,
 #'   maxLRO, maxAge)
-distLifespanCondR2PostBreedingNoEnv = function (P, F,
+distLifespanCondR2PostBreedingNoEnv = function (Pmat, Fmat,
                                            c0, maxClutchSize, maxLRO, maxAge,
                                            percentileCutoff = 0.99,
                                            Fdist="Poisson") {
@@ -1336,8 +1337,8 @@ distLifespanCondR2PostBreedingNoEnv = function (P, F,
              q, " sum to > 1 but clutch size is Bernoulli-distributed.")
   }
 
-  Plist = list (P)
-  Flist = list (F)
+  Plist = list (Pmat)
+  Flist = list (Fmat)
   Q = matrix (1, 1, 1)
 
   out = distLifespanCondR2PostBreeding (Plist, Flist, Q,
@@ -1369,10 +1370,10 @@ distLifespanCondR2PostBreedingNoEnv = function (P, F,
 #' that reproduction  happens after survival and growth, i.e. a
 #' post-breeding census.
 #'
-#' @param P The survival/growth transition matrix.
-#'   P\[i,j\] is the probability of transitioning from
+#' @param Pmat The survival/growth transition matrix.
+#'   Pmat\[i,j\] is the probability of transitioning from
 #'   state j to state i.
-#' @param F The fecundity matrix.  F\[i,j\]
+#' @param Fmat The fecundity matrix.  Fmat\[i,j\]
 #'   is the expected number of state i offspring from a state j
 #'   parent.
 #' @param c0 A vector specifying the offspring state distribution: c0\[j\] is
@@ -1387,17 +1388,17 @@ distLifespanCondR2PostBreedingNoEnv = function (P, F,
 #' @export
 #'
 #' @examples
-#' P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
-#' F = matrix (0, 3, 3); F[1,] = 0:2
+#' Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 #' c0 = c(1,0,0)
 #' maxClutchSize = 10
 #' maxLRO=20
-#' out = calcDistLRONoEnv (P, F, c0, maxClutchSize, maxLRO)
-calcDistLRONoEnv = function (P, F, c0, maxClutchSize, maxLRO,
+#' out = calcDistLRONoEnv (Pmat, Fmat, c0, maxClutchSize, maxLRO)
+calcDistLRONoEnv = function (Pmat, Fmat, c0, maxClutchSize, maxLRO,
                         Fdist="Poisson") {
 
-  Plist = list (P)
-  Flist = list(F)
+  Plist = list (Pmat)
+  Flist = list(Fmat)
   Q = matrix (1, 1, 1)
 
   out = calcDistLRO (Plist, Flist, Q, c0, maxClutchSize, maxLRO)
@@ -1427,15 +1428,16 @@ calcDistLRONoEnv = function (P, F, c0, maxClutchSize, maxLRO,
 #' assumes that reproduction happens after survival and growth, i.e. a
 #' post-breeding census.
 #'
-#' @param P The survival/growth transition matrix.
-#'   P\[i,j\] is the probability of transitioning from
+#' @param Pmat The survival/growth transition matrix.
+#'   Pmat\[i,j\] is the probability of transitioning from
 #'   state j to state i.
-#' @param F The fecundity matrix.  F\[i,j\]
+#' @param Fmat The fecundity matrix.  Fmat\[i,j\]
 #'   is the expected number of state i offspring from a state j
 #'   parent.
 #' @param c0 A vector specifying the offspring state distribution: c0\[j\] is
 #'   the probability that an individual is born in state j
 #' @param maxClutchSize The maximum clutch size to consider
+#' @param maxLRO The maximum LRO to consider
 #' @param Fdist The clutch size distribution.  The recognized options are
 #'   "Poisson" and "Bernoulli".  Optional.  The default value is "Poisson".
 #'
@@ -1443,18 +1445,18 @@ calcDistLRONoEnv = function (P, F, c0, maxClutchSize, maxLRO,
 #' @export
 #'
 #' @examples
-#' P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
-#' F = matrix (0, 3, 3); F[1,] = 0:2
+#' Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 #' Q = matrix (1/2, 2, 2)
 #' c0 = c(1,0,0)
 #' maxClutchSize = 10
 #' maxLRO = 30
-#' out = calcDistLROPostBreedingNoEnv (P, F, c0, maxClutchSize,
+#' out = calcDistLROPostBreedingNoEnv (Pmat, Fmat, c0, maxClutchSize,
 #'   maxLRO)
-calcDistLROPostBreedingNoEnv = function (P, F, c0, maxClutchSize, maxLRO,
+calcDistLROPostBreedingNoEnv = function (Pmat, Fmat, c0, maxClutchSize, maxLRO,
                                          Fdist="Poisson") {
-  Plist = list (P)
-  Flist = list(F)
+  Plist = list (Pmat)
+  Flist = list(Fmat)
   Q = matrix (1, 1, 1)
   out = calcDistLROPostBreeding (Plist, Flist, Q, c0, maxClutchSize,
                                  maxLRO)
@@ -1539,9 +1541,6 @@ probTraitCondLRONoEnv = function (PlistAllTraits, FlistAllTraits,
 #' @param FlistAllTraits A list of lists of fecundity  matrices.
 #'   Flist\[\[x\]\]\[\[q\]\]\[i,j\] is the expected number of state i
 #'   offspring from a state j, trait x parent in environment q.
-#' @param Q The environment transition matrix.  Q\[i,j\] is the
-#'   probability of transitioning from environment j to environment
-#'   i.
 #' @param c0 A vector specifying the offspring state distribution:
 #'   c0\[j\] is the probability that an individual is born in state j
 #' @param maxClutchSize The maximum clutch size to consider

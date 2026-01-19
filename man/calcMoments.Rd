@@ -28,13 +28,13 @@ R3 should be size n+1 x n+1.}
 \value{
 A list containing
 \itemize{
-\item rho1Vec: A vector whose jth entry gives the expected lifetime
+\item rho1Vec: A 1xn matrix whose jth entry gives the expected lifetime
 reward for a trajectory starting in state j
-\item mu2Vec: A vector whose jth entry gives the central 2nd moment
+\item mu2Vec: A 1xn matrix whose jth entry gives the central 2nd moment
 (variance) of lifetime reward for a trajectory starting in state j
-\item mu3Vec: A vector whose jth entry gives the central 3rd moment of
+\item mu3Vec: A 1xn matrix whose jth entry gives the central 3rd moment of
 lifetime reward for a trajectory starting in state j
-\item skewnessVec: A vector whose jth entry gives the skewness (3rd
+\item skewnessVec: A 1xn matrix whose jth entry gives the skewness (3rd
 central moment / variance^3/2) of lifetime reward for a trajectory starting
 in state j
 }
@@ -50,14 +50,14 @@ calculates moments of lifetime reproductive output.
 ## Transition matrix: M\[i,j\] is the probability of transitioning
 ##  from state j to state i
 M = matrix (0.1, 3, 3)
-## Fecundity matrix: F\[i,j\] is the expected number of size i offspring
+## Fecundity matrix: Fmat\[i,j\] is the expected number of size i offspring
 ## producted in one time step for a parent of size j
-F = matrix (0, 3, 3)
-F[1,] = c(0, 1, 2)
+Fmat = matrix (0, 3, 3)
+Fmat[1,] = c(0, 1, 2)
 ## Clutch size is Poisson distributed
 R1 = matrix (0, 4, 4)
 for (j in 1:3)
-  R1[,j] = sum(F[,j])
+  R1[,j] = sum(Fmat[,j])
 R2 = R1 + R1^2
 R3 = R1 + R1^2 + R1^3
 out = calcMoments (M, R1, R2, R3)

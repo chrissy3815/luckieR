@@ -5,8 +5,8 @@
 \title{Distribution of lifespan conditional on LRO}
 \usage{
 distLifespanCondR2NoEnv(
-  P,
-  F,
+  Pmat,
+  Fmat,
   c0,
   maxClutchSize,
   maxLRO,
@@ -16,11 +16,11 @@ distLifespanCondR2NoEnv(
 )
 }
 \arguments{
-\item{P}{The survival/growth transition matrix.
-P[i,j] is the probability of transitioning from
+\item{Pmat}{The survival/growth transition matrix.
+Pmat[i,j] is the probability of transitioning from
 state j to state i.}
 
-\item{F}{The fecundity matrix.  F[i,j]
+\item{Fmat}{The fecundity matrix.  Fmat[i,j]
 is the expected number of state i offspring from a state j
 parent.}
 
@@ -74,12 +74,12 @@ https://doi.org/10.1086/730557 and its online supplement.  This
 is a wrapper function for distLifespanCondR2.
 }
 \examples{
-P = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
-F = matrix (0, 3, 3); F[1,] = 0:2
+Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 c0 = c(1,0,0)
 maxClutchSize = 12
 maxLRO = 30
 maxAge=20
-out = distLifespanCondR2NoEnv (P, F, c0, maxClutchSize,
+out = distLifespanCondR2NoEnv (Pmat, Fmat, c0, maxClutchSize,
   maxLRO, maxAge)
 }

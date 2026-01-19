@@ -30,6 +30,8 @@ the probability that an individual is born in state j}
 
 \item{maxClutchSize}{The maximum clutch size to consider}
 
+\item{maxLRO}{The maximum LRO to consider}
+
 \item{Fdist}{The clutch size distribution.  The recognized options are
 "Poisson" and "Bernoulli".  Optional.  The default value is "Poisson".}
 }
