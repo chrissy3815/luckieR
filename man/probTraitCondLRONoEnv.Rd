@@ -15,6 +15,14 @@ probTraitCondLRONoEnv(
 )
 }
 \arguments{
+\item{PlistAllTraits}{A list of lists of survival/growth transition
+matrices. PlistAllTraits[[x]][i,j] is the probability of
+transitioning from state j to state i when an individual has trait x.}
+
+\item{FlistAllTraits}{A list of lists of fecundity  matrices.
+FlistAllTraits[[x]][i,j] is the expected number of state i
+offspring from a state j, trait x parent.}
+
 \item{c0}{A vector specifying the offspring state distribution:
 c0[j] is the probability that an individual is born in state j}
 
@@ -28,14 +36,6 @@ probability that the trait takes on the jth value}
 \item{Fdist}{The clutch size distribution.  The recognized options
 are "Poisson" and "Bernoulli".  Optional.  The default value is
 "Poisson".}
-
-\item{Plist}{A list of lists of survival/growth transition
-matrices. Plist[[x]][i,j] is the probability of
-transitioning from state j to state i when an individual has trait x.}
-
-\item{Flist}{A list of lists of fecundity  matrices.
-Flist[[x]][i,j] is the expected number of state i
-offspring from a state j, trait x parent.}
 }
 \value{
 A list containing the following:
@@ -63,12 +63,12 @@ Success?"  The American Naturalist 191(4).  DOI:
 \examples{
 P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 P2 = matrix (c(0, 0.5, 0, 0, 0, 0.2, 0, 0, 0.7), 3, 3)
-Plist = list(P1, P2)
+PlistAllTraits = list(P1, P2)
 F1 = matrix (0, 3, 3); F1[1,] = 0:2
 F2 = matrix (0, 3, 3); F2[1,] = 0.9*(0:2)
-Flist = list (F1, F2)
+FlistAllTraits = list (F1, F2)
 c0 = c(1,0,0)
 traitDist = rep(0.5, 2)
-out = probTraitCondLRONoEnv (Plist, Flist,
+out = probTraitCondLRONoEnv (PlistAllTraits, FlistAllTraits,
       c0, maxClutchSize=10, maxLRO=15, traitDist)
 }
