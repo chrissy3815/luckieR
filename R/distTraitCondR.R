@@ -1250,14 +1250,6 @@ distLifespanCondR2NoEnv = function (Pmat, Fmat, c0, maxClutchSize,
                                    maxLRO, maxAge,
                                    percentileCutoff=0.99,
                                    Fdist="Poisson") {
-  ## Sanity check input
-  if (Fdist == "Bernoulli") {
-    for (q in 1:numEnv)
-      if (sum(colSums(Flist[[q]]) > 1))
-        stop("Probability of having an offspring > 1!  Columns of fecundity matrix in environment ",
-             q, " sum to > 1 but clutch size is Bernoulli-distributed.")
-  }
-
   Plist = list (Pmat)
   Flist = list (Fmat)
   Q = matrix (1, 1, 1)
@@ -1328,14 +1320,6 @@ distLifespanCondR2PostBreedingNoEnv = function (Pmat, Fmat,
                                            c0, maxClutchSize, maxLRO, maxAge,
                                            percentileCutoff = 0.99,
                                            Fdist="Poisson") {
-
-  ## Sanity check input
-  if (Fdist == "Bernoulli") {
-    for (q in 1:numEnv)
-      if (sum(colSums(Flist[[q]]) > 1))
-        stop("Probability of having an offspring > 1!  Columns of fecundity matrix in environment ",
-             q, " sum to > 1 but clutch size is Bernoulli-distributed.")
-  }
 
   Plist = list (Pmat)
   Flist = list (Fmat)

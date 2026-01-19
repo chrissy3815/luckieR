@@ -3,10 +3,22 @@ Chrissy last updated 01-19-2026
 
 1. probTraitCondLRONoEnv - Should the input variables be called Plist and Flist, or PlistAllTraits and FlistAllTraits? I am unsure whether to rename things, but the function and documentation have errors due to this.
 
+It should be PlistAllTraits, etc.  These are lists of lists of matrices, unlike Plist and Flist, which are lists of matrices.
+
 2. probTraitCondLROPostBreedingNoEnv - same as item 1, issues with variable names Plist and Flist vs. PlistAllTraits and FlistAllTraits.
 
-3. distLifespanCondR2NoEnv - has a "sanity check" block at the beginning of the function that requires a variable "numEnv" which is not an input variable to this function. 
+Still PlistAllTraits, etc.
+
+3. distLifespanCondR2NoEnv - has a "sanity check" block at the beginning of the function that requires a variable "numEnv" which is not an input variable to this function.
+
+I got rid of the sanity check, since distLifespanCondR2 will do that sanity check first thing.
 
 4. distLifespanCondR2PostBreedingNoEnv - same as item 3 - R is trying to find "numEnv" as a global variable.
 
+Sanity check removed.
+
 5. getModalTimeToHitState - no documentation written. Also has an issue where the input variable is called Plist but line 563 tries to access a variable called "P" that does not exist. Should it be P[[1]][1]?
+
+Oy.  Let me write some documentation.  And I've added a new function, makeMCondLROThreshold, to partitiningUtilities.R, but it's not debugged yet and I have no tests for it yet.  Just an fyi.
+
+And P should be P[[1]] on line 563.  Fixed.

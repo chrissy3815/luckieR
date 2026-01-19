@@ -560,7 +560,7 @@ getModalTimeToHitState = function (absorbingStates,
   mz = dim(Plist[[1]])[1]
   if (is.null(Q)) {  ## no env. var.
     bigmz = mz
-    M = P
+    M = Plist[[1]]
   } else {
     numEnv = dim(Q)[1]
     bigmz = numEnv*mz
