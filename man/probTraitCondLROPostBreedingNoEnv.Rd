@@ -16,12 +16,12 @@ probTraitCondLROPostBreedingNoEnv(
 }
 \arguments{
 \item{PlistAllTraits}{A list of lists of survival/growth transition
-matrices. Plist[[x]][[q]][i,j] is the probability of
+matrices. PlistAllTraits[[x]][[q]][i,j] is the probability of
 transitioning from state j to state i in environment q when an
 individual has trait x.}
 
 \item{FlistAllTraits}{A list of lists of fecundity  matrices.
-Flist[[x]][[q]][i,j] is the expected number of state i
+FlistAllTraits[[x]][[q]][i,j] is the expected number of state i
 offspring from a state j, trait x parent in environment q.}
 
 \item{c0}{A vector specifying the offspring state distribution:
@@ -70,6 +70,6 @@ F2 = matrix (0, 3, 3); F2[1,] = 0.9*(0:2)
 FlistAllTraits = list (F1, F2)
 c0 = c(1,0,0)
 traitDist = rep(0.5, 2)
-out = probTraitCondLROPostBreedingNoEnv (PlistAllTraits, FlistAllTraits, Q,
+out = probTraitCondLROPostBreedingNoEnv (PlistAllTraits, FlistAllTraits,
       c0, maxClutchSize=10, maxLRO=15, traitDist)
 }
