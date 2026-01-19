@@ -1031,7 +1031,7 @@ probTraitCondLRO = function (PlistAllTraits, FlistAllTraits, Q,
   if (max(abs(range (foo1 - foo2))) > epsilon)
     ## warning ("Columns of probRCondX should sum to 1 and they
     ## don't.")
-    cat ("Columns of probRCondX should sum to 1 and they don't.")
+    message ("Columns of probRCondX should sum to 1 and they don't.")
 
   ## Now use Bayes thm to get P(X | R). ################
 
@@ -1250,14 +1250,6 @@ distLifespanCondR2NoEnv = function (Pmat, Fmat, c0, maxClutchSize,
                                    maxLRO, maxAge,
                                    percentileCutoff=0.99,
                                    Fdist="Poisson") {
-  ## Sanity check input
-  if (Fdist == "Bernoulli") {
-    for (q in 1:numEnv)
-      if (sum(colSums(Flist[[q]]) > 1))
-        stop("Probability of having an offspring > 1!  Columns of fecundity matrix in environment ",
-             q, " sum to > 1 but clutch size is Bernoulli-distributed.")
-  }
-
   Plist = list (Pmat)
   Flist = list (Fmat)
   Q = matrix (1, 1, 1)
@@ -1328,14 +1320,6 @@ distLifespanCondR2PostBreedingNoEnv = function (Pmat, Fmat,
                                            c0, maxClutchSize, maxLRO, maxAge,
                                            percentileCutoff = 0.99,
                                            Fdist="Poisson") {
-
-  ## Sanity check input
-  if (Fdist == "Bernoulli") {
-    for (q in 1:numEnv)
-      if (sum(colSums(Flist[[q]]) > 1))
-        stop("Probability of having an offspring > 1!  Columns of fecundity matrix in environment ",
-             q, " sum to > 1 but clutch size is Bernoulli-distributed.")
-  }
 
   Plist = list (Pmat)
   Flist = list (Fmat)
@@ -1468,11 +1452,11 @@ calcDistLROPostBreedingNoEnv = function (Pmat, Fmat, c0, maxClutchSize, maxLRO,
 #' Calculates Prob(X | R), where X is a trait value and R is lifetime
 #' reproductive output (LRO) in the absence of environmental
 #' variation.
-#' @param Plist A list of lists of survival/growth transition
-#'   matrices. Plist\[\[x\]\]\[i,j\] is the probability of
+#' @param PlistAllTraits A list of lists of survival/growth transition
+#'   matrices. PlistAllTraits\[\[x\]\]\[i,j\] is the probability of
 #'   transitioning from state j to state i when an individual has trait x.
-#' @param Flist A list of lists of fecundity  matrices.
-#'   Flist\[\[x\]\]\[i,j\] is the expected number of state i
+#' @param FlistAllTraits A list of lists of fecundity  matrices.
+#'   FlistAllTraits\[\[x\]\]\[i,j\] is the expected number of state i
 #'   offspring from a state j, trait x parent.
 #' @param c0 A vector specifying the offspring state distribution:
 #'   c0\[j\] is the probability that an individual is born in state j
@@ -1502,26 +1486,17 @@ calcDistLROPostBreedingNoEnv = function (Pmat, Fmat, c0, maxClutchSize, maxLRO,
 #' @examples
 #' P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' P2 = matrix (c(0, 0.5, 0, 0, 0, 0.2, 0, 0, 0.7), 3, 3)
-#' Plist = list(P1, P2)
+#' PlistAllTraits = list(P1, P2)
 #' F1 = matrix (0, 3, 3); F1[1,] = 0:2
 #' F2 = matrix (0, 3, 3); F2[1,] = 0.9*(0:2)
-#' Flist = list (F1, F2)
+#' FlistAllTraits = list (F1, F2)
 #' c0 = c(1,0,0)
 #' traitDist = rep(0.5, 2)
-#' out = probTraitCondLRONoEnv (Plist, Flist,
+#' out = probTraitCondLRONoEnv (PlistAllTraits, FlistAllTraits,
 #'       c0, maxClutchSize=10, maxLRO=15, traitDist)
 probTraitCondLRONoEnv = function (PlistAllTraits, FlistAllTraits,
                                   c0, maxClutchSize, maxLRO,
                                   traitDist,
-                                  Fdist="Poisson") {
-  P1list = list(Plist[[1]])
-  P2list = list(Plist[[2]])
-  PlistAllTraits = list(P1list, P2list)
-
-  F1list = list(Flist[[1]])
-  F2list = list(Flist[[2]])
-  FlistAllTraits = list (F1list, F2list)
-
   Q = matrix (1, 1, 1)
 
   out = probTraitCondLRO (PlistAllTraits, FlistAllTraits, Q,
@@ -1535,11 +1510,11 @@ probTraitCondLRONoEnv = function (PlistAllTraits, FlistAllTraits,
 #' reproductive output (LRO), for a post-breeding census model in the
 #' absence of environmental variation
 #' @param PlistAllTraits A list of lists of survival/growth transition
-#'   matrices. Plist\[\[x\]\]\[\[q\]\]\[i,j\] is the probability of
+#'   matrices. PlistAllTraits\[\[x\]\]\[\[q\]\]\[i,j\] is the probability of
 #'   transitioning from state j to state i in environment q when an
 #'   individual has trait x.
 #' @param FlistAllTraits A list of lists of fecundity  matrices.
-#'   Flist\[\[x\]\]\[\[q\]\]\[i,j\] is the expected number of state i
+#'   FlistAllTraits\[\[x\]\]\[\[q\]\]\[i,j\] is the expected number of state i
 #'   offspring from a state j, trait x parent in environment q.
 #' @param c0 A vector specifying the offspring state distribution:
 #'   c0\[j\] is the probability that an individual is born in state j
@@ -1575,21 +1550,13 @@ probTraitCondLRONoEnv = function (PlistAllTraits, FlistAllTraits,
 #' FlistAllTraits = list (F1, F2)
 #' c0 = c(1,0,0)
 #' traitDist = rep(0.5, 2)
-#' out = probTraitCondLROPostBreedingNoEnv (PlistAllTraits, FlistAllTraits, Q,
+#' out = probTraitCondLROPostBreedingNoEnv (PlistAllTraits, FlistAllTraits,
 #'       c0, maxClutchSize=10, maxLRO=15, traitDist)
 probTraitCondLROPostBreedingNoEnv =
   function (PlistAllTraits, FlistAllTraits,
             c0, maxClutchSize, maxLRO,
             traitDist,
             Fdist="Poisson") {
-
-  P1list = list(Plist[[1]])
-  P2list = list(Plist[[2]])
-  PlistAllTraits = list(P1list, P2list)
-
-  F1list = list(Flist[[1]])
-  F2list = list(Flist[[2]])
-  FlistAllTraits = list (F1list, F2list)
 
   Q = matrix (1, 1, 1)
 
