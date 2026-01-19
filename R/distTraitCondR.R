@@ -1496,7 +1496,7 @@ calcDistLROPostBreedingNoEnv = function (Pmat, Fmat, c0, maxClutchSize, maxLRO,
 #'       c0, maxClutchSize=10, maxLRO=15, traitDist)
 probTraitCondLRONoEnv = function (PlistAllTraits, FlistAllTraits,
                                   c0, maxClutchSize, maxLRO,
-                                  traitDist,
+                                  traitDist)
   Q = matrix (1, 1, 1)
 
   out = probTraitCondLRO (PlistAllTraits, FlistAllTraits, Q,
