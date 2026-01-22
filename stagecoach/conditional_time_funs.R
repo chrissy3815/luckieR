@@ -34,9 +34,11 @@
 
 ### The defined functions are:
 ##			mean_lifespan, var_lifespan
-## 			mean_conditional_times, var_conditional_times
+## 			mean_conditional_times, var_conditional_times 
 ##			mean_conditional_lifespan, var_conditional_lifespan 
-##			wrappers for population moments: pop_mean_var, pop_mu3 
+##			first_breed -- prob. of breeding before death, mean & var of age 
+##                         at first breeding, conditional on breeding 
+##			wrappers for population moments: pop_mean_var, pop_mu3, pop_skew 
 ##			Di_mat (a utility function)
 
 #### For testing 
@@ -262,6 +264,65 @@ var_conditional_lifespan = function(M){
 }
 
 #########################################################################
+##  Function to compute probability of breeding at least once, and 
+##  mean and variance of age at first breeding conditional on breeding,
+##  as a function of initial state. This requires that the model 
+##  specification includes state-dependent breeding probability, not just
+##  state-dependent mean fecundity. 
+##
+##  Probability of breeding at least once from now until death must be 
+##  positive for all states. If not, remove those states from the model
+##  (can't start in any of them, going into them becomes death) and 
+##  apply this function to the remaining states. 
+##
+##  Assumptions and coding follow Ellner et al. (2016) IPM monograph,
+##  chapter 3. The state transition matrix M is assumed to have the
+##  form M = p_b M_b + (1-p_b) M_0 to allow for costs of reproduction,
+##  but M_b and M_0 can be equal if there are no costs. 
+##  Breeding does not necessarily imply producing any new recruits,
+##  for example clutch size conditional on breeding could be Poisson. 
+##
+##  This function complements mature_age() in Rage, which computes
+##  the mean age at first entering a state with positive mean fecundity. 
+##
+##  Arguments:                                                          
+##  	M_0: transition matrix for non-breeders
+##		p_b: probability breeding for each state.                                 
+##  Return Value/s:   
+##	   B: prob. to breed at once, condional on initial state	(vector)
+##     abar_R: mean age at first breeding, conditional initial state (vector)        
+#########################################################################
+first_breed = function(M0,pb) {
+  if(!is.matrix(M0)) {stop("This is not a matrix")}
+  if(nrow(M0)!=ncol(M0)) {stop("This is not a square matrix")}
+  if(!is.numeric(M0)) {stop("This is not a numeric matrix")}
+  if(length(pb)!=nrow(M0)) {stop("Length mismatch, breeding probability")} 
+
+    nx = nrow(M0)
+	
+	## survival and growth without breeding
+	P0 = matrix(NA,nx,nx)
+	for(i in 1:nx) P0[i,] = (1-pb)*M0[i,]
+	N0 = solve(diag(nx)-P0); 
+	
+	## IPM book, page 70 
+	B = as.numeric(matrix(pb,1,nx)%*%M0) 
+	
+	## IPM book, page 71 
+	Pb = matrix(NA,nx,nx) 
+	for(z in 1:nx) Pb[,z] = P0[,z]*B/B[z] 
+	Nb = solve(diag(nx)-Pb); 
+	abar_R = colSums(Nb)-1; 
+	# -1 because age at birth = 0 by assumption. A 'lifespan' of 2 in Pb 
+	# means that you breed at your second census time, which is age=1. 
+	
+	## Caswell formula, only involves fundamental matrix
+	var_R = colSums(2*(Nb%*%Nb) - Nb) - colSums(Nb)^2;  
+	
+	return(list(p_breed=B,mean_age = abar_R, var_age = var_R))
+}	
+	
+#########################################################################
 ##  Function to compute the population mean and variance of some 
 ##  attribute X, given the vectors of mean and variance conditional on 
 ##  individual 'type' Z. This substitutes for all of the individual  
@@ -327,3 +388,33 @@ pop_mu3 = function(mean_by_type,var_by_type,mu3_by_type,mixdist){
 		return(result)
 }		
 
+#########################################################################
+##  Function to compute the population skewness of some attribute
+##  attribute X, given the vectors of mean, variance and skemness   
+##  conditional on individual 'type' Z. Done by calling pop_mu3
+##  and pop_mean_var.  
+##  Arguments:                                                          
+##  	mean_by_type: mean of X for each value of Z (vector) 
+##		var_by_type: variance of X for each value of Z (vector)                                 
+##      skew_by_type: skewness of X for each value of Z (vector)
+##		mixdist: frequency distribution of Z within the population. 
+##  Return Value/s:   
+##     population skewness (scalar)  
+##            
+#########################################################################
+pop_skew = function(mean_by_type,var_by_type,skew_by_type,mixdist){
+		if(min(mixdist)<0) {stop("Not a valid mixing distribution")} 
+		if(sum(mixdist)!=1) {stop("Not a valid mixing distribution")}
+		if(min(var_by_type)<0) {stop("Not a valid variances vector")}
+		nZ = length(mean_by_type) 
+		if(length(var_by_type)!=nZ) {stop("Length mismatch, mean and var")}
+		if(length(skew_by_type)!=nZ) {stop("Length mismatch, mean and mu3")}
+		if(length(mixdist)!=nZ) {stop("Length mismatch, means and mixing distribution")}
+		
+		mu3_by_type = skew_by_type*(var_by_type^(3/2)); 
+		mu3 = pop_mu3(mean_by_type,var_by_type,mu3_by_type,mixdist)
+		mu2 = pop_mean_var(mean_by_type,var_by_type,mixdist)$pop_var 
+		
+		result = mu3/(mu2^(3/2)); 
+		return(result)
+}
