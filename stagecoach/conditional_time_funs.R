@@ -41,21 +41,6 @@
 ##			wrappers for population moments: pop_mean_var, pop_mu3, pop_skew 
 ##			Di_mat (a utility function)
 
-#### For testing 
-M1 = matrix(c(0, 0,    0,  0,
-              1, 0,    0,  0,
-			  0, 0.5,  0,  0,
-			  0, 0.5,  1,  0), 4,4,byrow=TRUE) 
-N1 = solve(diag(4)-M1); colSums(N1); 			  
-## 3.5 2.5 2.0 1.0  
-
-M2 = matrix(c(0, 0,    0,  0,
-              1, 0,    0,  0,
-			  0, 0.25, 0,  0,
-			  0, 0.25, 1,  0), 4,4,byrow=TRUE) 
-N2 = solve(diag(4)-M2); colSums(N2); 			  
-## 2.75 1.75 2.00 1.00
- 
 ########################################################################### 
 ## Compute mean remaining lifespan given current state, for each state,       
 ##		given by row sums of the fundamental matrix. "Remaining lifespan"
@@ -77,7 +62,7 @@ mean_lifespan = function(M){
   if(!is.numeric(M)) {stop("This is not numeric")}
 
   matDim = nrow(M); 
-  N <- try(solve(diag(matDim) - M), silent = TRUE)
+  N = try(solve(diag(matDim) - M), silent = TRUE)
   if (inherits(N, "try-error")) {
         LE = rep(NA,matDim)
 		} else {
