@@ -1,0 +1,90 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx,amsmath,amssymb,blkarray,setspace,bm,gensymb}
+\usepackage[authoryear,sectionbib,sort]{natbib}
+\usepackage{lineno}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[subtle]{savetrees}
+\usepackage[compact]{titlesec} 
+\usepackage[font={small,singlespacing},labelfont=bf,skip=2pt]{caption}
+\usepackage{authblk,float}
+
+\usepackage[utf8]{inputenc}
+\usepackage[sc]{mathpazo} %Like Palatino with extensive math support
+
+\usepackage{enumitem}
+\setlist{topsep=-0.5em,itemsep=-0.2em,leftmargin=0.75cm}
+
+\usepackage[formats]{listings}
+\usepackage{color}
+\definecolor{mygreen}{rgb}{0.1,0.5,0.1}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\definecolor{mygrey}{rgb}{0.3,0.3,0.1}
+\lstset{
+  language=R,
+  otherkeywords={data.frame},
+  basicstyle=\normalsize\ttfamily, 
+  commentstyle=\normalsize\ttfamily,
+  keywordstyle=\normalsize\ttfamily,
+  stringstyle=\color{mymauve}, 
+  commentstyle=\color{mygreen},
+  keywordstyle=\color{blue},
+  showstringspaces=false, xleftmargin=2.5ex,
+  columns=flexible,
+  literate={~}{{$\sim \; \; $}}1,
+  alsodigit={\.,\_},
+  deletekeywords={on,by,data,R,Q,mean,var,sd,log,family,na,options,q,weights,effects,matrix,nrow,ncol,wt,fix,distance},
+}
+\lstset{escapeinside={(*}{*)}} 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%% Our macros for frequently used symbols and such 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\DeclareMathOperator{\Ex}{\mathbb{E}}
+\DeclareMathOperator{\var}{\textit{Var}}
+\DeclareMathOperator{\cov}{\textit{Cov}}
+\DeclareMathOperator{\vc}{\mbox{vec}}
+
+\newcommand{\sk}{\widetilde{\mu}_3}
+
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%% Just for commenting
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\new}{\textcolor{red}}
+\newcommand{\comment}{\textcolor{blue}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%% Some formatting control 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\renewcommand{\floatpagefraction}{0.9}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\textfraction}{0.05}
+\sloppy
+\clubpenalty = 1005
+\widowpenalty = 1000
+
+\title{Testing the \texttt{stageCoach} functions} 
+
+\author{Steve Ellner} 
+
+
+\begin{document} 
+
+\maketitle 
+
+\begin{figure}[tbp]
+\centering
+\includegraphics[width=0.8\textwidth]{LifeCycle.pdf}
+\caption{Life cycle used for testing the \texttt{stageCoach} functions. When one arrow exits
+a compartment, the transition probability is 1. When multiple arrows exit a compartment, they are 
+equally likely and their total probability is 1. Thus, all individuals eventually reach state 7 and then die. 
+Only compartment state 6 has positive fecundity, with a 50\% chance of breeding.}  
+\end{figure} 
+
+\end{document} 
