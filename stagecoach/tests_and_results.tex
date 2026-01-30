@@ -1,4 +1,4 @@
-\documentclass[11pt]{article}
+\documentclass[12pt]{article}
 \usepackage[margin=1in]{geometry}
 \usepackage{graphicx,amsmath,amssymb,blkarray,setspace,bm,gensymb}
 \usepackage[authoryear,sectionbib,sort]{natbib}
@@ -78,13 +78,52 @@
 
 \maketitle 
 
-\begin{figure}[tbp]
+\begin{figure}[h!]
 \centering
 \includegraphics[width=0.8\textwidth]{LifeCycle.pdf}
 \caption{Life cycle used for testing the \texttt{stageCoach} functions. When one arrow exits
 a compartment, the transition probability is 1. When multiple arrows exit a compartment, they are 
 equally likely and their total probability is 1. Thus, all individuals eventually reach state 7 and then die. 
 Only compartment state 6 has positive fecundity, with a 50\% chance of breeding.}  
+\label{fig:testCycle}
 \end{figure} 
+
+The life cycle diagrammed in Figure \ref{fig:testCycle} is used to do some basic tests of the 
+R translations of functions from \texttt{stageCoach}. Calculations are done in the script 
+\texttt{testing\_conditional\_time\_funs.R}. 
+
+\begin{itemize} 
+\item 
+\begin{verbatim} 
+mean_lifespan(M7); 
+[1] 4.666667 3.666667 3.000000 3.000000 2.000000 2.000000 1.000000
+\end{verbatim} 
+The function results for stages 3,5,6 and 7 are clearly right. Stage 4 has equal odds of lifespan 2 ($4 \to 7$) and
+lifespan 4 ($4 \to 3 \to 6 \to 7$) so lifespan=3 is correct. The mean lifespan for stage 2 is one more
+than the average for 3, 4, and 5, $1 + 8/3 = 3\frac{2}{3}$ and the mean lifespan for stage 1 is one more
+than that -- both correct. 
+
+\item 
+\begin{verbatim} 
+var_lifespan(M7); 
+[1] 0.5555556 0.5555556 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000
+\end{verbatim} 
+From stages 3, 5, 6 and 7 the route to the crypt is certain, so the function results are correct.  
+Stage 4 has equal odds of lifespans 2 and 4, so the function result (variance=1) is correct. 
+Stages 1 and 2 clearly have equal variance. From stage 2, $2 \to 3$ gives lifespan 4, $2 \to 5$ 
+gives lifespan 3 --- each of these has probability 1/3. $2 \to 4$ gives equal odds of lifespans 
+3 and 5, so these have probability 1/6 each. The function gives the correct value for the 
+variance of this probability distribution. 
+
+
+
+
+
+
+
+\end{itemize} 
+
+
+ 
 
 \end{document} 

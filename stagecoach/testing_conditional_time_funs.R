@@ -5,6 +5,40 @@ if(u["user"]=="Ellner") setwd("c:/repos/luckieR/stagecoach");
 source("conditional_time_funs.R"); 
 
 #######################################################
+#### For testing conditional times 
+#######################################################
+M1 = matrix(c(0, 0,    0,  0,
+              1, 0,    0,  0,
+			  0, 0.5,  0,  0,
+			  0, 0.5,  1,  0), 4,4,byrow=TRUE) 
+N1 = solve(diag(4)-M1); colSums(N1); 			  
+## 3.5 2.5 2.0 1.0  
+
+M2 = matrix(c(0, 0,    0,  0,
+              1, 0,    0,  0,
+			  0, 0.25, 0,  0,
+			  0, 0.25, 1,  0), 4,4,byrow=TRUE) 
+N2 = solve(diag(4)-M2); colSums(N2); 			  
+## 2.75 1.75 2.00 1.00
+
+
+M7 = matrix(0,7,7); 
+M7[2,1] = M7[6,3] = M7[7,5] = M7[7,6] = 1 ## states 1,3,5,6 
+M7[3,2] = M7[4,2] = M7[5,2] = 1/3; # state 2 
+M7[3,4] = M7[7,4] = 0.5; # state 4 
+
+mean_lifespan(M7); 
+
+var_lifespan(M7);
+# calculations for stage 2 
+probs = c(1/3,1/3,1/6,1/6); vals = c(4,3,3,5);  
+EX = sum(probs*vals); 
+EX2  = sum(probs*vals^2); 
+VarX = EX2 - EX^2; 
+
+
+
+#######################################################
 #### Testing the population moment wrappers
 #######################################################
 par(mfrow=c(5,4),mar=c(3,3,1,1)); 
@@ -29,28 +63,5 @@ for(rep in 1:20) {
 	cat(out$pop_mean,out$pop_var,out2,"\n"); 
 }
 	
-#######################################################
-#### For testing conditional times 
-#######################################################
-M1 = matrix(c(0, 0,    0,  0,
-              1, 0,    0,  0,
-			  0, 0.5,  0,  0,
-			  0, 0.5,  1,  0), 4,4,byrow=TRUE) 
-N1 = solve(diag(4)-M1); colSums(N1); 			  
-## 3.5 2.5 2.0 1.0  
 
-M2 = matrix(c(0, 0,    0,  0,
-              1, 0,    0,  0,
-			  0, 0.25, 0,  0,
-			  0, 0.25, 1,  0), 4,4,byrow=TRUE) 
-N2 = solve(diag(4)-M2); colSums(N2); 			  
-## 2.75 1.75 2.00 1.00
-
-
-M3 = matrix(0,7,7); 
-M3[2,1] = M3[6,3] = M3[7,5] = M3[7,6] = 1 ## states 1,3,5,6 
-M3[3,2] = M3[4,2] = M3[5,2] = 1/3; # state 2 
-M3[3,4] = M3[7,4] = 0.5; # state 4 
-N3 = solve(diag(7)-M3); signif(colSums(N3),4)
-## 4.667 3.667 3.000 3.000 2.000 2.000 1.000	
 	
