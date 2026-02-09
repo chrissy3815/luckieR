@@ -527,12 +527,16 @@ makeMCondLROThreshold = function (M, Fmat, threshold, m0, maxLRO=12,
 
     ## Construct A, the transition matrix for a (number of kids) x stage x
     ## env. model.
-    mT = maxLRO + 1
-  out = make_AxT (B, M, mT)
-  message ("calcDistLRO: Making A...")
-  A = out$A
+  mT = maxLRO + 1
   mzA = bigmz*mT
-  
+
+  if (FALSE) {  ## just for debugging
+    message ("makeMCondLROThreshold: Making A...")  
+    out = make_AxT (B, M, mT)
+    A = out$A
+  }
+
+  message ("makeMCondLROThreshold: Making bullet matrices...")
   ## Make "bullet" matrices for A.
   Fbullet = matrix (0, mzA, mzA)
 
@@ -572,10 +576,12 @@ makeMCondLROThreshold = function (M, Fmat, threshold, m0, maxLRO=12,
   for (k in 1:mT)
     Mbullet[(k-1)*bigmz + 1:bigmz, (k-1)*bigmz + 1:bigmz] = M
 
-  ## sanity check
-  epsilon = 0.00001
-  if (sum(abs(range(Mbullet %*% Fbullet - A))) > epsilon)
-    stop ("Mbullet %*% Fbullet is substantially different than A.")
+  ## sanity check: expensive, so just for debugging
+  if (FALSE) {
+    epsilon = 0.00001
+    if (sum(abs(range(Mbullet %*% Fbullet - A))) > epsilon)
+      stop ("Mbullet %*% Fbullet is substantially different than A.")
+  }
 
   ####################################################################
   ## Now make the additionally extended space matrix that allows us to
@@ -597,7 +603,7 @@ makeMCondLROThreshold = function (M, Fmat, threshold, m0, maxLRO=12,
   a0[1:bigmz] = m0
 
   transientStates = 1:(2*bigmz*threshold)
-  out = makeCondKernel (A, transientStates)
+  out = makeCondKernel (esA, transientStates)
   ACondSucceed = out$MCond
   probSucceedCondZ = out$q2Extended
   probSucceed = sum(probSucceedCondZ * a0)
