@@ -536,7 +536,6 @@ makeMCondLROThreshold = function (M, Fmat, threshold, m0, maxLRO=12,
     A = out$A
   }
 
-  message ("makeMCondLROThreshold: Making bullet matrices...")
   ## Make "bullet" matrices for A.
   Fbullet = matrix (0, mzA, mzA)
 
@@ -602,7 +601,7 @@ makeMCondLROThreshold = function (M, Fmat, threshold, m0, maxLRO=12,
   a0 = rep (0, esmzA)
   a0[1:bigmz] = m0
 
-  transientStates = 1:(2*bigmz*threshold)
+  transientStates = 1:(2*bigmz*(threshold-1))
   out = makeCondKernel (esA, transientStates)
   ACondSucceed = out$MCond
   probSucceedCondZ = out$q2Extended
