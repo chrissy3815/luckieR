@@ -700,7 +700,7 @@ makeMCondLROThresholdPostBreeding =
   a0 = rep (0, mzA)
   a0[1:bigmz] = m0
 
-  transientStates = 1:(bigmz*threshold)
+  transientStates = 1:(2*bigmz*(threshold-1))
   out = makeCondKernel (A, transientStates)
   ACondSucceed = out$MCond
   probSucceedCondZ = out$q2Extended
