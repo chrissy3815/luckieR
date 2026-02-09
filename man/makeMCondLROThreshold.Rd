@@ -39,34 +39,26 @@ reproductive bout.  Optional, with a default value of 12.}
 \value{
 A list containing the following.  All matrices and vectors
 are defined over an extended size distribution: if there are n
-sizes/stages, states 1--n are those sizes with no offspring yet,
-states n+1--2n are those sizes with the first offspring
-produced in the current year, and states 2n+1--3n are those sizes
-having produced at least one offspring in some past year.  See
-Details.
+sizes/stages, states 1--n are those sizes with LRO = 0,
+states n+1--2n are those sizes with LRO = 1, and so on through
+LRO = maxLRO.
 \itemize{
-\item ACondSucceed: the a size x #kids or size x env x #kids transition
+\item ACondSucceed: the size x #kids or size x env x #kids transition
 matrix conditional on reaching the LRO threshold before dying
 \item probSucceedCondZ: a vector whose jth entry is the probability
 of reaching the threshold before dying, conditional on beginning
 in size/stage j
-\item m0CondSucceed: the offspring state distribution conditional
-on reaching the offspring reaching the threshold before dying.
+\item probSucceed: the probability of succeeding assuming that an
+individual's starting state is distributed according to m0
+\item a0CondSucceed: the offspring state distribution conditional
+on reaching the LRO threshold before dying.
 }
 }
 \description{
 Calculates the transition kernel conditional on producing at least
 threshold offspring over the course of a life, as well as related
-quantites.
-}
-\details{
-To do this calculation, we extend the state space so that
-number of offspring is added to the state definition, and all
-outputs are given for this extended state space.  For
-example, if the original state space was (size 1, size 2),
-the new state space is (size 1, 0 offspring; size 2, 0 offspring;
-size 1, 1 offspring; size 2, 1 offspring, ...) up to #offspring =
-maxLRO.
+quantites.  Assumes a post-breeding census (survival and growth
+happen before reproduction).
 }
 \examples{
 M = matrix(0.1, 3, 3)
