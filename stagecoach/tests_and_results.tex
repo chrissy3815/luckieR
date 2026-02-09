@@ -1,0 +1,129 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx,amsmath,amssymb,blkarray,setspace,bm,gensymb}
+\usepackage[authoryear,sectionbib,sort]{natbib}
+\usepackage{lineno}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[subtle]{savetrees}
+\usepackage[compact]{titlesec} 
+\usepackage[font={small,singlespacing},labelfont=bf,skip=2pt]{caption}
+\usepackage{authblk,float}
+
+\usepackage[utf8]{inputenc}
+\usepackage[sc]{mathpazo} %Like Palatino with extensive math support
+
+\usepackage{enumitem}
+\setlist{topsep=-0.5em,itemsep=-0.2em,leftmargin=0.75cm}
+
+\usepackage[formats]{listings}
+\usepackage{color}
+\definecolor{mygreen}{rgb}{0.1,0.5,0.1}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\definecolor{mygrey}{rgb}{0.3,0.3,0.1}
+\lstset{
+  language=R,
+  otherkeywords={data.frame},
+  basicstyle=\normalsize\ttfamily, 
+  commentstyle=\normalsize\ttfamily,
+  keywordstyle=\normalsize\ttfamily,
+  stringstyle=\color{mymauve}, 
+  commentstyle=\color{mygreen},
+  keywordstyle=\color{blue},
+  showstringspaces=false, xleftmargin=2.5ex,
+  columns=flexible,
+  literate={~}{{$\sim \; \; $}}1,
+  alsodigit={\.,\_},
+  deletekeywords={on,by,data,R,Q,mean,var,sd,log,family,na,options,q,weights,effects,matrix,nrow,ncol,wt,fix,distance},
+}
+\lstset{escapeinside={(*}{*)}} 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%% Our macros for frequently used symbols and such 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\DeclareMathOperator{\Ex}{\mathbb{E}}
+\DeclareMathOperator{\var}{\textit{Var}}
+\DeclareMathOperator{\cov}{\textit{Cov}}
+\DeclareMathOperator{\vc}{\mbox{vec}}
+
+\newcommand{\sk}{\widetilde{\mu}_3}
+
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%% Just for commenting
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\new}{\textcolor{red}}
+\newcommand{\comment}{\textcolor{blue}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%% Some formatting control 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\renewcommand{\floatpagefraction}{0.9}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\textfraction}{0.05}
+\sloppy
+\clubpenalty = 1005
+\widowpenalty = 1000
+
+\title{Testing the \texttt{stageCoach} functions} 
+
+\author{Steve Ellner} 
+
+
+\begin{document} 
+
+\maketitle 
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.8\textwidth]{LifeCycle.pdf}
+\caption{Life cycle used for testing the \texttt{stageCoach} functions. When one arrow exits
+a compartment, the transition probability is 1. When multiple arrows exit a compartment, they are 
+equally likely and their total probability is 1. Thus, all individuals eventually reach state 7 and then die. 
+Only compartment state 6 has positive fecundity, with a 50\% chance of breeding.}  
+\label{fig:testCycle}
+\end{figure} 
+
+The life cycle diagrammed in Figure \ref{fig:testCycle} is used to do some basic tests of the 
+R translations of functions from \texttt{stageCoach}. Calculations are done in the script 
+\texttt{testing\_conditional\_time\_funs.R}. 
+
+\begin{itemize} 
+\item 
+\begin{verbatim} 
+mean_lifespan(M7); 
+[1] 4.666667 3.666667 3.000000 3.000000 2.000000 2.000000 1.000000
+\end{verbatim} 
+The function results for stages 3,5,6 and 7 are clearly right. Stage 4 has equal odds of lifespan 2 ($4 \to 7$) and
+lifespan 4 ($4 \to 3 \to 6 \to 7$) so lifespan=3 is correct. The mean lifespan for stage 2 is one more
+than the average for 3, 4, and 5, $1 + 8/3 = 3\frac{2}{3}$ and the mean lifespan for stage 1 is one more
+than that -- both correct. 
+
+\item 
+\begin{verbatim} 
+var_lifespan(M7); 
+[1] 0.5555556 0.5555556 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000
+\end{verbatim} 
+From stages 3, 5, 6 and 7 the route to the crypt is certain, so the function results are correct.  
+Stage 4 has equal odds of lifespans 2 and 4, so the function result (variance=1) is correct. 
+Stages 1 and 2 clearly have equal variance. From stage 2, $2 \to 3$ gives lifespan 4, $2 \to 5$ 
+gives lifespan 3 --- each of these has probability 1/3. $2 \to 4$ gives equal odds of lifespans 
+3 and 5, so these have probability 1/6 each. The function gives the correct value for the 
+variance of this probability distribution. 
+
+
+
+
+
+
+
+\end{itemize} 
+
+
+ 
+
+\end{document} 
