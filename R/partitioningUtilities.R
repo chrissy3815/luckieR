@@ -601,7 +601,10 @@ makeMCondLROThreshold = function (M, Fmat, threshold, m0, maxLRO=12,
   a0 = rep (0, esmzA)
   a0[1:bigmz] = m0
 
-  transientStates = 1:(2*bigmz*(threshold-1))
+  ## transient states are those with #kids below the threshold in both
+  ## the just-reproduced part of state space and the
+  ## just-survived-and-grew state space.
+  transientStates = c(1:(bigmz*threshold), mzA + 1:(bigmz*threshold))
   out = makeCondKernel (esA, transientStates)
   ACondSucceed = out$MCond
   probSucceedCondZ = out$q2Extended
@@ -700,7 +703,7 @@ makeMCondLROThresholdPostBreeding =
   a0 = rep (0, mzA)
   a0[1:bigmz] = m0
 
-  transientStates = 1:(2*bigmz*(threshold-1))
+  transientStates = 1:(2*bigmz*threshold)
   out = makeCondKernel (A, transientStates)
   ACondSucceed = out$MCond
   probSucceedCondZ = out$q2Extended
