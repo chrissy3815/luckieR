@@ -109,11 +109,89 @@ var_lifespan(M7);
 [1] 0.5555556 0.5555556 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000
 \end{verbatim} 
 From stages 3, 5, 6 and 7 the route to the crypt is certain, so the function results are correct.  
+
 Stage 4 has equal odds of lifespans 2 and 4, so the function result (variance=1) is correct. 
+
 Stages 1 and 2 clearly have equal variance. From stage 2, $2 \to 3$ gives lifespan 4, $2 \to 5$ 
 gives lifespan 3 --- each of these has probability 1/3. $2 \to 4$ gives equal odds of lifespans 
 3 and 5, so these have probability 1/6 each. The function gives the correct value for the 
 variance of this probability distribution. 
+
+\item 
+\begin{verbatim} 
+mean_conditional_times(M7); # rounded to 3 digits  
+      [,1]  [,2] [,3] [,4] [,5] [,6] [,7]
+[1,] 0.000    NA   NA   NA   NA   NA   NA
+[2,] 1.000 0.000   NA   NA   NA   NA   NA
+[3,] 2.333 1.333    0    1   NA   NA   NA
+[4,] 2.000 1.000   NA    0   NA   NA   NA
+[5,] 2.000 1.000   NA   NA    0   NA   NA
+[6,] 3.333 2.333    1    2   NA    0   NA
+[7,] 3.667 2.667    2    2    1    1    0
+\end{verbatim} 
+Starting from the right: the function results for stages 3, 4, 5, 6, and 7 are clearly right because
+there is only one possible route from the stage of origina to each of the reachable stages. 
+
+From stage 2: stage 3 can be reached in 1 time step (probability 1/3) or two time steps (probability 1/6). 
+Conditional mean time is therefore $(2/3)(1) + (1/3)(2) = 4/3$, same as the function result. Conditional
+times to 4 and 5 are both 1, as there is only one possible route. Conditional mean time to 6 is one more than
+conditional mean time to 3, check. Conditional time to reach 7 is equal to mean lifespan minus 1, check. 
+
+From stage 1: should be conditional time from stage 2 plus 1, check. 
+
+\item 
+\begin{verbatim} 
+var_conditional_times(M7); # rounded to 3 digits 
+      [,1]  [,2] [,3] [,4] [,5] [,6] [,7]
+[1,] 0.000    NA   NA   NA   NA   NA   NA
+[2,] 0.000 0.000   NA   NA   NA   NA   NA
+[3,] 0.222 0.222    0    0   NA   NA   NA
+[4,] 0.000 0.000   NA    0   NA   NA   NA
+[5,] 0.000 0.000   NA   NA    0   NA   NA
+[6,] 0.222 0.222    0    0   NA    0   NA
+[7,] 0.556 0.556    0    1    0    0    0
+\end{verbatim} 
+Results starting in states 3, 5, 6, and 7 are clearly correct. 
+
+From state 4, conditional time to reach 7 is
+one less than lifespan, so the value should be the same as lifespan variance, check. 
+
+Starting from 2, there are two ways to reach 6: $2 \to 3 \to 6$, probability 1/3, and $2 \to 4 \to 3 \to 6$, probability 1/6. 
+Conditional on reaching 6, the probabilities are 2/3 and 1/3, so the variance is that of a Bernoulli distribution
+with $p=2/3$, $(2/3)\times (1/3) = 0.2222 \cdots$, check. Reaching 7 is inevitable, so the conditional variance
+should equal the unconditional variance of lifespan, check. 
+
+Times starting from 1 are one more than times starting from two, so the variances should all be equal, check. 
+
+\item 
+\begin{verbatim} 
+mean_conditional_lifespan(M7); # rounded to 3 digits 
+     [,1]   [,2]  [,3]  [,4] [,5] [,6] [,7]
+[1,] 4.667    NA   NA   NA   NA   NA   NA
+[2,] 4.667 3.667   NA   NA   NA   NA   NA
+[3,] 5.333 4.333    3    4   NA   NA   NA
+[4,] 5.000 4.000   NA    3   NA   NA   NA
+[5,] 4.000 3.000   NA   NA    2   NA   NA
+[6,] 5.333 4.333    3    4   NA    2   NA
+[7,] 4.667 3.667    3    3    2    2    1
+\end{verbatim} 
+As everyone reaches 7, the bottom row should equal mean lifespan, check. 
+As everyone reaches their initial state, the diagonal should equal mean lifespan, check. 
+All results starting in states 5,6,and 7 are therefore correct. 
+
+Starting in 4, the mean lifespan conditional on reaching 3 or 6 is 4, check. 
+
+Starting in 3, mean lifespan is 3 come what may, check. 
+
+Starting in 2, we need to check the mean lifespans conditional on reaching 3, 4, 5, and 6. 
+There are two routes that go through 3: $2 \to 3 \to \to 7$ (lifespan 4, probability 1/3), 
+$2 \to 4 \to 3 \to \to 7$ (lifespan 5, probability 1/6). Conditional probabilities are 2/3 and 1/3,
+giving mean $4\frac{1}{3}$, check. 
+There are two equally likely routes through 4: $2 \to 4 \to 7$ (lifespan 3) and $2 \to 4 \to 3 \to \to 7$ 
+(lifespan 5), so the mean is 4, check. There is one route through 5, lifespan 3, check. Conditioning on 
+reaching 6 is the same as conditioning on reaching 3, check. 
+
+Results starting in state 1 should be those for state 2 plus 1, check. 
 
 
 
