@@ -452,7 +452,179 @@ makePCondBreedDef3 = function (P, Fmat, c0) {
 #'
 #' Calculates the transition kernel conditional on producing at least
 #'   threshold offspring over the course of a life, as well as related
-#'   quantites.
+#'   quantites.  Assumes a post-breeding census (survival and growth
+#'   happen before reproduction).
+#' @param M the unconditional survival/growth transition matrix.
+#'   M\[i,j\] is the probability of surviving and transitioning from
+#'   state j to state i.
+#' @param Fmat the fecundity matrix.  Fmat\[i,j\] is the expected number of
+#'   size i offspring from a size j parent.
+#' @param threshold the number of offspring LRO should meet or exceed
+#' @param m0 the state distribution of offspring
+#' @param maxLRO the maximum LRO is consider.  Optional, with a
+#'   default value of 12.
+#' @param maxClutchSize the maximum number of offspring born in one
+#'   reproductive bout.  Optional, with a default value of 12.
+#' @param Fdist the clutch size distribution.  Currently supported values are
+#'   "Poisson" and "Bernoulli."  Optional, with a default value of "Poisson".
+#'
+#' @details if there are n sizes/stages, states 1--n are those sizes
+#'   with LRO = 0 at the start of the time step (just after last
+#'   year's survival and growth (and environment) updates.  States
+#'   n+1--2n are those sizes with LRO = 0 just after this year's
+#'   fecundity update but before survival, growth (and environment)
+#'   updates.  States 2n+1--3n are those sizes with LRO = 1 at the
+#'   start of the time step, and so on through LRO = maxLRO.  To
+#'   advance the state by one time step, it is necessary to multiply
+#'   by ACondSucceed twice (once to update fecundity, then another
+#'   time to update survival, growth, and, if necessary, the
+#'   environment.  
+#' 
+#' @return A list containing the following.  All matrices and vectors
+#'   are defined over an extended size distribution: see Details. 
+#' * ACondSucceed: the size x #kids or size x env x #kids transition
+#'   matrix conditional on reaching the LRO threshold before dying
+#' * probSucceedCondZ: a vector whose jth entry is the probability
+#'   of reaching the threshold before dying, conditional on beginning
+#'   in size/stage j
+#' * probSucceed: the probability of succeeding assuming that an
+#'   individual's starting state is distributed according to m0
+#' * a0CondSucceed: the offspring state distribution conditional
+#'   on reaching the LRO threshold before dying.
+#' @export
+#'
+#' @examples
+#' M = matrix(0.1, 3, 3)
+#' Fmat = matrix(0, 3, 3); Fmat[1,] = 0:2
+#' threshold = 2
+#' m0 = c(1, 0, 0)
+#' out = makeMCondLROThreshold (M, Fmat, threshold, m0)
+makeMCondLROThreshold = function (M, Fmat, threshold, m0, maxLRO=12,
+                                  maxClutchSize=12, Fdist="Poisson") {
+  
+  bigmz = dim(M)[1]
+  
+  ## Sanity check input
+  if (Fdist == "Bernoulli") {
+    if (sum(colSums(Fmat) > 1))
+      stop("Probability of having an offspring > 1!  Columns of fecundity matrix sum to > 1 but clutch size is Bernoulli-distributed.")
+  }
+
+  ## Sanity check input
+  if (length(m0) != bigmz)
+    stop ("Length of m0 does not match dimension of M")
+
+  ## Sanity check input
+  if (dim(Fmat)[1] != bigmz)
+    stop ("M and Fmat should have the same dimensions.")
+
+  ## B[i,j] is the probability that a class-j individual has i-1 kids.
+  ## We assume Poisson-distributed number of offspring.
+  ## The columns of B should sum to 1.
+  B = mk_B (Fmat, maxClutchSize, Fdist)
+  message ("The column sums of B have min. of ", min(colSums(B)),
+           " and we hope this is close to 1.\n")
+
+    ## Construct A, the transition matrix for a (number of kids) x stage x
+    ## env. model.
+  mT = maxLRO + 1
+  mzA = bigmz*mT
+
+  if (FALSE) {  ## just for debugging
+    message ("makeMCondLROThreshold: Making A...")  
+    out = make_AxT (B, M, mT)
+    A = out$A
+  }
+
+  ## Make "bullet" matrices for A.
+  Fbullet = matrix (0, mzA, mzA)
+
+  ## Fbullet updates number of kids.
+  for (j in 1:mT) {
+    for (i in j:(mT-1)) {
+      for (z in 1:bigmz) {
+        if (Fdist == "Poisson") {
+          Fbullet[(i-1)*bigmz + z, (j-1)*bigmz + z] =
+            dpois (i-j, lambda=sum(Fmat[,z]))
+        } else if (Fdist == "Bernoulli") {
+          Fbullet[(i-1)*bigmz + z, (j-1)*bigmz + z] =
+            dbinom (i-j, prob=sum(Fmat[,z]), size=1)
+        } else {
+          stop ("Supported options for Fdist are 'Poisson' and 'Bernoulli.'\n")
+        }
+      }
+    }
+  }
+  ## Make mT absorbing.  If you have #kids index < mT, the probability
+  ## of going to mT while in stage z = 1 - all other kid transition
+  ## probabilities with stage z.
+
+  for (j in 1:(mT-1)) {
+    for (z in 1:bigmz) {
+      Fbullet[(mT-1)*bigmz + z, (j-1)*bigmz + z] =
+        1 - sum(Fbullet[(0:(mT-2))*bigmz + z, (j-1)*bigmz + z])
+    }
+  }
+  ## If you have #kids index = mT, you stay there.
+  for (z in 1:bigmz)
+    Fbullet[(mT-1)*bigmz + z, (mT-1)*bigmz + z] = 1
+
+  ## Mbullet updates everything else
+  ## Why doesn't the calculation work when I use bdiag?  No idea.
+  Mbullet = matrix (0, mzA, mzA)
+  for (k in 1:mT)
+    Mbullet[(k-1)*bigmz + 1:bigmz, (k-1)*bigmz + 1:bigmz] = M
+
+  ## sanity check: expensive, so just for debugging
+  if (FALSE) {
+    epsilon = 0.00001
+    if (sum(abs(range(Mbullet %*% Fbullet - A))) > epsilon)
+      stop ("Mbullet %*% Fbullet is substantially different than A.")
+  }
+
+  ####################################################################
+  ## Now make the additionally extended space matrix that allows us to
+  ## stop partway through a time step.  Our new prefix is es to
+  ## indicate this additional extension.  ("es" = "extended space")
+  ####################################################################
+
+  ## We don't need a space that separately updates survival, growth,
+  ## and environment.  We just need to do reproduction first, then
+  ## the rest.
+  esmzA = 2*mzA
+  esA = matrix (0, esmzA, esmzA)
+  esA[mzA + 1:mzA, 1:mzA] = Fbullet
+  esA[1:mzA, mzA + 1:mzA] = Mbullet
+
+  ## a0 is the initial state cross-classified by size and environment
+  ## and #kids
+  a0 = rep (0, esmzA)
+  a0[1:bigmz] = m0
+
+  transientStates = 1:(2*bigmz*(threshold-1))
+  out = makeCondKernel (esA, transientStates)
+  ACondSucceed = out$MCond
+  probSucceedCondZ = out$q2Extended
+  probSucceed = sum(probSucceedCondZ * a0)
+
+  ## Joint probability of starting in state z and hitting the threshold
+  jointProbSucceedAndZ = a0 * probSucceedCondZ
+  ## Initial state conditional on hitting the threshold
+  a0CondSucceed = jointProbSucceedAndZ / probSucceed
+
+  return (out = list(ACondSucceed=ACondSucceed,
+                     probSucceedCondZ=probSucceedCondZ,
+                     probSucceed=probSucceed,
+                     a0CondSucceed=a0CondSucceed))
+}
+
+#' Utility function for calculating a kernel conditional on having LRO
+#' meeting or exceeding a threshold
+#'
+#' Calculates the transition kernel conditional on producing at least
+#'   threshold offspring over the course of a life, as well as related
+#'   quantites.  Assumes a post-breeding census (survival and growth
+#'   happen before reproduction).
 #' @param M the unconditional survival/growth transition matrix.
 #'   M\[i,j\] is the probability of surviving and transitioning from
 #'   state j to state i.
@@ -469,35 +641,29 @@ makePCondBreedDef3 = function (P, Fmat, c0) {
 #'
 #' @return A list containing the following.  All matrices and vectors
 #'   are defined over an extended size distribution: if there are n
-#'   sizes/stages, states 1--n are those sizes with no offspring yet,
-#'   states n+1--2n are those sizes with the first offspring
-#'   produced in the current year, and states 2n+1--3n are those sizes
-#'   having produced at least one offspring in some past year.  See
-#'   Details.
-#' * ACondSucceed: the a size x #kids or size x env x #kids transition
+#'   sizes/stages, states 1--n are those sizes with LRO = 0,
+#'   states n+1--2n are those sizes with LRO = 1, and so on through
+#'   LRO = maxLRO.  
+#' * ACondSucceed: the size x #kids or size x env x #kids transition
 #'   matrix conditional on reaching the LRO threshold before dying
 #' * probSucceedCondZ: a vector whose jth entry is the probability
 #'   of reaching the threshold before dying, conditional on beginning
 #'   in size/stage j
-#' * m0CondSucceed: the offspring state distribution conditional
-#'   on reaching the offspring reaching the threshold before dying.
+#' * probSucceed: the probability of succeeding assuming that an
+#'   individual's starting state is distributed according to m0
+#' * a0CondSucceed: the offspring state distribution conditional
+#'   on reaching the LRO threshold before dying.
 #' @export
 #'
-#' @details To do this calculation, we extend the state space so that
-#'   number of offspring is added to the state definition, and all
-#'   outputs are given for this extended state space.  For
-#'   example, if the original state space was (size 1, size 2),
-#'   the new state space is (size 1, 0 offspring; size 2, 0 offspring;
-#'   size 1, 1 offspring; size 2, 1 offspring, ...) up to #offspring =
-#'   maxLRO.
 #' @examples
 #' M = matrix(0.1, 3, 3)
 #' Fmat = matrix(0, 3, 3); Fmat[1,] = 0:2
 #' threshold = 2
 #' m0 = c(1, 0, 0)
-#' out = makeMCondLROThreshold(M, Fmat, threshold, m0)
-makeMCondLROThreshold = function (M, Fmat, threshold, m0, maxLRO=12,
-                                  maxClutchSize=12, Fdist="Poisson") {
+#' out = makeMCondLROThresholdPostBreeding(M, Fmat, threshold, m0)
+makeMCondLROThresholdPostBreeding =
+  function (M, Fmat, threshold, m0, maxLRO=12,
+            maxClutchSize=12, Fdist="Poisson") {
   bigmz = dim(M)[1]
 
   ## Sanity check input
@@ -518,8 +684,8 @@ makeMCondLROThreshold = function (M, Fmat, threshold, m0, maxLRO=12,
   ## We assume Poisson-distributed number of offspring.
   ## The columns of B should sum to 1.
   B = mk_B (Fmat, maxClutchSize, Fdist)
-  message ("The column sums of B have a range of", range(colSums(B)),
-           " and we hope these are close to 1.\n")
+  message ("The column sums of B have min. of ", min(colSums(B)),
+           " and we hope this is close to 1.\n")
 
   ## Construct A, the transition matrix for a (number of kids) x stage x
   ## env. model.
@@ -534,7 +700,7 @@ makeMCondLROThreshold = function (M, Fmat, threshold, m0, maxLRO=12,
   a0 = rep (0, mzA)
   a0[1:bigmz] = m0
 
-  transientStates = 1:(bigmz*threshold)
+  transientStates = 1:(2*bigmz*(threshold-1))
   out = makeCondKernel (A, transientStates)
   ACondSucceed = out$MCond
   probSucceedCondZ = out$q2Extended
