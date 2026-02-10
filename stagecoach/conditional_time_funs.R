@@ -1,3 +1,5 @@
+###                     (I) OVERVIEW AND CONVENTIONS 
+
 #############################################################################
 ## R translations of formulas for mean/var of conditional lifespan, and 
 ## mean/var of conditional times to reach state i from state j, from 
@@ -5,41 +7,47 @@
 ##     calculating age-based life history parameters for stage-
 ##     structured populations. Ecological Monographs 62:345-364.
 ##
-## Original coding by Erin Souder, revised and extended for luckieR 
-## by Steve Ellner 
+## Original coding by Erin Souder supervised by Simone Blomberg, 
+## Revised and extended for luckieR by Steve Ellner  
 ##
 ## NOTE on time conventions: 																   
 ##     CE92 used the convention that all times (lifetime, transition time, etc.) 
-##     are the supremum of values that are consistent with the census data. 
-##     See figure 2 of CE92. That convention gives annuals a lifespan of 
-## 	   2 years, which was generally considered to be a bad idea, 
-##     so we abandon it here. 
+##     are the supremum of values that are consistent with the census data -  
+##     see figure 2 of CE92. That convention gives annuals a lifespan of 
+## 	   2 years, which was generally considered to be a bad idea, so we 
+##     use a different convention here.  
 ##
-##     An individual's lifespan is the number of times that they were alive  
-##     at a census time (rather than that number plus one). 
+##     1. An individual's lifespan is the number of times that they are 
+##     alive at a census time (rather than that number plus one). 
 ## 
-##     For transition times, a state-j newborn *could have* lived up to one 
+##     2. For transition times, a state-j newborn *could have* lived up to one 
 ## 	   step prior to being censused in state j, so the CE92 formula gives 1 as 
 ##	   the conditional mean time to reach state j starting from state j. 
-##     The code here gives instead 0: if you are first censused in state j,  
-## 	   we assume that it took you 'no time' to get there.
+##     The functions here give instead 0: if you are first censused in state j,  
+## 	   we assume that it took you 'no time at all' to get there.
 ##############################################################################                                          
                   
-##############################################################################
 
 ######################### NOTATION CONVENTIONS  ##############################
 ##      luckieR M = StageCoach P (state transitions) 
-##      luckieR F = StageCoach B (sexual births) + F (clonal births, fission) 
+##      luckieR F = StageCoach B (sexual births) + F (clonal births = fission) 
 ############################################################################## 
 
-### The defined functions are:
+##############################################################################
+## The defined functions are:
 ##			mean_lifespan, var_lifespan
 ## 			mean_conditional_times, var_conditional_times 
 ##			mean_conditional_lifespan, var_conditional_lifespan 
 ##			first_breed -- prob. of breeding before death, mean & var of age 
-##                         at first breeding, conditional on breeding 
-##			wrappers for population moments: pop_mean_var, pop_mu3, pop_skew 
-##			Di_mat (a utility function)
+##                         at first breeding (conditional on breeding) 
+##			wrappers for calculating population moments from state-specific
+##				moments and a mixing distribution: pop_mean_var, pop_mu3, pop_skew 
+##			Di_mat, a utility function of no independent interest (computes 
+##				modified kernel in which entering state i is followed by death). 
+##############################################################################
+
+
+##                            (II) FUNCTIONS 
 
 ########################################################################### 
 ## Compute mean remaining lifespan given current state, for each state,       

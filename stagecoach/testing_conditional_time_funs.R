@@ -32,9 +32,16 @@ mean_lifespan(M7);
 var_lifespan(M7);
 # calculations for stage 2 
 probs = c(1/3,1/3,1/6,1/6); vals = c(4,3,3,5);  
-EX = sum(probs*vals); 
-EX2  = sum(probs*vals^2); 
+EX = sum(probs*vals); EX2  = sum(probs*vals^2); 
 VarX = EX2 - EX^2; 
+
+mean_conditional_times(M7);  
+
+var_conditional_times(M7);
+
+mean_conditional_lifespan(M7); 
+
+
 
 
 
