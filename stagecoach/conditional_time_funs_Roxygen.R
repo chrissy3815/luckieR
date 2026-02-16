@@ -47,23 +47,50 @@
 ##############################################################################
 
 
-##                            (II) FUNCTIONS 
-
-########################################################################### 
-## Compute mean remaining lifespan given current state, for each state,       
-##		given by row sums of the fundamental matrix. "Remaining lifespan"
-##      includes the current year --- it is the number of years when the
-##		individual is alive to be censused, including the current year and
-##      all subsequent years, but not prior years (if there were any). 
-##  Arguments:                                                            
-##  		M: state transition matrix M                                  
-##  Return Value/s:                                                       
-##        Mean lifespan expectancy for each state i  					  
-## 
-##  Similar to life_expect_mean in Rage, but returns a vector of values
-##  for each state, rather than one value based on a mixing distribution
-##  across initial states. 
-########################################################################### 
+#' Mean remaining lifespan as a function of current state 
+#'
+#' Compute the mean remaining lifespan for each state, defined as the
+#' expected number of census occasions on which an individual is alive from now
+#' until death, \emph{including the current year} and all subsequent years.
+#'
+#' @description
+#' For a Markov/state-transition model with an absorbing death state, the mean
+#' remaining lifespan in each transient state equals the column sums of the
+#' fundamental matrix \eqn{N = (I - Q)^{-1}}, where \eqn{Q} is the submatrix of
+#' transition probabilities among transient (alive) states.  
+#'
+#' @details
+#' The mean remaining lifespan vector is then
+#' \deqn{\mathbf{e} =\mathbf{1}^T, N  \quad \text{where } N = (I - M)^{-1}, }
+#' i.e., the column sums of \eqn{N}. Values include the current census occasion.
+#'
+#' @param M The state transition matrix (numeric) for a matrix projection model,
+#'   consisting of the transient living states. This would be the transient x transient
+#'   block of a complete Markov chain transition probability matrix with death as an
+#'   additional absorbing state. 
+#'
+#' @returns
+#' A numeric vector of length equal to the number of transient states, giving
+#' the mean remaining lifespan (in census intervals) for each current state.
+#'
+#' @section Notes:
+#' This is analogous to `life_expect_mean()` in the **Rage** package, but
+#' instead of returning a single expectation under a mixing distribution over
+#' initial states, it returns a separate value for each state.
+#'
+#' @examples
+#' M2 = matrix(c(0, 0,    0,  0,
+#'               1, 0,    0,  0,
+#'			     0, 0.25, 0,  0,
+#'			     0, 0.25, 1,  0), 4,4,byrow=TRUE) 
+#' mean_lifespan(M2)
+#' [1] 2.75 1.75 2.00 1.00
+#'
+#' @seealso
+#' Concepts of the fundamental matrix for absorbing chains; functions in
+#' packages that work with Markov or matrix population models (e.g., **Rage**).
+#'
+#' @export
 mean_lifespan = function(M){ 
   if(!is.matrix(M)) {stop("This is not a matrix")}
   if(nrow(M)!=ncol(M)) {stop("This is not a square matrix")}
@@ -79,25 +106,62 @@ mean_lifespan = function(M){
   return(LE)
 }  
  
-## mean_lifespan(M1);
-## [1] 3.5 2.5 2.0 1.0
-## Give the same results as life_expect_mean(M1,start=j) for j = 1,2,3,4
-
-########################################################################### 
-## Compute variance of remaining lifespan given current state. See 
-##      mean_lifespan for the definition of "remaining lifespan". 
-## Equation 5 in Cochran and Ellner 1992, which is equivalent 
-##      to eqn. 5.12 in Caswell 2001 (proof: multiply each formula
-##      for B on the right by N%*%N, and the result for both is (I+M).
-##  Arguments:                                                            
-##  		M: state transition matrix M                                  
-##  Return Value/s:                                                       
-##        Variance of remaining lifespan given current state i  					  
-## 
-##  Similar to life_expect_var in Rage, but returns a vector of values
-##  for each state, rather than one value based on a mixing distribution
-##  across initial states.  
-########################################################################### 
+#' Variance of remaining lifespan by current state
+#'
+#' Compute the **variance** of the remaining lifespan \emph{for each state},
+#' where "remaining lifespan" is defined as the number of future census
+#' occasions on which an individual is alive, **including the current year**
+#' and all subsequent years, but not any prior years. 
+#'
+#' @description
+#' The variance of remaining lifespan is computed for each living state, and returned
+#' as a vector of variances. See `mean_remaining_lifespan()` for the corresponding 
+#' mean. 
+#'
+#' @details
+#' The variance vector can be computed using standard absorbing-chain results
+#' (e.g., Cochran & Ellner, 1992; Caswell, 2001). This function implements
+#' the formula in Cochran & Ellner (1992, eq. 5), which is equivalent to 
+#' Caswell (2001, eq. 5.12) after noting that multiplying the 
+#' each formula on the right by the sqaure of the fundamental matrix 
+#' gives the same result, \eqn{I + M}.
+#'
+#' @param M The state transition matrix (numeric) for a matrix projection model,
+#'   consisting of the transient living states. This would be the transient x transient
+#'   block of a complete Markov chain transition probability matrix with death as an
+#'   additional absorbing state. 
+#'
+#' @returns
+#' A numeric vector of length equal to the linear dimension of M, giving
+#' the **variance** of the remaining lifespan (in census intervals) for each
+#' current state.
+#'
+#' @section Relationship to other software:
+#' This is analogous to `life_expect_var()` in the **Rage** package, but
+#' instead of returning a single variance under a mixing distribution across
+#' initial states, it returns a vector with one value **per state**.
+#'
+#' @examples
+#' M2 = matrix(c(0, 0,    0,  0,
+#'               1, 0,    0,  0,
+#'			     0, 0.25, 0,  0,
+#'			     0, 0.25, 1,  0), 4,4,byrow=TRUE) 
+#' var_lifespan(M2)
+#' var_lifespan(M2);
+#' 0.6875 0.6875 0.0000 0.0000
+#'
+#' @seealso
+#' `mean_lifespan()` for the corresponding mean; fundamental matrix
+#' properties for absorbing Markov chains.
+#'
+#' @references
+#' Cochran, M. E., & Ellner, S. P. (1992).
+#' *Simple methods for calculating age-based life history parameters for stage-structured populations*.
+#' Ecological Monographs, 62(3), 345–364.
+#'
+#' Caswell, H. (2001). *Matrix Population Models* (2nd ed.). Sinauer Associates, Sunderland MA.
+#'
+#' @export
 var_lifespan = function(M){ 
   if(!is.matrix(M)) {stop("This is not a matrix")}
   if(nrow(M)!=ncol(M)) {stop("This is not a square matrix")}
@@ -119,21 +183,62 @@ var_lifespan = function(M){
 ##  Argument/s:                                                        
 ##     M: state transition matrix M                                    
 ##  Return Value/s:                                                    
-##     Array of D of transition matrices, such that D[,,i] is D_i   
-##  
-## Original coding by Erin Souder, adapted and extended Steve Ellner     
+##     Array of D of transition matrices, such that D[,,i] is D_i      
 ########################################################################
+
+#' Modified Transition Matrices \eqn{D_i} for Each Focal State
+#'
+#' Construct, for each state \eqn{i}, a modified transition matrix \eqn{D_i}
+#' in which individuals entering state \eqn{i} remain there for one time step
+#' and then die. This is a utility function implementing eq. 8 in 
+#' Cochran and Ellner (1992), and is not intended to be called directly by 
+#; package users.
+#'
+#' @details
+#' Given a square, numeric state transition matrix \eqn{M} (with columns
+#' representing destination states and rows representing origin states),
+#' this function returns a 3D array \eqn{D} where the third dimension indexes
+#' the focal state \eqn{i}. For each \eqn{i}, \eqn{D_{\,\cdot\,\cdot\,i}} is a
+#' copy of \eqn{M} with the \eqn{i}-th column set to 0, so that individuals 
+#' transition into state \eqn{i} spend one time step there and then die.
+#'
+#' @param M A square, numeric state transition matrix for a matrix projection 
+#' model.
+#'
+#' @return
+#' A 3D numeric array \code{D} of dimension \code{c(nrow(M), ncol(M), ncol(M))},
+#' where \code{D[,, i]} is the modified transition matrix \eqn{D_i} associated
+#' with focal state \eqn{i}.
+#'
+#' @references
+#' Cochran, M. E., & Ellner, S. (1992). Simple methods for calculating age‐based
+#' life history parameters for stage‐structured populations. *Ecological Monographs*,
+#' 62(3), 345–364.
+#'
+#' @examples
+#' # A simple 2-state (juvenile, adult) model 
+#' M <- matrix(c(0.0, 0.0,
+#'               0.6, 0.7),
+#'               nrow = 2, byrow = TRUE)
+#'
+#' D <- Di_mat(M)
+#' dim(D)            # 2 x 2 x 2
+#' D[, , 1]          # D_1: column 1 zeroed
+#' D[, , 2]          # D_2: column 2 zeroed
+#'
+#' @keywords internal
+#' @noRd
 Di_mat <- function(M){
   if(!is.matrix(M)) {stop("This is not a matrix")}
-  if(nrow(M)!=ncol(M)) {stop("This is not a square matrix")}
+  if(nrow(M) != ncol(M)) {stop("This is not a square matrix")}
   if(!is.numeric(M)) {stop("This is not numeric")}
   
-  results <- array(0, dim = c(dim(M),ncol(M)))
-  for (i  in 1:ncol(M)) {
-      results[,,i] = M; 
-      results[,i,i] = 0; 
+  results <- array(0, dim = c(dim(M), ncol(M)))
+  for (i in 1:ncol(M)) {
+    results[,, i] <- M
+    results[, i, i] <- 0
   }
-  return(results) 
+  return(results)
 }
 
 ############################################################################
