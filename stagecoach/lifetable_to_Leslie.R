@@ -5,7 +5,7 @@
 ## individuals currently age a must survive to reach age a+1, at which time 
 ## they produce m_a offspring which are immediately censused.   
 ##
-## NOTE: if m0>0, the life table has been constructed with *nonstandard definitions*;
+## NOTE: if m0>0, the life table has been constructed with nonstandard definitions;
 ## m0>0 with the usual definitions would imply that newborns immediately have offspring,  
 ## which in turn immediately have offspring, which in turn...  
 ##
@@ -31,8 +31,7 @@ lifetable_to_Leslie = function(lx, mx) {
   }
   
   # Check that m0 = 0 
-  if(mx[1]!=0) stop("m_0 is not zero")
-
+  if(mx[1]!=0) stop("You've got tribbles, m_0 is not zero")
 
   # Now make the matrix ######################################################### 
   
@@ -56,4 +55,8 @@ lx = c(1.00, 0.8, 0.6, 0.3, 0.1);      # ages 0,1,2,3,4
 mx = c(0,    1,    2,   2,   1)
 res = lifetable_to_Leslie(lx, mx)
 res; 
+
+require(Rage); 
+out = mpm_to_table(res$U,res$F,start=1); 
+cbind(out$lx,out$mx); ## does not agree. 
 
