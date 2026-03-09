@@ -67,8 +67,6 @@ test_that ("Skewness of LRO is 0", {
   expect_equal (out$skewnessVec, c(0,0))
 })
 
-
-
 ## makeMCondLROThreshold #################################################
 ## All juveniles become adults, who have exactly 1 kid and then die.
 M = matrix (c(0,1,0,0), 2, 2)
@@ -114,7 +112,6 @@ for (z in 1:bigmz)
   Fbullet[(mT-1)*bigmz + z, (mT-1)*bigmz + z] = 1
 
 ## Mbullet updates everything else
-## Why doesn't the calculation work when I use bdiag?  No idea.
 Mbullet = matrix (0, mzA, mzA)
 for (k in 1:mT)
   Mbullet[(k-1)*bigmz + 1:bigmz, (k-1)*bigmz + 1:bigmz] = M
@@ -123,6 +120,7 @@ esA = matrix (0, esmzA, esmzA)
 esA[mzA + 1:mzA, 1:mzA] = Fbullet
 esA[1:mzA, mzA + 1:mzA] = Mbullet
 
+## BUG: out$ACondSucceed has NaNs in column 6.
 out = makeMCondLROThreshold (M, F, threshold, m0, maxLRO,
                              maxClutchSize, Fdist)
 test_that("makeMCondLROThreshold returns the unconditional kernel (in the extended state space) when everyone is guaranteed to make the LRO threshold",{
@@ -147,4 +145,19 @@ probBreed = out2$pM
 test_that("makeMCondLROThreshold with a threshold of LRO = 1 (do you breed at least once?) gives the same probability of success as makePCondBreedDef3",{
   expect_equal (probSucceed, probBreed)
 })
+
+## makeMCondLROThresholdPostBreeding #######################
+## All juveniles become adults, who have 1 kid and then die
+P = matrix (c(0,1,0, 0,0,1, 0,0,0), 3, 3)
+F = matrix (c(0,0,0, 1,0,0, 0,0,0), 3, 3)
+m0 = c(1,0,0)
+threshold = 1
+maxLRO = 8
+maxClutchSize = 8
+
+## BUG: probSucceed = 0.  I probably have once again messed up the
+## post-breeding matrices...
+out = makeMCondLROThresholdPostBreeding (P, F, threshold, m0,
+                                         maxClutchSize=1, Fdist="Bernoulli")
+probSucceed = out$probSucceed
 
