@@ -1,3 +1,74 @@
+## makeCondKernel #####################################
+
+## All (stage 1) mature into stage 2 which matures into stage 3 with
+## no losses.  Stage 3 is absorbing.  Verify that the kernel
+## conditional on reaching stage 3 is simply the unconditional kernel.
+M = matrix (c(0,1,0, 0,0,1, 0,0,0.5), 3, 3)
+transientStates = c(1,2)
+out = makeCondKernel (M, transientStates)
+test_that("makeCondKernel returns M when reaching the absorbing states is guaranteed", {
+  expect_equal (out$MCond, M)
+})
+
+## makeCondFailureKernel ##################################
+
+## All stage 1 mature into stage 2 which never mature into stage 3.
+## Stage 3 is absorbing.  Verify that the kernel conditional on never
+## reaching stage 3 is simply the unconditional transient kernel.
+M = matrix (c(0,1,0, 0,0.8,0, 0,0,0.5), 3, 3)
+transientStates = c(1,2)
+out = makeCondFailureKernel (M, transientStates)
+test_that("makeCondFailureKernel returns M when reaching the absorbing states is guaranteed not to occur", {
+  expect_equal (out$MCond, M[transientStates, transientStates])
+})
+
+## calcMoments #################################################
+
+## All juveniles become adults, who have exactly f kids and then die.
+f = 2
+M = matrix (c(0,1,0,0), 2, 2)
+F = matrix (c(0,0,f,0), 2, 2)
+## Clutch size is Bernoulli distributed
+R1 = matrix (0, 3, 3)
+for (j in 1:2)
+  R1[,j] = sum(F[,j])
+R2 = R1^2
+R3 = R1^3
+out = calcMoments (M, R1, R2, R3)
+test_that ("Mean LRO is 2", {
+  expect_equal (out$rho1Vec[1,], c(f,f))
+})
+
+## All juveniles become adults, who have exactly f kids and then die.
+M = matrix (c(0,1,0,0), 2, 2)
+F = matrix (c(0,0,f,0), 2, 2)
+## Clutch size is Bernoulli distributed
+R1 = matrix (0, 3, 3)
+for (j in 1:2)
+  R1[,j] = sum(F[,j])
+R2 = R1^2
+R3 = R1^3
+out = calcMoments (M, R1, R2, R3)
+test_that ("Variance of LRO is 0", {
+  expect_equal (out$mu2Vec[1,], c(0,0))
+})
+
+## All juveniles become adults, who have exactly f kids and then die.
+M = matrix (c(0,1,0,0), 2, 2)
+F = matrix (c(0,0,f,0), 2, 2)
+## Clutch size is Bernoulli distributed
+R1 = matrix (0, 3, 3)
+for (j in 1:2)
+  R1[,j] = sum(F[,j])
+R2 = R1^2
+R3 = R1^3
+out = calcMoments (M, R1, R2, R3)
+test_that ("Skewness of LRO is 0", {
+  expect_equal (out$skewnessVec, c(0,0))
+})
+
+
+
 ## makeMCondLROThreshold #################################################
 ## All juveniles become adults, who have exactly 1 kid and then die.
 M = matrix (c(0,1,0,0), 2, 2)

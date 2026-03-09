@@ -88,10 +88,19 @@ makeCondKernel = function (M, transientStates) {
 
   ## How many states are there all told?
   numStates = dim(M)[1]
+  ## Check to ensure that user didn't accidentally include fecundities
+  ## --- M is just survival and growth
+  foo = range (colSums(M))
+  if ((min(foo) < 0) | (max(foo) > 1))
+    stop("makeCondKernel: M is the survival/growth kernel.  Column sums should be non-negative and should not exceed 1.")
+  
   ## Create U, the transition matrix for the transient states
   U = M[transientStates, transientStates]
   ## How many transient states are there?
   numTransient = length(transientStates)
+  if (numTransient < 2)
+    stop ("makeCondKernel: need at least 2 transient states\n")
+  
   ## calculate a2, the probability of hitting an absorbing state in
   ## the next time step
   a2 = apply (M, 2, sum)[transientStates] - apply (U, 2, sum)
@@ -146,14 +155,6 @@ makeCondFailureKernel = function (M, transientStates) {
   U = M[transientStates, transientStates]
   ## How many transient states are there?
   numTransient = length(transientStates)
-  if (FALSE) {
-    ## calculate a1, the probability of dying in the next time step
-    a1 = (1 - apply (M, 2, sum))[transientStates]
-    ## calculate q1, the probability of dying before hitting the
-    ## "successful" absorbing state given that you are now in state i.
-    NU = solve (diag(numTransient) - U)
-    q1 = a1 %*% NU
-  }
   ## calculate a2, the probability of hitting an absorbing state in
   ## the next time step
   a2 = apply (M, 2, sum)[transientStates] - apply (U, 2, sum)
