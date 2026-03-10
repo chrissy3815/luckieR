@@ -253,16 +253,16 @@ calcMoments = function (M, R1, R2, R3) {
   ## Ex(R)
   e = rep (1, numStates+1)
   N = solve (diag(numStates) - M)
-  cat ("Calculating rho1Vec...\n")
+  message ("Calculating rho1Vec...\n")
   rho1Vec = t(N) %*% Z %*% t(Mplus * R1) %*% e
 
   ## Ex(R^2 | x)
-  cat ("Calculating rho2Vec...\n")
+  message ("Calculating rho2Vec...\n")
   rho2Vec = t(N) %*% (Z %*% t(Mplus * R2) %*% e +
                         2*t(M * R1Stripped) %*% rho1Vec)
 
   ## Ex(R^3 | x)
-  cat ("Calculating rho3Vec...\n")
+  message ("Calculating rho3Vec...\n")
   rho3Vec = t(N) %*% (Z %*% t(Mplus * R3) %*% e +
                         3*t(M*R2Stripped) %*% rho1Vec +
                         3*t(M*R1Stripped) %*% rho2Vec)
@@ -720,8 +720,6 @@ makeMCondLROThresholdPostBreeding =
   ## Initial state conditional on hitting the threshold
   a0CondSucceed = jointProbSucceedAndZ / probSucceed
 
-  message ("The dimension of ACondSucceed is ", dim(ACondSucceed)[1], "\n")
-  
   return (out = list(ACondSucceed=ACondSucceed,
                      probSucceedCondZ=probSucceedCondZ,
                      probSucceed=probSucceed,
