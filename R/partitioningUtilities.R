@@ -112,8 +112,13 @@ makeCondKernel = function (M, transientStates) {
 
   ## Transition matrix conditional on reproducing before death.
   MCond = matrix (0, numStates, numStates)
-  for (j in 1:numStates)
-    MCond[,j] = M[,j] * q2Extended / q2Extended[j]
+  for (j in 1:numStates) {
+    if ((q2Extended[j] == 0) & (sum(M[,j]*q2Extended) == 0)) {
+      MCond[,j] = rep (0, numStates)
+    } else {
+      MCond[,j] = M[,j] * q2Extended / q2Extended[j]
+    }
+  }
 
   return (out=list (q2Extended=q2Extended, MCond=MCond))
 }
@@ -704,7 +709,7 @@ makeMCondLROThresholdPostBreeding =
   a0 = rep (0, mzA)
   a0[1:bigmz] = m0
 
-  transientStates = 1:(2*bigmz*threshold)
+  transientStates = 1:(bigmz*threshold)
   out = makeCondKernel (A, transientStates)
   ACondSucceed = out$MCond
   probSucceedCondZ = out$q2Extended
@@ -715,6 +720,8 @@ makeMCondLROThresholdPostBreeding =
   ## Initial state conditional on hitting the threshold
   a0CondSucceed = jointProbSucceedAndZ / probSucceed
 
+  message ("The dimension of ACondSucceed is ", dim(ACondSucceed)[1], "\n")
+  
   return (out = list(ACondSucceed=ACondSucceed,
                      probSucceedCondZ=probSucceedCondZ,
                      probSucceed=probSucceed,

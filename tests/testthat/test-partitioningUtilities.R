@@ -152,12 +152,23 @@ P = matrix (c(0,1,0, 0,0,1, 0,0,0), 3, 3)
 F = matrix (c(0,0,0, 1,0,0, 0,0,0), 3, 3)
 m0 = c(1,0,0)
 threshold = 1
-maxLRO = 8
-maxClutchSize = 8
+maxLRO = 1
+maxClutchSize = 1
 
-## BUG: probSucceed = 0.  I probably have once again messed up the
-## post-breeding matrices...
-out = makeMCondLROThresholdPostBreeding (P, F, threshold, m0,
-                                         maxClutchSize=1, Fdist="Bernoulli")
+out = makeMCondLROThresholdPostBreeding (P, F, threshold, m0, maxLRO=maxLRO,
+                                         maxClutchSize=maxClutchSize,
+                                         Fdist="Bernoulli")
 probSucceed = out$probSucceed
+ACondSucceed = out$ACondSucceed
+
+B = mk_B (F, maxClutchSize, Fdist="Bernoulli")
+## Construct A, the transition matrix for a (number of kids) x stage x
+## env. model.
+mT = maxLRO + 1
+out = make_AxT (B, P, mT)
+A = out$A
+
+test_that("makeMCondLROThresholdPostBreeding returns the unconditional kernel if success is guaranteed",{
+  expect_equal (ACondSucceed, A)
+})
 
