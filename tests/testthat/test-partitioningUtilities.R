@@ -120,7 +120,6 @@ esA = matrix (0, esmzA, esmzA)
 esA[mzA + 1:mzA, 1:mzA] = Fbullet
 esA[1:mzA, mzA + 1:mzA] = Mbullet
 
-## BUG: out$ACondSucceed has NaNs in column 6.
 out = makeMCondLROThreshold (M, F, threshold, m0, maxLRO,
                              maxClutchSize, Fdist)
 test_that("makeMCondLROThreshold returns the unconditional kernel (in the extended state space) when everyone is guaranteed to make the LRO threshold",{
