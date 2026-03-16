@@ -87,10 +87,10 @@ for (j in 1:mT) {
     for (z in 1:bigmz) {
       if (Fdist == "Poisson") {
         Fbullet[(i-1)*bigmz + z, (j-1)*bigmz + z] =
-          dpois (i-j, lambda=sum(Fmat[,z]))
+          dpois (i-j, lambda=sum(F[,z]))
       } else if (Fdist == "Bernoulli") {
         Fbullet[(i-1)*bigmz + z, (j-1)*bigmz + z] =
-          dbinom (i-j, prob=sum(Fmat[,z]), size=1)
+          dbinom (i-j, prob=sum(F[,z]), size=1)
       } else {
         stop ("Supported options for Fdist are 'Poisson' and 'Bernoulli.'\n")
       }
@@ -120,7 +120,7 @@ esA = matrix (0, esmzA, esmzA)
 esA[mzA + 1:mzA, 1:mzA] = Fbullet
 esA[1:mzA, mzA + 1:mzA] = Mbullet
 
-out = makeMCondLROThreshold (M, F, threshold, m0, maxLRO,
+out = makeMCondLROThreshold (M, F, threshold=1, m0, maxLRO,
                              maxClutchSize, Fdist)
 test_that("makeMCondLROThreshold returns the unconditional kernel (in the extended state space) when everyone is guaranteed to make the LRO threshold",{
   expect_equal (out$ACondSucceed, esA)
