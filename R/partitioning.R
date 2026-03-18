@@ -475,8 +475,16 @@ partitionVarSkewnessEnvVar = function (Plist, Flist, Q, c0,
   Slist = Glist = list (numEnv)
   for (q in 1:numEnv) {
     Slist[[q]] = diag (colSums (Plist[[q]]))
-    Sinv = diag (1 / diag(Slist[[q]]))
-    Glist[[q]] = Plist[[q]] %*% Sinv
+    ## Does not work if any stage has zero probability of survival.
+    ## Replaced by code below that seems to deal with that issue.
+    ## Sinv = diag (1 / diag(Slist[[q]]))
+    ## Glist[[q]] = Plist[[q]] %*% Sinv
+    Glist[[q]] = Plist[[q]];
+    for(ic in 1:ncol(Glist[[q]])){
+      if(Slist[[q]][ic,ic]>0)
+        Glist[[q]][,ic]=Glist[[q]][,ic]/Slist[[q]][ic,ic]
+  }
+
   }
 
   ## Make "bullet" matrices.  bdiag makes sparse matrices, which can't

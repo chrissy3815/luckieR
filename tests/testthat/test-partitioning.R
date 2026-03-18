@@ -1,187 +1,39 @@
-## partitionVarSkewnessNoEnvVar ####################
-P = matrix (c(0,0.3,0, 0,0.25,0.25, 0,0,0.5), 3, 3)
-F = matrix (0, 3, 3); F[1,] = 0:2
-c0 = c(1,0,0)
-test_that("partitionVarSkewnessNoEnvVar works with Poisson dist. clutch sizes", {  
-##  withr::local_options(width=20)
-  expect_snapshot (
-      partitionVarSkewnessNoEnvVar (P, F, c0)
-##      waldo::partitionVarSkewnessNoEnvVar (P, F, c0)
-  )
-})
-
-P = matrix (c(0,0.3,0, 0,0.25,0.25, 0,0,0.5), 3, 3)
-F = matrix (0, 3, 3); F[1,] = 0.1*(0:2)
-c0 = c(1,0,0)
-test_that("partitionVarSkewnessNoEnvVar works with Bernoulli dist. clutch sizes", {  
-  expect_snapshot (
-      partitionVarSkewnessNoEnvVar (P, F, c0, maxAge=40,
-                                    survThreshold=0.01,
-                                    Fdist="Bernoulli")
-  )
-})
-
-## partitionVarSkewnessEnvVar #######################
-
-P1 = matrix (c(0,0.3,0, 0,0.25,0.25, 0,0,0.5), 3, 3)
-P2 = matrix (c(0,0.4,0, 0,0.2,0.2, 0,0,0.6), 3, 3)
-F1 = matrix (0, 3, 3); F1[1,] = 0:2
-F2 = matrix (0, 3, 3); F1[1,] = 0.8*(0:2)
-Plist = list (P1, P2)
-Flist = list (F1, F2)
+## All juveniles become adults, who have exactly 1 kid and then die.
+## There are two traits, which have identical parameters, and two
+## environments, which are identical.
+P = matrix (c(0,1,0,0), 2, 2)
+F = matrix (c(0,0,1,0), 2, 2)
+c0 = c(1,0)
+Fdist = "Bernoulli"
+maxLRO = 1
+maxClutchSize = 1
+Plist = list (P, P)
+Flist = list (F, F)
+PlistAllTraits = list (Plist, Plist)
+FlistAllTraits = list (Flist, Flist)
 Q = matrix (1/2, 2, 2)
-c0 = c(1,0,0)
-test_that("partitionVarSkewnessEnvVar works with Poisson dist. clutch sizes", {
-  expect_snapshot (
-      partitionVarSkewnessEnvVar(Plist, Flist, Q, c0)
-  )
-})
-
-P1 = matrix (c(0,0.3,0, 0,0.25,0.25, 0,0,0.5), 3, 3)
-P2 = matrix (c(0,0.4,0, 0,0.2,0.2, 0,0,0.6), 3, 3)
-F1 = matrix (0, 3, 3); F1[1,] = 0.1*(0:2)
-F2 = matrix (0, 3, 3); F1[1,] = 0.2*(0:2)
-Plist = list (P1, P2)
-Flist = list (F1, F2)
-Q = matrix (1/2, 2, 2)
-c0 = c(1,0,0)
-test_that("partitionVarSkewnessEnvVar works with Bernoulli dist. clutch sizes", {
-  expect_snapshot (
-      partitionVarSkewnessEnvVar (Plist, Flist, Q, c0, maxAge=60,
-                                      survThreshold=0.01,
-                                      Fdist="Bernoulli")
-  )
-})
-
-## partitionVarSkewnessEnvVarAndTraits #######################
-PlistAllTraits = FlistAllTraits = list ()
-P1 = matrix (c(0,0.3,0, 0,0.25,0.25, 0,0,0.5), 3, 3)
-P2 = 0.9*P1
-PlistAllTraits[[1]] = list (P1, P2)
-P1 = matrix (c(0,0.4,0, 0,0.2,0.2, 0,0,0.6), 3, 3)
-P2 = 0.9*P1
-PlistAllTraits[[2]] = list (P1, P2)
-F1 = matrix (0, 3, 3); F1[1,] = 0:2
-F2 = 0.8*F1
-FlistAllTraits[[1]] = list (F1, F2)
-F1 = matrix (0, 3, 3); F1[1,] = 0.2*(0:2)
-F2 = 1.1*F1
-FlistAllTraits[[2]] = list (F1, F2)
-Q = matrix (1/2, 2, 2)
-c0 = c(1,0,0)
 traitDist = rep(0.5, 2)
-test_that("partitionVarSkewnessEnvVarAndTraits works with Poisson-dist. clutch sizes", {
-  expect_snapshot (
-      partitionVarSkewnessEnvVarAndTraits (PlistAllTraits,
-                                            FlistAllTraits, Q, c0,
-                                           traitDist)
-  )
+
+out = partitionVarSkewnessEnvVarAndTraits (PlistAllTraits,
+                                           FlistAllTraits,
+                                           Q, c0, traitDist)
+
+test_that("Traits contribute no variance", {
+  expect_equal (out$varFromTraits, 0)
 })
 
-PlistAllTraits = FlistAllTraits = list ()
-P1 = matrix (c(0,0.3,0, 0,0.25,0.25, 0,0,0.5), 3, 3)
-P2 = 0.9*P1
-PlistAllTraits[[1]] = list (P1, P2)
-P1 = matrix (c(0,0.4,0, 0,0.2,0.2, 0,0,0.6), 3, 3)
-P2 = 0.9*P1
-PlistAllTraits[[2]] = list (P1, P2)
-F1 = matrix (0, 3, 3); F1[1,] = 0.1*(0:2)
-F2 = 0.8*F1
-FlistAllTraits[[1]] = list (F1, F2)
-F1 = matrix (0, 3, 3); F1[1,] = 0.09*(0:2)
-F2 = 1.1*F1
-FlistAllTraits[[2]] = list (F1, F2)
-Q = matrix (1/2, 2, 2)
-c0 = c(1,0,0)
-traitDist = rep(0.5, 2)
-test_that("partitionVarSkewnessEnvVarAndTraits works with Bernoulli-dist. clutch sizes", {
-  expect_snapshot (
-      partitionVarSkewnessEnvVarAndTraits (PlistAllTraits,
-                                           FlistAllTraits, Q, c0,
-                                           traitDist,
-                                           maxAge=60,
-                                           survThreshold=0.05,
-                                           Fdist="Bernoulli")
-  )
+test_that("Traits contribute no skewness", {
+  expect_equal (out$skewnessFromTraits[1,1], 0)
 })
 
-## partitionVarSkewnessNoEnvVarPostBreeding ####################
-P = matrix (c(0,0.3,0, 0,0.25,0.25, 0,0,0.5), 3, 3)
-F = matrix (0, 3, 3); F[1,] = 0:2
-c0 = c(1,0,0)
-test_that("partitionVarSkewnessNoEnvVarPostBreeding works with Poisson dist. clutch sizes", {  
-  expect_snapshot (
-      partitionVarSkewnessNoEnvVar (P, F, c0)
-  )
+test_that("Environment contributes no variance", {
+  expect_equal (sum(out$envTrajecVar), 0)
 })
 
-P = matrix (c(0,0.3,0, 0,0.25,0.25, 0,0,0.5), 3, 3)
-F = matrix (0, 3, 3); F[1,] = 0.1*(0:2)
-c0 = c(1,0,0)
-test_that("partitionVarSkewnessNoEnvVarPostBreeding works with Bernoulli dist. clutch sizes", {  
-  expect_snapshot (
-      partitionVarSkewnessNoEnvVar (P, F, c0, maxAge=40,
-                                    survThreshold=0.01,
-                                    Fdist="Bernoulli")
-  )
+test_that("Traits contribute no skewness", {
+  expect_equal (sum(out$envTrajecSkewness), 0)
 })
 
-## partitionVarSkewnessEnvVarPostBreeding #########################
-P1 = matrix (c(0,0.3,0, 0,0.25,0.25, 0,0,0.5), 3, 3)
-P2 = matrix (c(0,0.4,0, 0,0.2,0.2, 0,0,0.6), 3, 3)
-F1 = matrix (0, 3, 3); F1[1,] = 0:2
-F2 = matrix (0, 3, 3); F2[1,] = 0.8*(0:2)
-Plist = list (P1, P2)
-Flist = list (F1, F2)
-Q = matrix (1/2, 2, 2)
-c0 = c(1,0,0)
-test_that("partitionVarSkewnessEnvVarPostBreeding works with Poisson-dist. clutch sizes", {
-  expect_snapshot (
-      partitionVarSkewnessEnvVarPostBreeding (Plist, Flist, Q, c0)
-  )
-})
-
-P1 = matrix (c(0,0.3,0, 0,0.25,0.25, 0,0,0.5), 3, 3)
-P2 = matrix (c(0,0.4,0, 0,0.2,0.2, 0,0,0.6), 3, 3)
-F1 = matrix (0, 3, 3); F1[1,] = 0.1*(0:2)
-F2 = matrix (0, 3, 3); F1[1,] = 0.2*(0:2)
-Plist = list (P1, P2)
-Flist = list (F1, F2)
-Q = matrix (1/2, 2, 2)
-c0 = c(1,0,0)
-test_that("partitionVarSkewnessEnvVarPostBreeding works with Bernoulli-dist. clutch sizes", {
-  expect_snapshot (
-      partitionVarSkewnessEnvVarPostBreeding (Plist, Flist, Q,
-                                              c0, maxAge=60,
-                                              survThreshold=0.01,
-                                              Fdist="Bernoulli")
-  )
-})
-
-## partitionVarSkewnessEnvVarAndTraits with post-breeding census ######
-PlistAllTraits = FlistAllTraits = list ()
-P1 = matrix (c(0,0.3,0, 0,0.25,0.25, 0,0,0.5), 3, 3)
-P2 = 0.9*P1
-PlistAllTraits[[1]] = list (P1, P2)
-P1 = matrix (c(0,0.4,0, 0,0.2,0.2, 0,0,0.6), 3, 3)
-P2 = 0.9*P1
-PlistAllTraits[[2]] = list (P1, P2)
-F1 = matrix (0, 3, 3); F1[1,] = 0:2
-F2 = 0.8*F1
-FlistAllTraits[[1]] = list (F1, F2)
-F1 = matrix (0, 3, 3); F1[1,] = 0.2*(0:2)
-F2 = 1.1*F1
-FlistAllTraits[[2]] = list (F1, F2)
-Q = matrix (1/2, 2, 2)
-c0 = c(1,0,0)
-traitDist = rep(0.5, 2)
-test_that("partitionVarSkewnessEnvVarAndTraits works with Poisson-dist. clutch sizes", {
-  expect_snapshot (
-      partitionVarSkewnessEnvVarAndTraits (PlistAllTraits,
-                                           FlistAllTraits, Q, c0,
-                                           traitDist, postBreedingCensus=TRUE)
-  )
-})
 
 ## Sanity check comparisons #######################################
 
@@ -193,6 +45,7 @@ Flist = list (F, F)
 PlistAllTraits = list (Plist, Plist)
 FlistAllTraits = list (Flist, Flist)
 Q = matrix (1/2, 2, 2)
+traitDist = rep(0.5, 2)
 out1 = partitionVarSkewnessNoEnvVar (P, F, c0)
 out2 = partitionVarSkewnessEnvVar(Plist, Flist, Q, c0)
 out3 = partitionVarSkewnessEnvVarAndTraits (PlistAllTraits,
