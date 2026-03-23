@@ -587,9 +587,9 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
 
 #' Distribution of lifetime reproductive output
 #'
-#' Calculates the distribution of lifetime reproductive output (LRO) the
+#' Calculates the distribution of lifetime reproductive output (LRO) in the
 #' presence of environmental variation.  Assumes a pre-breeding census
-#' (reproductiion happens before survival and growth).
+#' (reproduction happens before survival and growth).
 #'
 #' Called by probTraitCondLRO.
 #'
