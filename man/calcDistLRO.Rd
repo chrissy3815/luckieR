@@ -31,9 +31,9 @@ the probability that an individual is born in state j}
 The distribution of lifetime reproductive output
 }
 \description{
-Calculates the distribution of lifetime reproductive output (LRO) in the
+Calculates the distribution of lifetime reproductive output (LRO) the
 presence of environmental variation.  Assumes a pre-breeding census
-(reproduction happens before survival and growth).
+(reproductiion happens before survival and growth).
 }
 \details{
 Called by probTraitCondLRO.
