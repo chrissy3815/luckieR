@@ -38,10 +38,7 @@ reproductive bout.  Optional, with a default value of 12.}
 }
 \value{
 A list containing the following.  All matrices and vectors
-are defined over an extended size distribution: if there are n
-sizes/stages, states 1--n are those sizes with LRO = 0,
-states n+1--2n are those sizes with LRO = 1, and so on through
-LRO = maxLRO.
+are defined over an extended size distribution: see Details.
 \itemize{
 \item ACondSucceed: the size x #kids or size x env x #kids transition
 matrix conditional on reaching the LRO threshold before dying
@@ -60,10 +57,23 @@ threshold offspring over the course of a life, as well as related
 quantites.  Assumes a post-breeding census (survival and growth
 happen before reproduction).
 }
+\details{
+if there are n sizes/stages, states 1--n are those sizes
+with LRO = 0 at the start of the time step (just after last
+year's survival and growth (and environment) updates.  States
+n+1--2n are those sizes with LRO = 0 just after this year's
+fecundity update but before survival, growth (and environment)
+updates.  States 2n+1--3n are those sizes with LRO = 1 at the
+start of the time step, and so on through LRO = maxLRO.  To
+advance the state by one time step, it is necessary to multiply
+by ACondSucceed twice (once to update fecundity, then another
+time to update survival, growth, and, if necessary, the
+environment.
+}
 \examples{
 M = matrix(0.1, 3, 3)
 Fmat = matrix(0, 3, 3); Fmat[1,] = 0:2
 threshold = 2
 m0 = c(1, 0, 0)
-out = makeMCondLROThreshold(M, Fmat, threshold, m0)
+out = makeMCondLROThreshold (M, Fmat, threshold, m0)
 }
