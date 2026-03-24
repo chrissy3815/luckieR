@@ -10,7 +10,8 @@ probTraitCondLRONoEnv(
   c0,
   maxClutchSize,
   maxLRO,
-  traitDist
+  traitDist,
+  Fdist = "Poisson"
 )
 }
 \arguments{
