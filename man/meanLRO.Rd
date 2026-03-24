@@ -29,7 +29,7 @@ from: https://doi.org/10.1111/ele.14390}
 \value{
 Value(s) of expected lifetime reproductive output. If
 \code{mixdist=NULL}, then \code{meanLRO} returns a vector containing the expected
-future LRO for individuals starting in each of the \exp{n} states. If a
+future LRO for individuals starting in each of the \eqn{n} states. If a
 mixing distribution is provided, then \code{meanLRO} returns a single value,
 calculated as a weighted average of the offspring starting states.
 }

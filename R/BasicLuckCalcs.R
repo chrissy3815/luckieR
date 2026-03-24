@@ -34,7 +34,7 @@
 #'
 #' @returns Value(s) of expected lifetime reproductive output. If
 #'   `mixdist=NULL`, then `meanLRO` returns a vector containing the expected
-#'   future LRO for individuals starting in each of the \exp{n} states. If a
+#'   future LRO for individuals starting in each of the \eqn{n} states. If a
 #'   mixing distribution is provided, then `meanLRO` returns a single value,
 #'   calculated as a weighted average of the offspring starting states.
 #' @export
@@ -82,7 +82,32 @@ meanLRO<- function(Umat, Fmat, mixdist=NULL, offspring_weight=NULL){
   }
 }
 
-# Function for the probability of reproducing at least once:
+#' Probability of reproducing at least once, based on starting state
+#'
+#' Calculates the probability of reproducing at least once, for individuals
+#' starting in all possible starting states. In Hernandez et al. 2024, we used
+#' the probability of surviving to reproduce to rescale reproductive rewards
+#' when individuals can produce multiple offspring types.
+#'
+#' @param Umat An \eqn{n \times n} matrix of transition rates among the \eqn{n}
+#'   states in the matrix population model
+#' @param Fmat An \eqn{n \times n} matrix of per capita rates of reproduction
+#'   rates by any of the \eqn{n} states into offspring (new individuals of any
+#'   of the \eqn{n} states)
+#' @param repro_var The form of variance in reproductive output, with possible
+#'   values of `"poisson"`, `"bernoulli"` or `"fixed"`. This is required to
+#'   calculate the probability of breeding this year from the values of mean per
+#'   capita reproductive output.
+#'
+#' @returns A vector of length \eqn{n} containing the probability of reproducing
+#'   at least once, for individuals starting in each of the \eqn{n} states
+#' @export
+#' @importFrom stats ppois
+#'
+#' @examples
+#' Umat<- matrix(c(0.5, 0.1, 0.1, 0, 0.5, 0.3, 0, 0, 0.8), ncol=3)
+#' Fmat<- matrix(c(0.2, 0, 0, 1, 0.5, 0, 5, 3, 0), ncol=3)
+#' probVals<- probRepro(Umat, Fmat, repro_var='poisson')
 probRepro<- function(Umat, Fmat, repro_var = 'poisson'){
   # take the column sum of reproduction:
   betabar<- colSums(Fmat) # the average offspring production
