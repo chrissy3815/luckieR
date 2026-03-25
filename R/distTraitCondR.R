@@ -1496,21 +1496,21 @@ calcDistLROPostBreedingNoEnv = function (Pmat, Fmat, c0, maxClutchSize, maxLRO,
 #'       c0, maxClutchSize=10, maxLRO=15, traitDist)
 probTraitCondLRONoEnv = function (PlistAllTraits, FlistAllTraits,
                                   c0, maxClutchSize, maxLRO,
-                                  traitDist) {
+                                  traitDist, Fdist="Poisson") {
   Q = matrix (1, 1, 1)
 
   ## Re-package PlistAllTraits into a list of lists, where
   ## PlistAll[[x]][q]] is the P matrix for trait x, environment q (of
   ## which there is only one) and likewise for FlistAllTraits
-  PlistAll = FlistAll = list ()
   numTraits = length (PlistAllTraits)
+  PlistAll = FlistAll = vector("list", numTraits)
   for (x in 1:numTraits) {
     PlistAll[[x]][[1]] = PlistAllTraits[[x]]
     FlistAll[[x]][[1]] = FlistAllTraits[[x]]
   }
-  
+
   out = probTraitCondLRO (PlistAll, FlistAll, Q,
-                          c0, maxClutchSize=10, maxLRO=15, traitDist)
+                          c0, maxClutchSize=10, maxLRO=15, traitDist, Fdist)
   return (out)
 }
 
@@ -1570,9 +1570,19 @@ probTraitCondLROPostBreedingNoEnv =
 
   Q = matrix (1, 1, 1)
 
-  out = probTraitCondLROPostBreeding (PlistAllTraits, FlistAllTraits, Q,
+  ## Re-package PlistAllTraits into a list of lists, where
+  ## PlistAll[[x]][q]] is the P matrix for trait x, environment q (of
+  ## which there is only one) and likewise for FlistAllTraits
+  numTraits = length (PlistAllTraits)
+  PlistAll = FlistAll = vector("list", numTraits)
+  for (x in 1:numTraits) {
+    PlistAll[[x]][[1]] = PlistAllTraits[[x]]
+    FlistAll[[x]][[1]] = FlistAllTraits[[x]]
+  }
+
+  out = probTraitCondLROPostBreeding (PlistAll, FlistAll, Q,
                                       c0, maxClutchSize=10, maxLRO=15,
-                                      traitDist)
+                                      traitDist, Fdist)
 
   return (out)
 }
