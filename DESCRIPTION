@@ -17,3 +17,5 @@ Suggests:
 Config/testthat/edition: 3
 Imports: 
     Matrix
+URL: https://github.com/chrissy3815/luckieR
+BugReports: https://github.com/chrissy3815/luckieR/issues
