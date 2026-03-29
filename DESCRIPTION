@@ -1,6 +1,6 @@
 Package: luckieR
 Title: Calculations of Luck in Structured Population Models
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: c(
     person("Robin", "Snyder", , "res29@case.edu", role = c("aut", "cph")),
     person("Christina", "Hernandez", , "christinahernan@gmail.com", role=c("aut", "cre")),
