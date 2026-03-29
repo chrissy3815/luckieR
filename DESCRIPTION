@@ -1,12 +1,13 @@
 Package: luckieR
-Title: Calculations for Luck (Individual Stochasticity) in Structured Population Models
+Title: Calculations of Luck in Structured Population Models
 Version: 0.0.0.9000
 Authors@R: c(
-    person("Robin", "Snyder", , "first.last@example.com", role = c("aut", "cre")),
-    person("Christina", "Hernandez", , "christinahernan@gmail.com", role=c("aut"))
+    person("Robin", "Snyder", , "res29@case.edu", role = c("aut", "cph")),
+    person("Christina", "Hernandez", , "christinahernan@gmail.com", role=c("aut", "cre")),
+    person("Steve", "Ellner", , "spe2@cornell.edu", role=c("aut"))
     )
 Maintainer: Christina Hernandez <christinahernan@gmail.com>
-Description: What the package does (one paragraph).
+Description: User-friendly and generalized tools for the calculation of luck -- moments of variation in metrics like lifespan and lifetime reproductive output. We provide tools for calculating those moments and also performing decompositions into contributions from, for example, individual traits, environmental impacts, and luck (also called individual stochasticity). The functions included here are based on Snyder and Ellner (2024) <doi:10.1086/730557>, Cochran and Ellner (1992) <https://www.jstor.org/stable/2937115>, and Hernandez et al. (2024) <doi:10.1111/ele.14390>.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

@@ -4,3 +4,4 @@
 ^README\.Rmd$
 ^stagecoach$
 ^misc$
+^cran-comments\.md$

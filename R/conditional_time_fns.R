@@ -80,7 +80,7 @@
 #'               0.6, 0.7),
 #'               nrow = 2, byrow = TRUE)
 #'
-#' D <- Di_mat(M)
+#' D <- luckieR:::Di_mat(M)
 #' dim(D)            # 2 x 2 x 2
 #' D[, , 1]          # D_1: column 1 zeroed
 #' D[, , 2]          # D_2: column 2 zeroed

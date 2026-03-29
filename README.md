@@ -21,6 +21,10 @@ the development version of `luckieR` from [Github](https://github.com/)
 as follows:
 
 ``` r
+# CRAN installation:
+install.packages("luckieR")
+
+# Github direct installation
 # install.packages("pak")
 pak::pak("chrissy3815/luckieR")
 ```
