@@ -27,33 +27,53 @@ pak::pak("chrissy3815/luckieR")
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+This is a basic example which shows you how to calculate mean of
+lifespan and lifetime reproductive output (LRO) for a simple matrix
+model:
 
 ``` r
-library(luckieR) # Again, this does not yet exist!
-## basic example code
+library(luckieR)
+
+# Our matrix is separated into the Umat (survival and growth) and the Fmat (reproduction)
+Umat<- matrix(c(0.5, 0.1, 0.1, 0, 0.5, 0.3, 0, 0, 0.8), ncol=3)
+Fmat<- matrix(c(0.2, 0, 0, 1, 0.5, 0, 5, 3, 0), ncol=3)
+Amat<- Umat+Fmat
+
+# Lifespan:
+meanL<- meanLifespan(Umat)
+varL<- varLifespan(Umat)
+skewL<- skewLifespan(Umat)
+
+# LRO:
+meanLrepro<- meanLRO(Umat, Fmat)
+varLrepro<- varLRO(Umat, Fmat, repro_var = 'poisson')
+skewLrepro<- skewLRO(Umat, Fmat, repro_var = 'poisson')
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
+Those functions all return the values for individuals starting in any
+possible starting state. However, new individuals in the population are
+born into either state 1 or 2, but never state 3. So if we want to know
+the expected lifespan from birth, for a random individual born into this
+population, we need to take a weighted mean according to the frequency
+of offspring types.
+
+We refer to the frequency distribution for calculating this kind of
+weighted mean as the “mixing distribution.” A standard choice for the
+mixing distribution is the distribution of offspring types in a cohort
+produced by the population at its stable distribution.
 
 ``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
+# luckieR provides a function to calculate the distribution of offspring in a cohort produced at the stable distribution:
+mixdist<- calcDistOffspringCohort(Amat, Fmat)
+
+# Now we can calculate population measures of mean, variance, and skewness:
+# Lifespan:
+pop_meanL<- meanLifespan(Umat, mixdist)
+pop_varL<- varLifespan(Umat, mixdist)
+pop_skewL<- skewLifespan(Umat, mixdist)
+
+# LRO:
+pop_meanLrepro<- meanLRO(Umat, Fmat, mixdist)
+pop_varLrepro<- varLRO(Umat, Fmat, repro_var = 'poisson', mixdist)
+pop_skewLrepro<- skewLRO(Umat, Fmat, repro_var = 'poisson', mixdist)
 ```
-
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this.
-
-You can also embed plots, for example:
-
-<img src="man/figures/README-pressure-1.png" alt="" width="100%" />
-
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
