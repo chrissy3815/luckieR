@@ -48,7 +48,7 @@
 #' @export
 #'
 #' @examples
-#' P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' \dontrun{P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' P2 = matrix (c(0, 0.2, 0, 0, 0, 0.3, 0, 0, 0.4), 3, 3)
 #' F1 = matrix (0, 3, 3); F1[1,] = 0:2
 #' F2 = matrix (0, 3, 3); F1[1,] = 0.8*(0:2)
@@ -60,7 +60,7 @@
 #' maxLRO = 30
 #' maxAge=20
 #' out = distLifespanCondR2 (Plist, Flist, Q, c0, maxClutchSize,
-#'   maxLRO, maxAge)
+#'   maxLRO, maxAge)}
 distLifespanCondR2 = function (Plist, Flist, Q,
                                c0, maxClutchSize, maxLRO, maxAge,
                                percentileCutoff = 0.99,
@@ -1238,14 +1238,14 @@ probTraitCondLROPostBreeding = function (PlistAllTraits, FlistAllTraits, Q,
 #' @export
 #'
 #' @examples
-#' Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' \dontrun{Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 #' c0 = c(1,0,0)
 #' maxClutchSize = 12
 #' maxLRO = 30
 #' maxAge=20
 #' out = distLifespanCondR2NoEnv (Pmat, Fmat, c0, maxClutchSize,
-#'   maxLRO, maxAge)
+#'   maxLRO, maxAge)}
 distLifespanCondR2NoEnv = function (Pmat, Fmat, c0, maxClutchSize,
                                    maxLRO, maxAge,
                                    percentileCutoff=0.99,
@@ -1308,14 +1308,14 @@ distLifespanCondR2NoEnv = function (Pmat, Fmat, c0, maxClutchSize,
 #' @export
 #'
 #' @examples
-#' Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' \dontrun{Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 #' c0 = c(1,0,0)
 #' maxClutchSize = 12
 #' maxAge=20
 #' maxLRO = 30
 #' out = distLifespanCondR2PostBreedingNoEnv (Pmat, Fmat, c0, maxClutchSize,
-#'   maxLRO, maxAge)
+#'   maxLRO, maxAge)}
 distLifespanCondR2PostBreedingNoEnv = function (Pmat, Fmat,
                                            c0, maxClutchSize, maxLRO, maxAge,
                                            percentileCutoff = 0.99,

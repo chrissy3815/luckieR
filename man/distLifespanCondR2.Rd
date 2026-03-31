@@ -77,7 +77,7 @@ populations."  The American Naturalist 204(2),
 https://doi.org/10.1086/730557 and its online supplement.
 }
 \examples{
-P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+\dontrun{P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 P2 = matrix (c(0, 0.2, 0, 0, 0, 0.3, 0, 0, 0.4), 3, 3)
 F1 = matrix (0, 3, 3); F1[1,] = 0:2
 F2 = matrix (0, 3, 3); F1[1,] = 0.8*(0:2)
@@ -89,5 +89,5 @@ maxClutchSize = 12
 maxLRO = 30
 maxAge=20
 out = distLifespanCondR2 (Plist, Flist, Q, c0, maxClutchSize,
-  maxLRO, maxAge)
+  maxLRO, maxAge)}
 }
