@@ -48,7 +48,7 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' \donttest{P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' P2 = matrix (c(0, 0.2, 0, 0, 0, 0.3, 0, 0, 0.4), 3, 3)
 #' F1 = matrix (0, 3, 3); F1[1,] = 0:2
 #' F2 = matrix (0, 3, 3); F1[1,] = 0.8*(0:2)
@@ -1017,7 +1017,7 @@ probTraitCondLRO = function (PlistAllTraits, FlistAllTraits, Q,
   probXCondR = matrix (0, mT, numTraits)
 
   for (x in 1:numTraits) {
-    cat ("Trait", x, "...\n")
+    message ("Trait", x, "...\n")
     Plist = PlistAllTraits[[x]]
     Flist = FlistAllTraits[[x]]
     probRCondX[,x] = calcDistLRO (Plist, Flist, Q,
@@ -1149,7 +1149,7 @@ probTraitCondLROPostBreeding = function (PlistAllTraits, FlistAllTraits, Q,
   probXCondR = matrix (0, mT, numTraits)
 
   for (x in 1:numTraits) {
-    cat ("Trait", x, "...\n")
+    message ("Trait", x, "...\n")
     Plist = PlistAllTraits[[x]]
     Flist = FlistAllTraits[[x]]
     probRCondX[,x] = calcDistLROPostBreeding (Plist, Flist, Q,
@@ -1238,7 +1238,7 @@ probTraitCondLROPostBreeding = function (PlistAllTraits, FlistAllTraits, Q,
 #' @export
 #'
 #' @examples
-#' \dontrun{Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' \donttest{Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 #' c0 = c(1,0,0)
 #' maxClutchSize = 12
@@ -1308,7 +1308,7 @@ distLifespanCondR2NoEnv = function (Pmat, Fmat, c0, maxClutchSize,
 #' @export
 #'
 #' @examples
-#' \dontrun{Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' \donttest{Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 #' c0 = c(1,0,0)
 #' maxClutchSize = 12

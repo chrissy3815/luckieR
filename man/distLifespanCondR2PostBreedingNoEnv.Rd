@@ -72,7 +72,7 @@ https://doi.org/10.1086/730557 and its online supplement.  This
 is a wrapper function for distLifespanCondR2PostBreeding.
 }
 \examples{
-\dontrun{Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+\donttest{Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 c0 = c(1,0,0)
 maxClutchSize = 12
