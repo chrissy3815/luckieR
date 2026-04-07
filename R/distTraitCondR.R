@@ -180,9 +180,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
   epsilon = 0.00001
   if (sum(abs(range(Qbullet %*% Gbullet %*% Sbullet %*% Fbullet - A)))
       > epsilon)
-    ## warning("Qbullet %*% Gbullet %*% Sbullet %*% Fbullet differs
-    ## substantially from A")
-    cat ("Qbullet %*% Gbullet %*% Sbullet %*% Fbullet differs substantially from A")
+    warning("Qbullet %*% Gbullet %*% Sbullet %*% Fbullet differs substantially from A")
 
   ####################################################################
   ## Now make the additionally extended space matrix that allows us to
@@ -320,9 +318,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
   foo1 = apply (probLifespanCondR, 1, sum)
   foo2 = rep (1, nrow(probLifespanCondR))
   if (max(abs(range(foo1 - foo2))) > epsilon)
-    ## warning ("Rows of probLifespanCondR should sum to 1 and they
-    ## don't.")
-    cat ("Rows of probLifespanCondR should sum to 1 and they don't.")
+    warning ("Rows of probLifespanCondR should sum to 1 and they don't.")
 
   meanLifespanCondR = sdLifespanCondR = CVLifespanCondR =
     numeric (RCutoff+1)
@@ -557,9 +553,7 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
   foo2 = rep (1, nrow(probLifespanCondR))
 
   if (max(abs(range(foo1 - foo2))) > epsilon)
-    ##warning ("Rows of probLifespanCondR should sum to 1 and they
-    ##don't.")
-    cat ("Rows of probLifespanCondR should sum to 1 and they don't.")
+    warning ("Rows of probLifespanCondR should sum to 1 and they don't.")
 
   meanLifespanCondR = sdLifespanCondR = CVLifespanCondR =
     numeric (RCutoff+1)
@@ -1044,8 +1038,7 @@ probTraitCondLRO = function (PlistAllTraits, FlistAllTraits, Q,
   ## Marginalize over X to get P(R)
   probR = apply (probRAndX, 1, sum)
   if (abs(sum(probR) - 1) > epsilon)
-    ## warning ("Pr(R) does not sum to 1.")
-    cat ("Pr(R) does not sum to 1.")
+    warning ("Pr(R) does not sum to 1.")
 
   ## Condition on R
   for (x in 1:numTraits)
@@ -1161,9 +1154,7 @@ probTraitCondLROPostBreeding = function (PlistAllTraits, FlistAllTraits, Q,
   foo1 = colSums(probRCondX)
   foo2 = rep (1, ncol(probRCondX))
   if (max(abs(range (foo1 - foo2))) > epsilon)
-    ##warning ("Columns of probRCondX should sum to 1 and they
-    ##don't.")
-    cat ("Columns of probRCondX should sum to 1 and they don't.")
+    warning ("Columns of probRCondX should sum to 1 and they don't.")
 
   ## Now use Bayes thm to get P(X | R). ################
 
@@ -1176,8 +1167,7 @@ probTraitCondLROPostBreeding = function (PlistAllTraits, FlistAllTraits, Q,
   ## Marginalize over X to get P(R)
   probR = apply (probRAndX, 1, sum)
   if (abs(sum(probR) - 1) > epsilon)
-    ##warning ("Pr(R) does not sum to 1.")
-    cat("Pr(R) does not sum to 1.")
+    warning ("Pr(R) does not sum to 1.")
 
   ## Condition on R
   for (x in 1:numTraits)
