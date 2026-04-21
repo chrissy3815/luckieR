@@ -16,6 +16,9 @@ knitr::opts_chunk$set(
 # luckieR
 
 <!-- badges: start -->
+[![CRAN status](https://www.r-pkg.org/badges/version/luckieR)](https://CRAN.R-project.org/package=luckieR)
+[![Codecov test coverage](https://codecov.io/gh/chrissy3815/luckieR/graph/badge.svg)](https://app.codecov.io/gh/chrissy3815/luckieR)
+[![R-CMD-check](https://github.com/chrissy3815/luckieR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/chrissy3815/luckieR/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The goal of luckieR is to provide user-friendly and generalized tools for the calculation of "luck" -- moments of variation in metrics like lifespan and lifetime reproductive output. We provide tools for calculating those moments and also performing decompositions into contributions from, for example, individual traits, environmental impacts, and luck (also called individual stochasticity).
