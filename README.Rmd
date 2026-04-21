@@ -17,7 +17,6 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 [![CRAN status](https://www.r-pkg.org/badges/version/luckieR)](https://CRAN.R-project.org/package=luckieR)
-[![Codecov test coverage](https://codecov.io/gh/chrissy3815/luckieR/graph/badge.svg)](https://app.codecov.io/gh/chrissy3815/luckieR)
 [![R-CMD-check](https://github.com/chrissy3815/luckieR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/chrissy3815/luckieR/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
