@@ -1,0 +1,172 @@
+\documentclass[11pt]{article}
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[english]{babel}
+\usepackage[page,header]{appendix}
+\usepackage{titletoc}
+\usepackage{subcaption}
+% Set page size and margins
+% Replace `letterpaper' with `a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+% Useful packages
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{color}
+\usepackage{enumitem}
+\usepackage{cancel}
+\usepackage{lineno}
+\usepackage{authblk}
+\usepackage{siunitx}
+\usepackage{mathtools}
+\usepackage[font=small,skip=0pt]{caption}
+
+%Useful new commands
+\newcommand{\A}{\mathbf{A}}
+\newcommand{\Abar}{\overline\A}
+\newcommand{\w}{\mathbf{w}}
+\newcommand{\wbar}{\overline\w}
+\newcommand{\vbar}{\overline\bbv}
+
+% Chrissy bibliography:
+\usepackage[
+    citestyle=authoryear, 
+    uniquelist=false,
+    uniquename=false,
+    natbib,
+    backend=biber,
+    bibstyle=apa,
+    ]{biblatex}
+\addbibresource{hernandez_library.bib}
+
+\title{luckieR: an R package for calculating and decomposing distributions of luck in life histories}
+\author[1]{Stephen P. Ellner}
+\author[2]{Christina M. Hern\'andez\thanks{Corresponding author. Email: cmhernan@odu.edu}}
+\author[3]{Robin E. Snyder}
+% Authors currently alphabetical
+
+\affil[1]{Cornell University, Department of Ecology and Evolutionary Biology, Ithaca, NY, USA}
+\affil[2]{Old Dominion University, Department of Biological Sciences, Norfolk, VA, USA}
+\affil[3]{Case Western Reserve University, Department of Biology, Cleveland, OH, USA}
+
+\begin{document}
+\maketitle
+
+\noindent For submission at \textit{Methods in Ecology and Evolution} as an \textit{Application} paper.
+
+\paragraph{Running title} luckieR package
+
+\paragraph{Acknowledgements} ADD FUNDING INFORMATION
+
+\paragraph{Author Contributions} All authors contributed R functions to the package. CMH built and submitted the package to CRAN. All authors wrote and revised the manuscript text.
+
+\paragraph{Data availability statement} The R package \texttt{luckieR} is available on CRAN and at Github (\url{https://github.com/chrissy3815/luckieR}). \textcolor{red}{REF VIGNETTES?} All code files required to repeat the worked examples are archived at Zenodo (\textcolor{red}{ADD LINK WHEN RELEVANT}). 
+\paragraph{Word count} Abstract: \textless 350, Main text: \textless 4000\\
+\textbf{Figures} Main text: 2 figures, 1 table\\
+
+% Journal scope statement for MEE: 
+% We present a mathematical decomposition of variance in population growth rate into contributions from variation in vital rates and population structure. We present analytical expressions, the resulting theoretical expectations, and a simulation approach. To demonstrate interpretation of results, we include case studies. Our methods are broadly relevant to population ecology.
+
+\newpage
+
+\doublespacing
+\begin{linenumbers}
+
+\section*{Abstract}
+1. Luck is important and a robust set of tools have been introduced across multiple papers. These tools do X, Y, Z.
+
+\noindent 2. Here, we introduce an R package, luckieR, that brings together many of the tools for calculating luck metrics. The generalized software available through luckieR is a user-friendly toolkit for calculating a variety of 
+
+\noindent 3. We demonstrate the utility of the package and its functions for ecological investigations through two worked examples. First, we demonstrate the insight about variation among individuals in life history outcomes that can be gained from a single matrix model, using an example from the COMADRE animal matrix population model database. To highlight the more complex analyses that are possible with our software, we present a luck decomposition analysis of an IPM for a grass-endophyte experiment that includes both trait and environmental variation.
+
+\noindent 4. In conclusion, luckieR facilitates sophisticated analyses of variation among individuals in a population in their life history outcomes such as age of maturity, lifespan, and lifetime reproductive output. The package is open source and available on CRAN. As analyses of luck in life histories continue to be developed, luckieR will provide a centralized resource for software to perform those calculations.
+
+\noindent \textbf{Data/code for peer review statement:} An anonymized version of the code has been provided as a zip file containing \textcolor{red}{NUMBER} R script files. We have also provided an anonymized README.txt file, and two CSV data files. \textcolor{red}{Will need to look into how to anonymize the package?}
+
+\noindent \textbf{Keywords:} lifetime reproductive output, matrix population models, \textcolor{red}{OTHERS}
+
+\newpage
+\section{Introduction}
+
+\section{Package Overview}
+Different papers use different headers for this section: Implementation, Modeling Approach, etc. We can change section names or number of sections as needed.
+
+\subsection{Chrissy's questions about software dev}
+\begin{enumerate}
+	\item Robin's functions have different options for different cases (NoEnv, PostBreeding, PostBreedingNoEnv). Is it worth creating a wrapper that has input variables that allow users to select pre- vs. post-breeding and environment vs no environment? Chrissy is offering to do that if it's desirable.
+	\item Is it possible to change ``Def3" to something more intuitive?
+\end{enumerate}
+
+\section{Example Applications}
+
+\section{Discussion}
+
+
+\newpage
+\begin{table}[ptb]
+  \renewcommand{\arraystretch}{1.2}
+  \caption{List of functions included in luckieR vXXXX. We could add references to where the more-complete math is introduced? Or we could add usage details?} 
+  \label{tab:notation}
+  \begin{center}
+    \small
+    \vspace{-0.2in}
+    \begin{tabular}{lp{0.1cm}p{10.5cm}}
+      \hline
+      \textbf{Function name}& & \textbf{Short description}  \\
+      \hline
+       \multicolumn{3}{l}{\textbf{Basic calculations}} \\[-3pt]
+      calcDistLRO &&  and friends: NoEnv, PostBreeding, PostBreedingNoEnv \\[6pt]
+      \multicolumn{3}{l}{\textbf{Functions for calculating conditional distributions}}\\[-3pt]
+      calcDistOffspringCohort && Calculates the distribution of offspring types in a cohort produced by the stable population distribution. \\
+      calcMoments &&   \\
+      distLifespanCondR2 && And NoEnv, PostBreeding, and PostBreedingNoEnv versions. \\
+      firstBreed &&   \\
+      flatten &&   \\
+      fundamental\_matrix &&  change to camel case, I think? \\
+      makeCondFailureKernel &&  \\
+      makeCondKernel &&  \\
+      makeM &&  \\
+      makeMCondLROThreshold && And version for PostBreeding \\
+      makePCondBreedDef3 && This does not have the most intuitive name \\
+      makePDef3 && Is it possible to change ``Def3" to something descriptive? \\
+      make\_AxT && \\
+      meanConditionalLifespan && \\
+      meanConditionalTimes && \\
+      meanLRO && \\
+      meanLifespan && \\
+      mk\_B && change to ``make" to match other functions? and change to camel case. \\
+      mk\_BPostBreeding && same comment as line above \\
+      p\_xT && \\
+      partitionVarSkewnessEnvVar && and friends: partitionVarSkewnessEnvVarAndTraits, partitionVarSkewnessEnvVarPostBreeding, partitionVarSkewnessNoEnvVar, partitionVarSkewnessNoEnvVarPostBreeding \\
+      popMeanVar && \\
+      probRepro && \\
+      probTraitCondLRO && and friends: NoEnv, PostBreeding, PostBreedingNoEnv \\
+      skewLRO && \\
+      skewLifespan && \\
+      stable\_dist && Change to camel case \\
+      traitAve && Change to ``mean"? \\
+      traitMu3 && \\
+      traitVar && \\
+      unfold && Does this function need to be exported? \\
+      unvec && Does this function need to be exported? \\
+      varConditionalLifespan && \\
+      varConditionalTimes && \\
+      varLRO && \\
+      varLifespan && \\
+      vec && \\
+      \hline
+    \end{tabular}
+   \normalsize
+  \end{center}
+  \renewcommand{\arraystretch}{1}
+\end{table}
+
+\end{linenumbers}
+
+%\printbibliography
+
+\end{document}

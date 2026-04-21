@@ -8,3 +8,4 @@
 ^CRAN-SUBMISSION$
 ^codecov\.yml$
 ^\.github$
+^manuscript$
