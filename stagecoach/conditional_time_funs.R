@@ -413,3 +413,38 @@ pop_skew = function(mean_by_type,var_by_type,skew_by_type,mixdist){
 		result = mu3/(mu2^(3/2)); 
 		return(result)
 }
+
+setwd("c:/repos/luckieR/stagecoach"); 
+source("BasicLuckCalcs"); 
+source("matrix_utilities.R");  
+Umat<- matrix(c(0.5, 0.1, 0.1, 0, 0.5, 0.3, 0, 0, 0.8), ncol=3)
+Fmat<- matrix(c(0.2, 0, 0, 1, 0.5, 0, 5, 3, 0), ncol=3)
+ 
+mixdist=abs(eigen(Umat+Fmat)$vectors[,1]); 
+mixdist=Fmat%*%mixdist; 
+mixdist=mixdist/sum(mixdist); mixdist=as.numeric(mixdist); 
+ 
+mean_by_type = as.numeric(meanLRO(Umat, Fmat)); 
+var_by_type = as.numeric(varLRO(Umat,Fmat)); 
+skew_by_type<- as.numeric(skewLRO(Umat, Fmat, repro_var='poisson'))
+mu3_by_type = skew_by_type*((var_by_type)^(3/2))
+
+skew_all = pop_skew(mean_by_type,var_by_type,skew_by_type,mixdist)
+mu3_all = pop_mu3(mean_by_type,var_by_type,mu3_by_type,mixdist); 
+
+
+################# numerical test by simulation 
+X1 = runif(50000,1,2); 
+X2 = rnorm(50000,3,1)^2; 
+X3 = rpois(50000,4); 
+X = c(X1,X2,X3); 
+
+require(moments); 
+mean_by_type = c(mean(X1),mean(X2),mean(X3)); 
+var_by_type = c(var(X1),var(X2), var(X3)); 
+skew_by_type = c(skewness(X1),skewness(X2),skewness(X3)); 
+mixdist = rep(1/3,3); 
+
+pop_skew(mean_by_type,var_by_type,skew_by_type,mixdist)
+skewness(X); 
+
