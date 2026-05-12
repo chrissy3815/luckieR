@@ -1,0 +1,107 @@
+---
+title: "grassEndophyteVignette"
+author: "Robin Snyder"
+date: "May 11, 2026"
+output: pdf_document
+bibliography: grassEndo.bib
+link-citations: true
+---
+
+
+**Study background** This vignette involves perennial grasses with and
+without endophytes.  We use the size-structured matrix model for
+*Elymus villosus* from @2024:fowle.ziegl.whitn.ea, which includes
+transition matrices for 13 years.  The model is in turn based on data
+from a long-term symbiont removal experiment at Lilly-Dickey Woods in
+Indiana, USA [@2023:mille.fowle.ziegl.ea].
+
+**Variables**:
+
+* PlistAllEndo: a list of lists containing the yearly transition
+matrices: PlistAllEndo[[1]] is a list of yearly transition matrices
+for plants with endophytes and PlistAllEndo[[2]] is the same for
+plants without endophytes
+
+* FlistAllEndo: a list of lists containing the yearly fecundity
+matrices, with the same structure as PlistAllEndo
+
+* Q: the transition matrix between year types.  (Here we assume that year
+types are drawn randomly with replacement.)
+
+* c0: The initial size distribution.  (Here all individuals are born
+  into size class 1, the seedling size class, so c0[1] = 1 and all
+  other entries are 0.)
+
+* maxClutchSize: the maximum number of offspring that can be produced
+  in a single reproductive bout
+
+* maxLRO: the maximum lifetime reproductive output
+
+* traitDist: the probability distribution for trait values.  Here we
+  assume that plants are equally likely to have endophytes or not, so
+  traitDist = c(0.5, 0.5).
+
+* Fdist: the probability distribution for the clutch size, with
+  current options "Poisson" and "Bernoulli".  Here we assume
+  "Poisson". 
+
+One question we may wish to ask is how certain we are of an
+individual's endophyte status based on their lifetime reproductive
+output (LRO).  In order to make the code less glacially slowly,
+we use an abridged version of the model, with only five year
+types.  (WARNING: this code is still slow.)  For this species, not
+having endophytes produces higher LRO, but even if we observe an
+individual with 6 offspring (which is well into the 90th percentile),
+we can't be very confident that that individual lacked endophytes.
+For more details on the math behind this calculation, see
+@2018:snyde.ellne and @2024:snyde.ellne.
+
+```{r, eval=FALSE}
+library ("luckieR")
+maxClutchSize = 24
+maxLRO = 24
+groupDist = rep (0.5, 2)
+
+## read in matrices
+PlistAllEndo = readRDS ("ELRIPMatrices.rds")
+FlistAllEndo = readRDS ("ELRIFMatrices.rds")
+
+## find number of year types
+numEnv = length(PlistAllEndo[[1]])
+
+## Assume that all env. are equally likely and the sequence is
+## temporally uncorrelated.  You can make other choices if you have
+## more information.
+Q = matrix (1/numEnv, numEnv, numEnv)
+
+## How many states do we have in each env.?
+mz = dim(PlistAllEndo[[1]][[1]])[1]
+
+bigmz = mz * numEnv
+
+## Initial state distrib.
+c0 = rep (0, mz); c0[1] = 1
+
+## Clutch size distribution
+Fdist = "Poisson"
+
+## Equally likely to have endophytes or not
+traitDist = rep (0.5, 2)
+
+out = probTraitCondLRO (PlistAllEndo, FlistAllEndo, Q,
+                        c0, maxClutchSize, maxLRO,
+                        traitDist, Fdist)
+
+probXCondR = out$probXCondR
+
+matplot (0:6, probXCondR[1:7,], xlab="LRO",
+         ylab="Probability", type="l", col=c("black", "red"), lwd=2,
+         lty=1, main="ELRI", ylim=c(0,1))
+
+legend (x="topleft", col=c("black", "red"),
+        legend=c("With endophytes", "Without endophytes"),
+        lwd=2, bty="n", cex=1.3)
+```
+
+Alternatively, we may wish to focus on what forms of luck are most
+important and at what ages.  
