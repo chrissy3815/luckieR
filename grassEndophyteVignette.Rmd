@@ -47,8 +47,8 @@ types are drawn randomly with replacement.)
 
 One question we may wish to ask is how certain we are of an
 individual's endophyte status based on their lifetime reproductive
-output (LRO).  In order to make the code less glacially slowly,
-we use an abridged version of the model, with only five year
+output (LRO).  In order to make the code less glacially slow,
+we use an abridged version of the model, with only three year
 types.  (WARNING: this code is still slow.)  For this species, not
 having endophytes produces higher LRO, but even if we observe an
 individual with 6 offspring (which is well into the 90th percentile),
@@ -104,4 +104,82 @@ legend (x="topleft", col=c("black", "red"),
 ```
 
 Alternatively, we may wish to focus on what forms of luck are most
-important and at what ages.  
+important and at what ages.  If we partition the variance in LRO into
+a within-endophyte-status contribution and a between-endophyte-status
+contribution, we can think of the within-endophyte-status contribution
+as the contribution of luck [@2018:snyde.ellne].  We can further
+partition that luck contribution into contributions from individual
+demographic transitions at different ages.  Did you survive from age 2
+to age 3 and how much does knowing the outcome reduce the overall
+variance?  If you lived, how much did you grow or shrink and how much
+does knowing the outcome reduce the overall variance?  And so forth.
+The amount that knowing the outcome of each of these demographic
+transitions reduces the overall variance is the contribution that
+transition makes.
+
+We see that early survival luck is key and this makes sense: if you
+die young, it doesn't matter how lucky you would have been later.  We
+also see that growing quickly at ages 2 and 3 is important.  Survival
+rises rapidly with size for this species, so this too, makes sense.
+(Note: in order to make the code slow, we use an abridged version of
+the model, with only three year types.)
+
+```{r, eval=FALSE}
+library ("luckieR")
+maxClutchSize = 24
+maxLRO = 24
+groupDist = rep (0.5, 2)
+
+## read in matrices
+PlistAllEndo = readRDS ("ELRIPMatrices.rds")
+FlistAllEndo = readRDS ("ELRIFMatrices.rds")
+
+## find number of year types
+numEnv = length(PlistAllEndo[[1]])
+
+## Assume that all env. are equally likely and the sequence is
+## temporally uncorrelated.  You can make other choices if you have
+## more information.
+Q = matrix (1/numEnv, numEnv, numEnv)
+
+## How many states do we have in each env.?
+mz = dim(PlistAllEndo[[1]][[1]])[1]
+
+bigmz = mz * numEnv
+
+## Initial state distrib.
+c0 = rep (0, mz); c0[1] = 1
+## Initial env. distrib.  Should probably be the stationary distribution.
+u0 = rep (1/numEnv, numEnv)
+
+## We have two traits: endophyte-positive and -negative
+numTraits=2
+## Maximum age
+maxAge = 25
+
+## Equally likely to have endophytes or not
+traitDist = rep (0.5, 2)
+
+out = partitionVarSkewnessEnvVarAndTraits (PlistAllEndo,
+                                           FlistAllEndo,
+                                           Q, c0, traitDist, maxAge,
+                                           survThreshold=0.05)
+
+varTrajecResults = array (NA, dim=c(numTraits, 4, maxAge))
+varTrajecResults[,1,] = out$survTrajecVarCondX
+varTrajecResults[,2,] = out$growthTrajecVarCondX
+varTrajecResults[,3,] = out$envTrajecVarCondX
+varTrajecResults[,4,] = out$fecVarCondX
+
+colorVec = colorVecAll6[2:5]
+matplot (1:9, t(varTrajecResults[1,,1:9]),
+         xlab="Age", ylab="Contrib. to Var(R)", type="l",
+         main="ELRI with endophytes", lwd=2,
+	 col=c("black", "orange", "forest green", "turquoise"),
+	 lty=1, cex.lab=1.3)
+
+legend (x="topright", lwd=2,
+        col=c("black", "orange", "forest green", "turquoise"),
+        legend=c("Survival", "Growth", "Environment", "Fecundity"),
+        lty=1, cex=1.4, bty="n")
+```
