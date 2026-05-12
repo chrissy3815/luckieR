@@ -48,7 +48,7 @@
 #' @export
 #'
 #' @examples
-#' P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' \donttest{P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' P2 = matrix (c(0, 0.2, 0, 0, 0, 0.3, 0, 0, 0.4), 3, 3)
 #' F1 = matrix (0, 3, 3); F1[1,] = 0:2
 #' F2 = matrix (0, 3, 3); F1[1,] = 0.8*(0:2)
@@ -60,7 +60,7 @@
 #' maxLRO = 30
 #' maxAge=20
 #' out = distLifespanCondR2 (Plist, Flist, Q, c0, maxClutchSize,
-#'   maxLRO, maxAge)
+#'   maxLRO, maxAge)}
 distLifespanCondR2 = function (Plist, Flist, Q,
                                c0, maxClutchSize, maxLRO, maxAge,
                                percentileCutoff = 0.99,
@@ -180,9 +180,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
   epsilon = 0.00001
   if (sum(abs(range(Qbullet %*% Gbullet %*% Sbullet %*% Fbullet - A)))
       > epsilon)
-    ## warning("Qbullet %*% Gbullet %*% Sbullet %*% Fbullet differs
-    ## substantially from A")
-    cat ("Qbullet %*% Gbullet %*% Sbullet %*% Fbullet differs substantially from A")
+    warning("Qbullet %*% Gbullet %*% Sbullet %*% Fbullet differs substantially from A")
 
   ####################################################################
   ## Now make the additionally extended space matrix that allows us to
@@ -320,9 +318,7 @@ distLifespanCondR2 = function (Plist, Flist, Q,
   foo1 = apply (probLifespanCondR, 1, sum)
   foo2 = rep (1, nrow(probLifespanCondR))
   if (max(abs(range(foo1 - foo2))) > epsilon)
-    ## warning ("Rows of probLifespanCondR should sum to 1 and they
-    ## don't.")
-    cat ("Rows of probLifespanCondR should sum to 1 and they don't.")
+    warning ("Rows of probLifespanCondR should sum to 1 and they don't.")
 
   meanLifespanCondR = sdLifespanCondR = CVLifespanCondR =
     numeric (RCutoff+1)
@@ -557,9 +553,7 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
   foo2 = rep (1, nrow(probLifespanCondR))
 
   if (max(abs(range(foo1 - foo2))) > epsilon)
-    ##warning ("Rows of probLifespanCondR should sum to 1 and they
-    ##don't.")
-    cat ("Rows of probLifespanCondR should sum to 1 and they don't.")
+    warning ("Rows of probLifespanCondR should sum to 1 and they don't.")
 
   meanLifespanCondR = sdLifespanCondR = CVLifespanCondR =
     numeric (RCutoff+1)
@@ -1017,7 +1011,7 @@ probTraitCondLRO = function (PlistAllTraits, FlistAllTraits, Q,
   probXCondR = matrix (0, mT, numTraits)
 
   for (x in 1:numTraits) {
-    cat ("Trait", x, "...\n")
+    message ("Trait", x, "...\n")
     Plist = PlistAllTraits[[x]]
     Flist = FlistAllTraits[[x]]
     probRCondX[,x] = calcDistLRO (Plist, Flist, Q,
@@ -1044,8 +1038,7 @@ probTraitCondLRO = function (PlistAllTraits, FlistAllTraits, Q,
   ## Marginalize over X to get P(R)
   probR = apply (probRAndX, 1, sum)
   if (abs(sum(probR) - 1) > epsilon)
-    ## warning ("Pr(R) does not sum to 1.")
-    cat ("Pr(R) does not sum to 1.")
+    warning ("Pr(R) does not sum to 1.")
 
   ## Condition on R
   for (x in 1:numTraits)
@@ -1149,7 +1142,7 @@ probTraitCondLROPostBreeding = function (PlistAllTraits, FlistAllTraits, Q,
   probXCondR = matrix (0, mT, numTraits)
 
   for (x in 1:numTraits) {
-    cat ("Trait", x, "...\n")
+    message ("Trait", x, "...\n")
     Plist = PlistAllTraits[[x]]
     Flist = FlistAllTraits[[x]]
     probRCondX[,x] = calcDistLROPostBreeding (Plist, Flist, Q,
@@ -1161,9 +1154,7 @@ probTraitCondLROPostBreeding = function (PlistAllTraits, FlistAllTraits, Q,
   foo1 = colSums(probRCondX)
   foo2 = rep (1, ncol(probRCondX))
   if (max(abs(range (foo1 - foo2))) > epsilon)
-    ##warning ("Columns of probRCondX should sum to 1 and they
-    ##don't.")
-    cat ("Columns of probRCondX should sum to 1 and they don't.")
+    warning ("Columns of probRCondX should sum to 1 and they don't.")
 
   ## Now use Bayes thm to get P(X | R). ################
 
@@ -1176,8 +1167,7 @@ probTraitCondLROPostBreeding = function (PlistAllTraits, FlistAllTraits, Q,
   ## Marginalize over X to get P(R)
   probR = apply (probRAndX, 1, sum)
   if (abs(sum(probR) - 1) > epsilon)
-    ##warning ("Pr(R) does not sum to 1.")
-    cat("Pr(R) does not sum to 1.")
+    warning ("Pr(R) does not sum to 1.")
 
   ## Condition on R
   for (x in 1:numTraits)
@@ -1238,14 +1228,14 @@ probTraitCondLROPostBreeding = function (PlistAllTraits, FlistAllTraits, Q,
 #' @export
 #'
 #' @examples
-#' Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' \donttest{Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 #' c0 = c(1,0,0)
 #' maxClutchSize = 12
 #' maxLRO = 30
 #' maxAge=20
 #' out = distLifespanCondR2NoEnv (Pmat, Fmat, c0, maxClutchSize,
-#'   maxLRO, maxAge)
+#'   maxLRO, maxAge)}
 distLifespanCondR2NoEnv = function (Pmat, Fmat, c0, maxClutchSize,
                                    maxLRO, maxAge,
                                    percentileCutoff=0.99,
@@ -1308,14 +1298,14 @@ distLifespanCondR2NoEnv = function (Pmat, Fmat, c0, maxClutchSize,
 #' @export
 #'
 #' @examples
-#' Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' \donttest{Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 #' c0 = c(1,0,0)
 #' maxClutchSize = 12
 #' maxAge=20
 #' maxLRO = 30
 #' out = distLifespanCondR2PostBreedingNoEnv (Pmat, Fmat, c0, maxClutchSize,
-#'   maxLRO, maxAge)
+#'   maxLRO, maxAge)}
 distLifespanCondR2PostBreedingNoEnv = function (Pmat, Fmat,
                                            c0, maxClutchSize, maxLRO, maxAge,
                                            percentileCutoff = 0.99,

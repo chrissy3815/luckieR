@@ -7,12 +7,13 @@ Plist = list (P1, P2)
 Flist = list (F1, F2)
 Q = matrix (1/2, 2, 2)
 c0 = c(1,0,0)
-test_that("distLifespanCondR2 works with Poisson dist. clutch sizes", {  
+test_that("distLifespanCondR2 works with Poisson dist. clutch sizes", {
   expect_snapshot (
       distLifespanCondR2 (Plist, Flist, Q, c0, maxClutchSize=12,
                           maxLRO=20,
-                          maxAge=20) 
+                          maxAge=20)
   )
+  skip_on_cran()
 })
 
 P1 = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
@@ -23,7 +24,7 @@ F2 = matrix (0, 3, 3); F1[1,] = 0.08*(0:2)
 Flist = list (F1, F2)
 Q = matrix (1/2, 2, 2)
 c0 = c(1,0,0)
-test_that("distLifespanCondR2 works with Bernoulli dist. clutch sizes", {  
+test_that("distLifespanCondR2 works with Bernoulli dist. clutch sizes", {
   expect_snapshot (
       distLifespanCondR2 (Plist, Flist, Q, c0, maxClutchSize=1,
                           maxAge=12,

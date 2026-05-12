@@ -4,3 +4,8 @@
 ^README\.Rmd$
 ^stagecoach$
 ^misc$
+^cran-comments\.md$
+^CRAN-SUBMISSION$
+^codecov\.yml$
+^\.github$
+^manuscript$

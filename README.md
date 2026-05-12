@@ -5,6 +5,9 @@
 
 <!-- badges: start -->
 
+[![CRAN
+status](https://www.r-pkg.org/badges/version/luckieR)](https://CRAN.R-project.org/package=luckieR)
+[![R-CMD-check](https://github.com/chrissy3815/luckieR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/chrissy3815/luckieR/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The goal of luckieR is to provide user-friendly and generalized tools
@@ -16,27 +19,68 @@ impacts, and luck (also called individual stochasticity).
 
 ## Installation
 
-Currently, the package has not been built. At this point, this is our
-space for development of the package. When it is ready to be downloaded
-from GitHub and/or CRAN, we will update this section with installation
-instructions.
-
-You can install the development version of luckieR from [GitHub](https://github.com/) with: -->
+We are working on releasing the package to CRAN. You can always install
+the development version of `luckieR` from [Github](https://github.com/)
+as follows:
 
 ``` r
+# CRAN installation:
+install.packages("luckieR")
+
+# Github direct installation
 # install.packages("pak")
 pak::pak("chrissy3815/luckieR")
-# Note that the devtools::install_github() function has been deprecated in favor of "pak"
 ```
 
 ## Example
 
-This is a basic example which shows you how to calculate the mean, variance, and 
-skewness of lifespan and LRO dependent on starting stage:
+This is a basic example which shows you how to calculate mean of
+lifespan and lifetime reproductive output (LRO) for a simple matrix
+model:
 
 ``` r
 library(luckieR)
-## basic example code
+
+# Our matrix is separated into the Umat (survival and growth) and the Fmat (reproduction)
+Umat<- matrix(c(0.5, 0.1, 0.1, 0, 0.5, 0.3, 0, 0, 0.8), ncol=3)
+Fmat<- matrix(c(0.2, 0, 0, 1, 0.5, 0, 5, 3, 0), ncol=3)
+Amat<- Umat+Fmat
+
+# Lifespan:
+meanL<- meanLifespan(Umat)
+varL<- varLifespan(Umat)
+skewL<- skewLifespan(Umat)
+
+# LRO:
+meanLrepro<- meanLRO(Umat, Fmat)
+varLrepro<- varLRO(Umat, Fmat, repro_var = 'poisson')
+skewLrepro<- skewLRO(Umat, Fmat, repro_var = 'poisson')
 ```
 
+Those functions all return the values for individuals starting in any
+possible starting state. However, new individuals in the population are
+born into either state 1 or 2, but never state 3. So if we want to know
+the expected lifespan from birth, for a random individual born into this
+population, we need to take a weighted mean according to the frequency
+of offspring types.
 
+We refer to the frequency distribution for calculating this kind of
+weighted mean as the “mixing distribution.” A standard choice for the
+mixing distribution is the distribution of offspring types in a cohort
+produced by the population at its stable distribution.
+
+``` r
+# luckieR provides a function to calculate the distribution of offspring in a cohort produced at the stable distribution:
+mixdist<- calcDistOffspringCohort(Amat, Fmat)
+
+# Now we can calculate population measures of mean, variance, and skewness:
+# Lifespan:
+pop_meanL<- meanLifespan(Umat, mixdist)
+pop_varL<- varLifespan(Umat, mixdist)
+pop_skewL<- skewLifespan(Umat, mixdist)
+
+# LRO:
+pop_meanLrepro<- meanLRO(Umat, Fmat, mixdist)
+pop_varLrepro<- varLRO(Umat, Fmat, repro_var = 'poisson', mixdist)
+pop_skewLrepro<- skewLRO(Umat, Fmat, repro_var = 'poisson', mixdist)
+```
