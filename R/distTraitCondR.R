@@ -1500,7 +1500,10 @@ probTraitCondLRONoEnv = function (PlistAllTraits, FlistAllTraits,
   }
 
   out = probTraitCondLRO (PlistAll, FlistAll, Q,
-                          c0, maxClutchSize=10, maxLRO=15, traitDist, Fdist)
+                          c0, maxClutchSize, maxLRO, traitDist, Fdist)
+##                        c0, maxClutchSize=10, maxLRO=15,
+##                          traitDist, Fdist)
+
   return (out)
 }
 
