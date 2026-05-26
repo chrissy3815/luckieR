@@ -1573,9 +1573,8 @@ probTraitCondLROPostBreedingNoEnv =
     FlistAll[[x]][[1]] = FlistAllTraits[[x]]
   }
 
-  out = probTraitCondLROPostBreeding (PlistAll, FlistAll, Q,
-                                      c0, maxClutchSize=10, maxLRO=15,
-                                      traitDist, Fdist)
-
+    out = probTraitCondLROPostBreeding (PlistAll, FlistAll, Q,
+                                        c0, maxClutchSize, maxLRO,
+                                        traitDist, Fdist) 
   return (out)
 }

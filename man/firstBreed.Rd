@@ -54,6 +54,6 @@ pb<- c(0, 0.1, 0.4) # probability of breeding in the next time step, given curre
 }
 \seealso{
 \code{\link[=probRepro]{probRepro()}} if you do not have values for \code{pb},
-\code{\link[Rage:repro_maturity]{Rage::mature_age()}} which computes the mean age at first entering a state
+\code{\link[Rage:mature_age]{Rage::mature_age()}} which computes the mean age at first entering a state
 with positive mean fecundity.
 }
