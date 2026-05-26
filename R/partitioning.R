@@ -1987,8 +1987,11 @@ partitionVarMu3EnvVar = function (Plist, Flist, Q, c0,
          esMu2Vec %*% c(m0, bigmzZero, bigmzZero, bigmzZero), "should = ",
          ## esMu2Vec %*% c(bigmzZero, bigmzZero, bigmzZero, m0), "should = ",
          expZVarRCondZ + varZExpRCondZ, "\n")
+    N = solve(diag(bigmz) - M)
+    cat ("Temporary mean check:",
+         esRho1Vec %*% c(m0, bigmzZero, bigmzZero, bigmzZero),
+         "should = ", colSums(Fmat %*% N) %*% m0, "\n")
   }
-
 
   fecUpdateMu3[1] = esMu3Vec %*%
     c(bigmzZero, Fbullet %*% MaM0, bigmzZero, bigmzZero)
@@ -2087,7 +2090,9 @@ partitionVarMu3EnvVar = function (Plist, Flist, Q, c0,
     birthStateMu3 + birthEnvMu3
   if ((foo < (1 - percentTol)*totMu3) |
       (foo > (1 + percentTol)*totMu3))
-    warning("Mu3 luck components do not sum to total mu3 as calculated by bsMu3Vec.")
+    warning("Mu3 luck components sum to ", round(foo, digits=2),
+            " but total mu3 as calculated by bsMu3Vec sums to ",
+            round(totMu3, digits=2), ".  Consider increasing maxAge.\n")
 
   totSurvTrajecVar = sum(survTrajecVar)
   totGrowthTrajecVar = sum(growthTrajecVar)
@@ -2101,7 +2106,9 @@ partitionVarMu3EnvVar = function (Plist, Flist, Q, c0,
     birthStateVar + birthEnvVar
   if ((foo < (1 - percentTol)*totVar) |
       (foo > (1 + percentTol)*totVar))
-    warning("Variance luck components do not sum to total variance as calculated by bsMu2Vec.")
+    warning("Variance luck components sum to ", round(foo, digits=2),
+            " but total variance as calculated by bsMu2Vec sums to ",
+            round(totVar, digits=2), ".  Consider increasing maxAge.\n")
 
   return (out=list(birthStateVar=birthStateVar,
                    birthEnvVar=birthEnvVar,
