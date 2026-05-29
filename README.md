@@ -5,6 +5,9 @@
 
 <!-- badges: start -->
 
+[![CRAN
+status](https://www.r-pkg.org/badges/version/luckieR)](https://CRAN.R-project.org/package=luckieR)
+[![R-CMD-check](https://github.com/chrissy3815/luckieR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/chrissy3815/luckieR/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The goal of luckieR is to provide user-friendly and generalized tools

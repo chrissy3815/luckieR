@@ -1500,7 +1500,10 @@ probTraitCondLRONoEnv = function (PlistAllTraits, FlistAllTraits,
   }
 
   out = probTraitCondLRO (PlistAll, FlistAll, Q,
-                          c0, maxClutchSize=10, maxLRO=15, traitDist, Fdist)
+                          c0, maxClutchSize, maxLRO, traitDist, Fdist)
+##                        c0, maxClutchSize=10, maxLRO=15,
+##                          traitDist, Fdist)
+
   return (out)
 }
 
@@ -1570,9 +1573,8 @@ probTraitCondLROPostBreedingNoEnv =
     FlistAll[[x]][[1]] = FlistAllTraits[[x]]
   }
 
-  out = probTraitCondLROPostBreeding (PlistAll, FlistAll, Q,
-                                      c0, maxClutchSize=10, maxLRO=15,
-                                      traitDist, Fdist)
-
+    out = probTraitCondLROPostBreeding (PlistAll, FlistAll, Q,
+                                        c0, maxClutchSize, maxLRO,
+                                        traitDist, Fdist) 
   return (out)
 }

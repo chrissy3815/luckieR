@@ -1,4 +1,4 @@
-# luckieR 0.1.0
+# luckieR (development version)
 
 # luckieR v0.1.0
 

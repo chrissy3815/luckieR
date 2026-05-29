@@ -60,21 +60,31 @@ includes the pre-birth "ur-state" (see Details). Optional.  The default
 assumes Poisson-distributed clutch sizes.}
 }
 \value{
-A list containing the following: * birthStateVar: the contribution to
-Var(LRO) from birth state luck * survTrajecVar: a vector whose jth entry
-contains the contribution to Var(LRO) from survival trajectory luck at age
-j-1.  * growthTrajecVar: a vector whose jth entry contains the contribution
-to Var(LRO) from growth trajectory luck at age j-1.  * fecVar: a vector
-whose jth entry contains the contribution to Var(LRO) from fecundity luck
-at age j-1.  * totVar: the total variance in LRO * birthStateSkewness: the
-contribution to LRO skewness from birth state luck * survTrajecSkewness: a
-vector whose jth entry contains the contribution to LRO skewness from
-survival trajectory luck at age j-1.  * growthTrajecSkewness: a vector
-whose jth entry contains the contribution to LRO skewness from growth
-trajectory luck at age j-1.  * fecSkewness: a vector whose jth entry
-contains the contribution to LRO skewness from fecundity luck at age j-1.
+A list containing the following:
 \itemize{
-\item totSkewness: the total skewness in LRO * lifespan: the age by which a
+\item birthStateVar: the contribution to
+Var(LRO) from birth state luck
+\item survTrajecVar: a vector whose jth entry
+contains the contribution to Var(LRO) from survival trajectory luck at age
+j-1.
+\item growthTrajecVar: a vector whose jth entry contains the contribution
+to Var(LRO) from growth trajectory luck at age j-1.
+\item fecVar: a vector
+whose jth entry contains the contribution to Var(LRO) from fecundity luck
+at age j-1.
+\item totVar: the total variance in LRO
+\item birthStateSkewness: the
+contribution to LRO skewness from birth state luck
+\item survTrajecSkewness: a
+vector whose jth entry contains the contribution to LRO skewness from
+survival trajectory luck at age j-1.
+\item growthTrajecSkewness: a vector
+whose jth entry contains the contribution to LRO skewness from growth
+trajectory luck at age j-1.
+\item fecSkewness: a vector whose jth entry
+contains the contribution to LRO skewness from fecundity luck at age j-1.
+\item totSkewness: the total skewness in LRO
+\item lifespan: the age by which a
 proportion survThreshold of a cohort will be dead
 }
 }
