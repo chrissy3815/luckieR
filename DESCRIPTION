@@ -4,7 +4,8 @@ Version: 0.1.0.9000
 Authors@R: c(
     person("Robin", "Snyder", , "res29@case.edu", role = c("aut", "cph")),
     person("Christina", "Hernandez", , "christinahernan@gmail.com", role=c("aut", "cre")),
-    person("Steve", "Ellner", , "spe2@cornell.edu", role=c("aut"))
+    person("Steve", "Ellner", , "spe2@cornell.edu", role=c("aut")),
+    person("Erin", "Souder Benedict", , "erin.souderbenedict@uq.net.au", role=c("ctb"))
     )
 Maintainer: Christina Hernandez <christinahernan@gmail.com>
 Description: User-friendly and generalized tools for the calculation of luck -- moments of variation in metrics like lifespan and lifetime reproductive output. We provide tools for calculating those moments and also performing decompositions into contributions from, for example, individual traits, environmental impacts, and luck (also called individual stochasticity). The functions included here are based on Snyder and Ellner (2024) <doi:10.1086/730557>, Cochran and Ellner (1992) <https://www.jstor.org/stable/2937115>, and Hernandez et al. (2024) <doi:10.1111/ele.14390>.
