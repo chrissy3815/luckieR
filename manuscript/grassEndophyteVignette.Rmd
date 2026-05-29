@@ -1,20 +1,12 @@
 ---
-title: "GrassEndophyteVignette"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{GrassEndophyteVignette}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+title: "Grass-endophyte vignette"
+author: "Robin Snyder"
+date: "May 12, 2026"
+output: pdf_document
 bibliography: grassEndo.bib
 link-citations: true
 ---
 
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
-```
 
 **Study background** This vignette involves perennial grasses with and
 without endophytes.  We use the size-structured matrix model for
