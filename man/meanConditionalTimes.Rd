@@ -4,10 +4,10 @@
 \alias{meanConditionalTimes}
 \title{Compute conditional time to arriving in a state}
 \usage{
-meanConditionalTimes(M)
+meanConditionalTimes(Umat)
 }
 \arguments{
-\item{M}{An \eqn{n \times n} matrix of transition rates among the \eqn{n}
+\item{Umat}{An \eqn{n \times n} matrix of transition rates among the \eqn{n}
 states in the matrix population model}
 }
 \value{

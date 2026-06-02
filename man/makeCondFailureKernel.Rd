@@ -6,10 +6,10 @@
 and the transition kernel conditional on not becoming successful
 before death.}
 \usage{
-makeCondFailureKernel(M, transientStates)
+makeCondFailureKernel(Umat, transientStates)
 }
 \arguments{
-\item{M}{The unconditional kernel (i.e. transition matrix)}
+\item{Umat}{The unconditional kernel (i.e. transition matrix)}
 
 \item{transientStates}{A vector listing the transient
 (non-absorbing) states}
@@ -33,9 +33,9 @@ transition kernel conditional on not becoming successful before
 death.
 }
 \examples{
-M = matrix (0.1, 3, 3) ## States are small, medium, and large
+Umat = matrix (0.1, 3, 3) ## States are small, medium, and large
 ## Transient states are small and medium.  "Success" is becoming
 ## large before you die.
 transientStates = 1:2
-out = makeCondFailureKernel (M, transientStates)
+out = makeCondFailureKernel (Umat, transientStates)
 }

@@ -4,12 +4,12 @@
 \alias{mk_BPostBreeding}
 \title{Make B matrix for a post-breeding census}
 \usage{
-mk_BPostBreeding(M, Fmat, maxKids = 20, Fdist = "Poisson")
+mk_BPostBreeding(Umat, Fmat, maxKids = 20, Fdist = "Poisson")
 }
 \arguments{
-\item{M}{The state transition matrix.  States can be a single
+\item{Umat}{The state transition matrix.  States can be a single
 quantity, such as size or life history stage, or can be
-cross-classified, such as size x environment.  M[i,j] is the
+cross-classified, such as size x environment.  Umat[i,j] is the
 probability of transitioning from state j to state i.}
 
 \item{Fmat}{the fecundity matrix.  Fmat[i,j] is the expected number of size i
@@ -32,7 +32,7 @@ post-breeding census
 }
 \examples{
 Fmat = matrix (c(0,0,0, 0.5,0,0, 0,0,0), 3, 3)
-M = matrix (c(0,0.5,0, 0,0,0.5, 0,0,0), 3, 3)
+Umat = matrix (c(0,0.5,0, 0,0,0.5, 0,0,0), 3, 3)
 maxClutchSize=10
-out = mk_BPostBreeding (M, Fmat, maxClutchSize, Fdist="Bernoulli")
+out = mk_BPostBreeding (Umat, Fmat, maxClutchSize, Fdist="Bernoulli")
 }

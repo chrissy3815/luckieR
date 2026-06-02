@@ -29,8 +29,8 @@
 
 
 ######################### NOTATION CONVENTIONS  ##############################
-##      luckieR M = StageCoach P (state transitions)
-##      luckieR F = StageCoach B (sexual births) + F (clonal births = fission)
+##      luckieR Umat = StageCoach P (state transitions)
+##      luckieR Fmat = StageCoach B (sexual births) + F (clonal births = fission)
 ##############################################################################
 
 ##############################################################################
@@ -54,18 +54,18 @@
 #; package users.
 #'
 #' @details
-#' Given a square, numeric state transition matrix \eqn{M} (with columns
+#' Given a square, numeric state transition matrix \eqn{Umat} (with columns
 #' representing destination states and rows representing origin states),
 #' this function returns a 3D array \eqn{D} where the third dimension indexes
 #' the focal state \eqn{i}. For each \eqn{i}, \eqn{D_{\,\cdot\,\cdot\,i}} is a
-#' copy of \eqn{M} with the \eqn{i}-th column set to 0, so that individuals
+#' copy of \eqn{Umat} with the \eqn{i}-th column set to 0, so that individuals
 #' transition into state \eqn{i} spend one time step there and then die.
 #'
-#' @param M A square, numeric state transition matrix for a matrix projection
+#' @param Umat A square, numeric state transition matrix for a matrix projection
 #' model.
 #'
 #' @return
-#' A 3D numeric array \code{D} of dimension \code{c(nrow(M), ncol(M), ncol(M))},
+#' A 3D numeric array \code{D} of dimension \code{c(nrow(Umat), ncol(Umat), ncol(Umat))},
 #' where \code{D[,, i]} is the modified transition matrix \eqn{D_i} associated
 #' with focal state \eqn{i}.
 #'
@@ -76,25 +76,25 @@
 #'
 #' @examples
 #' # A simple 2-state (juvenile, adult) model
-#' M <- matrix(c(0.0, 0.0,
+#' Umat <- matrix(c(0.0, 0.0,
 #'               0.6, 0.7),
 #'               nrow = 2, byrow = TRUE)
 #'
-#' D <- luckieR:::Di_mat(M)
+#' D <- luckieR:::Di_mat(Umat)
 #' dim(D)            # 2 x 2 x 2
 #' D[, , 1]          # D_1: column 1 zeroed
 #' D[, , 2]          # D_2: column 2 zeroed
 #'
 #' @keywords internal
 #' @noRd
-Di_mat <- function(M){
-  if(!is.matrix(M)) {stop("This is not a matrix")}
-  if(nrow(M) != ncol(M)) {stop("This is not a square matrix")}
-  if(!is.numeric(M)) {stop("This is not numeric")}
+Di_mat <- function(Umat){
+  if(!is.matrix(Umat)) {stop("This is not a matrix")}
+  if(nrow(Umat) != ncol(Umat)) {stop("This is not a square matrix")}
+  if(!is.numeric(Umat)) {stop("This is not numeric")}
 
-  results <- array(0, dim = c(dim(M), ncol(M)))
-  for (i in 1:ncol(M)) {
-    results[,, i] <- M
+  results <- array(0, dim = c(dim(Umat), ncol(Umat)))
+  for (i in 1:ncol(Umat)) {
+    results[,, i] <- Umat
     results[, i, i] <- 0
   }
   return(results)
@@ -107,7 +107,7 @@ Di_mat <- function(M){
 #' state \eqn{j} to an arrival state \eqn{i}, conditional on arriving in state
 #' \eqn{i}.
 #'
-#' @param M An \eqn{n \times n} matrix of transition rates among the \eqn{n}
+#' @param Umat An \eqn{n \times n} matrix of transition rates among the \eqn{n}
 #'   states in the matrix population model
 #'
 #' @returns An \eqn{n \times n} matrix where the \eqn{(i,j)} element represents
@@ -118,15 +118,15 @@ Di_mat <- function(M){
 #' @examples
 #' Umat<- matrix(c(0.5, 0.1, 0.1, 0, 0.5, 0.3, 0, 0, 0.8), ncol=3)
 #' meanCondTimes<- meanConditionalTimes(Umat)
-meanConditionalTimes <- function(M){
-  if(!is.matrix(M)) {stop("This is not a matrix")}
-  if(nrow(M)!=ncol(M)) {stop("This is not a square matrix")}
-  if(!is.numeric(M)) {stop("This is not numeric")}
+meanConditionalTimes <- function(Umat){
+  if(!is.matrix(Umat)) {stop("This is not a matrix")}
+  if(nrow(Umat)!=ncol(Umat)) {stop("This is not a square matrix")}
+  if(!is.numeric(Umat)) {stop("This is not numeric")}
 
-  D <- Di_mat(M)
+  D <- Di_mat(Umat)
 
-  results <- matrix(0, nrow(M), ncol(M))
-  for (i in 1:nrow(M)) {
+  results <- matrix(0, nrow(Umat), ncol(Umat))
+  for (i in 1:nrow(Umat)) {
     Imat <- diag(x=1, dim(D[,,i])[1])
     den <- solve(Imat - D[,,i])
     num <- den %*% den
@@ -145,7 +145,7 @@ meanConditionalTimes <- function(M){
 #' conditional on them reaching state \eqn{i} before death. This calculation is
 #' based on Equation 6 in Cochran and Ellner (1992).
 #'
-#' @param M An \eqn{n \times n} matrix of transition rates among the \eqn{n}
+#' @param Umat An \eqn{n \times n} matrix of transition rates among the \eqn{n}
 #'   states in the matrix population model
 #'
 #' @returns An \eqn{n \times n} matrix where the \eqn{(i,j)} element represents
@@ -157,16 +157,16 @@ meanConditionalTimes <- function(M){
 #' @examples
 #' Umat<- matrix(c(0.5, 0.1, 0.1, 0, 0.5, 0.3, 0, 0, 0.8), ncol=3)
 #' meanCondLifespan<- meanConditionalLifespan(Umat)
-meanConditionalLifespan <- function(M){
-  if(!is.matrix(M)) {stop("This is not a matrix")}
-  if(nrow(M)!=ncol(M)) {stop("This is not a square matrix")}
-  if(!is.numeric(M)) {stop("This is not numeric")}
+meanConditionalLifespan <- function(Umat){
+  if(!is.matrix(Umat)) {stop("This is not a matrix")}
+  if(nrow(Umat)!=ncol(Umat)) {stop("This is not a square matrix")}
+  if(!is.numeric(Umat)) {stop("This is not numeric")}
 
-  LE <- meanLifespan(M)
-  MT <- meanConditionalTimes(M)
+  LE <- meanLifespan(Umat)
+  MT <- meanConditionalTimes(Umat)
 
-  results <- matrix(0,nrow = nrow(M),ncol = ncol(M))
-  for (i in 1:nrow(M)) {
+  results <- matrix(0,nrow = nrow(Umat),ncol = ncol(Umat))
+  for (i in 1:nrow(Umat)) {
 	results[i,]=MT[i,] + LE[i]
   }
   return(results)
@@ -178,7 +178,7 @@ meanConditionalLifespan <- function(M){
 #' \eqn{j}, conditional on them reaching state \eqn{i} before death. This
 #' calculation is based on Equation 10 in Cochran and Ellner (1992).
 #'
-#' @param M An \eqn{n \times n} matrix of transition rates among the \eqn{n}
+#' @param Umat An \eqn{n \times n} matrix of transition rates among the \eqn{n}
 #'   states in the matrix population model
 #'
 #' @returns An \eqn{n \times n} matrix where the \eqn{(i,j)} element represents
@@ -190,20 +190,20 @@ meanConditionalLifespan <- function(M){
 #' @examples
 #' Umat<- matrix(c(0.5, 0.1, 0.1, 0, 0.5, 0.3, 0, 0, 0.8), ncol=3)
 #' varCondTimes<- varConditionalTimes(Umat)
-varConditionalTimes <- function(M){
+varConditionalTimes <- function(Umat){
   ##   Note: the difference in time conventions (shorter here by 1 than in CE92)
   ##     does not affect the variance, so we use the CE92 convention and formula.
-  if(!is.matrix(M)) {stop("This is not a matrix")}
-  if(nrow(M)!=ncol(M)) {stop("This is not a square matrix")}
-  if(!is.numeric(M)) {stop("This is not numeric")}
+  if(!is.matrix(Umat)) {stop("This is not a matrix")}
+  if(nrow(Umat)!=ncol(Umat)) {stop("This is not a square matrix")}
+  if(!is.numeric(Umat)) {stop("This is not numeric")}
 
-  D  = Di_mat(M)
-  tau = meanConditionalTimes(M) + 1 ## use CE92 convention
+  D  = Di_mat(Umat)
+  tau = meanConditionalTimes(Umat) + 1 ## use CE92 convention
 
-  results <- matrix(0, nrow(M), ncol(M))
-  Imat <- diag(nrow(M))
+  results <- matrix(0, nrow(Umat), ncol(Umat))
+  Imat <- diag(nrow(Umat))
 
-  for (i in 1:nrow(M)) {
+  for (i in 1:nrow(Umat)) {
     Ni = solve(Imat - D[,,i])
     num <- (Imat + D[,,i]) %*% Ni %*% Ni %*% Ni
     results[i,] <- (num[i,]/Ni[i,]) - tau[i,]^2;
@@ -219,7 +219,7 @@ varConditionalTimes <- function(M){
 #' state \eqn{j}, conditional on them reaching state \eqn{i} before death. This
 #' calculation is based on Equation 7 in Cochran and Ellner (1992).
 #'
-#' @param M An \eqn{n \times n} matrix of transition rates among the \eqn{n}
+#' @param Umat An \eqn{n \times n} matrix of transition rates among the \eqn{n}
 #'   states in the matrix population model
 #'
 #' @returns An \eqn{n \times n} matrix where the \eqn{(i,j)} element represents
@@ -231,18 +231,18 @@ varConditionalTimes <- function(M){
 #' @examples
 #' Umat<- matrix(c(0.5, 0.1, 0.1, 0, 0.5, 0.3, 0, 0, 0.8), ncol=3)
 #' varCondLifespan<- varConditionalLifespan(Umat)
-varConditionalLifespan = function(M){
-  if(!is.matrix(M)) {stop("This is not a matrix")}
-  if(nrow(M)!=ncol(M)) {stop("This is not a square matrix")}
-  if(!is.numeric(M)) {stop("This is not numeric")}
+varConditionalLifespan = function(Umat){
+  if(!is.matrix(Umat)) {stop("This is not a matrix")}
+  if(nrow(Umat)!=ncol(Umat)) {stop("This is not a square matrix")}
+  if(!is.numeric(Umat)) {stop("This is not numeric")}
 
   # variance of conditional time to reach i from j
-  var_tau_ij = varConditionalTimes(M)
+  var_tau_ij = varConditionalTimes(Umat)
 
   # variance of remaining lifespan starting at i
-  var_Omega_i = varLifespan(M)
+  var_Omega_i = varLifespan(Umat)
 
-  nx = nrow(M); results = matrix(NA,nx,nx);
+  nx = nrow(Umat); results = matrix(NA,nx,nx);
   for(i in 1:nx){
   for(j in 1:nx){
 	results[i,j] = var_tau_ij[i,j] + var_Omega_i[i]
@@ -287,7 +287,7 @@ varConditionalLifespan = function(M){
 #'   `Fmat`) is the mean of a Poisson, Bernoulli, or fixed reproductive process.
 #'
 #'   Assumptions and coding follow Ellner et al. (2016) IPM monograph, chapter
-#'   3. The state transition matrix M is assumed to have the form M = p_b M_b +
+#'   3. The state transition matrix Umat is assumed to have the form Umat = p_b M_b +
 #'   (1-p_b) M_0 to allow for costs of reproduction, but M_b and M_0 can be
 #'   equal if there are no costs. Breeding does not necessarily imply producing
 #'   any new recruits, for example clutch size conditional on breeding could be

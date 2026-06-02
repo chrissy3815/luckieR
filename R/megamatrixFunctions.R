@@ -53,11 +53,11 @@ unvec <- function(nvec,nrow=NULL,ncol=NULL){
 #'
 #' @seealso unfold, make_AxT
 #' @examples
-#' M = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' Umat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' Fmat = matrix (0, 3, 3); Fmat[1,] = 0.1*(0:2)
 #' B = mk_B (Fmat, Fdist="Bernoulli")
 #' mT = 6
-#' out = make_AxT(B, M, mT)
+#' out = make_AxT(B, Umat, mT)
 #' K = out$K
 #' A = flatten(out$K) ## should equal out$A
 flatten <- function(A4) {
@@ -78,11 +78,11 @@ flatten <- function(A4) {
 #'
 #' @seealso flatten, make_AxT
 #' @examples
-#' M = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' Umat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' Fmat = matrix (0, 3, 3); Fmat[1,] = 0.1*(0:2)
 #' B = mk_B (Fmat, Fdist="Bernoulli")
 #' mT = 6
-#' out = make_AxT (B, M, mT)
+#' out = make_AxT (B, Umat, mT)
 #' A = out$A
 #' K = unfold (A, dim=c(3,6,3,6))  ## should equal out$K
 unfold <- function(A2,dim) {
@@ -137,9 +137,9 @@ mk_B = function (Fmat, maxKids=20, Fdist="Poisson") {
 #'   20.
 #' @param Fmat the fecundity matrix.  Fmat\[i,j\] is the expected number of size i
 #'   offspring from a size j parent.
-#' @param M The state transition matrix.  States can be a single
+#' @param Umat The state transition matrix.  States can be a single
 #'   quantity, such as size or life history stage, or can be
-#'   cross-classified, such as size x environment.  M\[i,j\] is the
+#'   cross-classified, such as size x environment.  Umat\[i,j\] is the
 #'   probability of transitioning from state j to state i.
 #' @param Fdist the clutch size distribution.  Currently supported values are
 #'   "Poisson" and "Bernoulli."  Optional, with a default value of "Poisson".
@@ -151,12 +151,12 @@ mk_B = function (Fmat, maxKids=20, Fdist="Poisson") {
 #'
 #' @examples
 #' Fmat = matrix (c(0,0,0, 0.5,0,0, 0,0,0), 3, 3)
-#' M = matrix (c(0,0.5,0, 0,0,0.5, 0,0,0), 3, 3)
+#' Umat = matrix (c(0,0.5,0, 0,0,0.5, 0,0,0), 3, 3)
 #' maxClutchSize=10
-#' out = mk_BPostBreeding (M, Fmat, maxClutchSize, Fdist="Bernoulli")
-mk_BPostBreeding = function (M, Fmat, maxKids=20, Fdist="Poisson") {
+#' out = mk_BPostBreeding (Umat, Fmat, maxClutchSize, Fdist="Bernoulli")
+mk_BPostBreeding = function (Umat, Fmat, maxKids=20, Fdist="Poisson") {
   bigmz = ncol(Fmat)
-  surv = colSums(M); die = 1 - surv
+  surv = colSums(Umat); die = 1 - surv
   ## fecCondSurv = colSums(Fmat) / surv
   ## zeroMass = c(1, rep(0, maxKids))
   B = matrix (0, maxKids+1, bigmz)
@@ -187,7 +187,7 @@ mk_BPostBreeding = function (M, Fmat, maxKids=20, Fdist="Poisson") {
 }
 
 ######################################################################
-# Function to take B and M matrices, and compute the transition
+# Function to take B and Umat matrices, and compute the transition
 # probabilities from size-class i and j total kids, to all size classes
 # and l total kids. This returns a vector of zeros if (l-j) is < 0
 # or above the assumed maxnumber of kids per year,  ncol(B) - 1.
@@ -197,7 +197,7 @@ mk_BPostBreeding = function (M, Fmat, maxKids=20, Fdist="Poisson") {
 #'
 #' Function to take clutch size distribution matrix (B) and survival
 #' and growth or survival and growth and environment transition matrix
-#' (M), and compute the transition probabilities from size-class i and
+#' (Umat), and compute the transition probabilities from size-class i and
 #' j total kids, to all size classes and l total kids.
 #' @param l the value of total #kids in the next time step
 #' @param i the current state
@@ -205,9 +205,9 @@ mk_BPostBreeding = function (M, Fmat, maxKids=20, Fdist="Poisson") {
 #' @param B The clutch size distribution matrix, where B\[m,n\] is the
 #'   probability that a size n parent produces m-1 offspring in a
 #'   single reproductive bout
-#' @param M The state transition matrix.  States can be a single
+#' @param Umat The state transition matrix.  States can be a single
 #'   quantity, such as size or life history stage, or can be
-#'   cross-classified, such as size x environment.  M\[i,j\] is the
+#'   cross-classified, such as size x environment.  Umat\[i,j\] is the
 #'   probability of transitioning from state j to state i.
 #' @return A vector whose kth entry is the probability that a size i
 #'   individual with total number of offspring j will produce (l - j)
@@ -218,24 +218,24 @@ mk_BPostBreeding = function (M, Fmat, maxKids=20, Fdist="Poisson") {
 #' @export
 #'
 #' @examples
-#' M = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' Umat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 #' B = mk_B (Fmat)
-#' p_xT (5, 2, 3, B, M)
-p_xT <- function(l, i, j, B, M) {
-  bigmz <- ncol(M); maxKids <- nrow(B)-1;
+#' p_xT (5, 2, 3, B, Umat)
+p_xT <- function(l, i, j, B, Umat) {
+  bigmz <- ncol(Umat); maxKids <- nrow(B)-1;
   newKids <- (l-j);
   if((newKids < 0) | (newKids > maxKids)) {
     return(rep(0, bigmz))
   }else{
-    return(M[,i]*B[newKids+1,i])
+    return(Umat[,i]*B[newKids+1,i])
   }
 }
 
 ##############################################################################
 ## Function to make the 2D iteration matrix A for a size-kids model
-## based on the M and B matrices summarizing a size-structured
-## IPM. Apart from B and M the only input is mT, dimension for T
+## based on the Umat and B matrices summarizing a size-structured
+## IPM. Apart from B and Umat the only input is mT, dimension for T
 ## (so range of T is 0 to mT-1). The 4-D iteration array K is also returned.
 ##
 ## Iteration matrix is modified so individuals who get to the maximum
@@ -249,9 +249,9 @@ p_xT <- function(l, i, j, B, M) {
 #' @param B The clutch size distribution matrix, where B\[m,n\] is the
 #'   probability that a size n parent produces m-1 offspring in a
 #'   single reproductive bout
-#' @param M The state transition matrix.  States can be a single
+#' @param Umat The state transition matrix.  States can be a single
 #'   quantity, such as size or life history stage, or can be
-#'   cross-classified, such as size x environment.  M\[i,j\] is the
+#'   cross-classified, such as size x environment.  Umat\[i,j\] is the
 #'   probability of transitioning from state j to state i.
 #' @param mT The dimension of the #kids part of the 4-d array.
 #' I.e. the maximum #kids is mT-1.
@@ -266,26 +266,26 @@ p_xT <- function(l, i, j, B, M) {
 #' @export
 #'
 #' @examples
-#' M = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' Umat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 #' B = mk_B (Fmat)
 #' mT = 20
-#' out = make_AxT(B, M, mT)
-make_AxT <- function(B, M, mT) {
-  bigmz=ncol(M); Kvals=array(0,c(bigmz,mT,bigmz,mT));
+#' out = make_AxT(B, Umat, mT)
+make_AxT <- function(B, Umat, mT) {
+  bigmz=ncol(Umat); Kvals=array(0,c(bigmz,mT,bigmz,mT));
   for(z in 1:bigmz){ # initial size
     for(k in 1:mT){ # initial T
       for(kp in 1:(mT-1)){ # final T
-        Kvals[,kp,z,k]=p_xT(kp,z,k,B,M)
+        Kvals[,kp,z,k]=p_xT(kp,z,k,B,Umat)
       }
       for (zp in 1:bigmz)
         ## make last kids class absorbing
-        Kvals[zp,mT,z,k] = M[zp,z] - sum(Kvals[zp,,z,k])
+        Kvals[zp,mT,z,k] = Umat[zp,z] - sum(Kvals[zp,,z,k])
     }
   }
   ## make kids-class mT absorbing: stay there with prob=1
   Kvals[1:bigmz,1:mT,1:bigmz,mT] <- 0;
-  Kvals[1:bigmz,mT,1:bigmz,mT] <- M;
+  Kvals[1:bigmz,mT,1:bigmz,mT] <- Umat;
   A <- Kvals; dim(A) <- c(bigmz*mT,bigmz*mT);
 
   return(list(A=A,K=Kvals))
@@ -324,7 +324,7 @@ make_AxT <- function(B, M, mT) {
 #'   vector is (env. 1, stage 1; env. 1, stage 2; ... env. 1, stage n;
 #'   env. 2, stage 1, ...), then environment is the slow state and
 #'   slowMatrix is the environment transition matrix.
-#' @return M, the transition matrix for the cross-classified state
+#' @return Umat, the transition matrix for the cross-classified state
 #' @export
 #'
 #' @examples
@@ -335,7 +335,7 @@ make_AxT <- function(B, M, mT) {
 #' Plist = list (P1, P2)
 #' Flist = list (F1, F2)
 #' Q = matrix (1/2, 2, 2)
-#' M = makeM (Plist, Q)
+#' Umat = makeM (Plist, Q)
 #' bigF = makeM(Flist, Q)
 makeM = function (fastMatrixList, slowMatrix) {
   dimSlow = dim(slowMatrix)[1]
@@ -348,44 +348,44 @@ makeM = function (fastMatrixList, slowMatrix) {
   if (dim(fastMatrixList[[1]])[2] != dimFast)
     stop ("makeM: Matrices must be square.\n")
 
-  M = matrix (NA, dimFast*dimSlow, dimFast*dimSlow)
+  Umat = matrix (NA, dimFast*dimSlow, dimFast*dimSlow)
 
   for (i in 1:dimSlow) {
     for (j in 1:dimSlow) {
-      M[(i-1)*dimFast + 1:dimFast, (j-1)*dimFast + 1:dimFast] =
+      Umat[(i-1)*dimFast + 1:dimFast, (j-1)*dimFast + 1:dimFast] =
         fastMatrixList[[j]]*slowMatrix[i,j]
     }
   }
 
-  return (M)
+  return (Umat)
 }
 
 ## Debugging: Try this for post-breeding? #############
-p_xTPostBreeding <- function(l, i, j, B, M) {
-  bigmz <- ncol(M); maxKids <- nrow(B) - 1;
+p_xTPostBreeding <- function(l, i, j, B, Umat) {
+  bigmz <- ncol(Umat); maxKids <- nrow(B) - 1;
   newKids <- (l-j);
   if((newKids < 0) | (newKids > maxKids)) {
     return(rep(0, bigmz))
   }else{
-    return (M[,i] * B[newKids+1,i])
+    return (Umat[,i] * B[newKids+1,i])
   }
 }
 
-make_AxTPostBreeding <- function(B, M, mT) {
-  bigmz=ncol(M); Kvals=array(0,c(bigmz,mT,bigmz,mT));
+make_AxTPostBreeding <- function(B, Umat, mT) {
+  bigmz=ncol(Umat); Kvals=array(0,c(bigmz,mT,bigmz,mT));
   for(z in 1:bigmz){ # initial size
     for(k in 1:mT){ # initial T
       for(kp in 1:(mT-1)){ # final T
-        Kvals[,kp,z,k] = p_xTPostBreeding (kp, z, k, B, M)
+        Kvals[,kp,z,k] = p_xTPostBreeding (kp, z, k, B, Umat)
       }
       for (zp in 1:bigmz)
         ## make last kids class absorbing
-        Kvals[zp,mT,z,k] = M[zp,z] - sum(Kvals[zp,,z,k])
+        Kvals[zp,mT,z,k] = Umat[zp,z] - sum(Kvals[zp,,z,k])
     }
   }
   ## make kids-class mT absorbing: stay there with prob=1
   Kvals[1:bigmz,1:mT,1:bigmz,mT] <- 0;
-  Kvals[1:bigmz,mT,1:bigmz,mT] <- M;
+  Kvals[1:bigmz,mT,1:bigmz,mT] <- Umat;
   A <- Kvals; dim(A) <- c(bigmz*mT,bigmz*mT);
 
   return(list(A=A,K=Kvals))

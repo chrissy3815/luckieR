@@ -5,7 +5,7 @@
 \title{Helper function used for calculating size x #kids transition
 matrices}
 \usage{
-p_xT(l, i, j, B, M)
+p_xT(l, i, j, B, Umat)
 }
 \arguments{
 \item{l}{the value of total #kids in the next time step}
@@ -18,9 +18,9 @@ p_xT(l, i, j, B, M)
 probability that a size n parent produces m-1 offspring in a
 single reproductive bout}
 
-\item{M}{The state transition matrix.  States can be a single
+\item{Umat}{The state transition matrix.  States can be a single
 quantity, such as size or life history stage, or can be
-cross-classified, such as size x environment.  M[i,j] is the
+cross-classified, such as size x environment.  Umat[i,j] is the
 probability of transitioning from state j to state i.}
 }
 \value{
@@ -32,17 +32,17 @@ size k.  If l-j is < 0, the return value is a vector of zeros.
 \description{
 Function to take clutch size distribution matrix (B) and survival
 and growth or survival and growth and environment transition matrix
-(M), and compute the transition probabilities from size-class i and
+(Umat), and compute the transition probabilities from size-class i and
 j total kids, to all size classes and l total kids.
 }
 \details{
 Called by make_AxT
 }
 \examples{
-M = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+Umat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 B = mk_B (Fmat)
-p_xT (5, 2, 3, B, M)
+p_xT (5, 2, 3, B, Umat)
 }
 \seealso{
 make_AxT

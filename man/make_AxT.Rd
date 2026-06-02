@@ -4,16 +4,16 @@
 \alias{make_AxT}
 \title{Make the size x #kids transition matrix}
 \usage{
-make_AxT(B, M, mT)
+make_AxT(B, Umat, mT)
 }
 \arguments{
 \item{B}{The clutch size distribution matrix, where B[m,n] is the
 probability that a size n parent produces m-1 offspring in a
 single reproductive bout}
 
-\item{M}{The state transition matrix.  States can be a single
+\item{Umat}{The state transition matrix.  States can be a single
 quantity, such as size or life history stage, or can be
-cross-classified, such as size x environment.  M[i,j] is the
+cross-classified, such as size x environment.  Umat[i,j] is the
 probability of transitioning from state j to state i.}
 
 \item{mT}{The dimension of the #kids part of the 4-d array.
@@ -38,9 +38,9 @@ Makes the 2-dim iteration matrix A for a size x #kids model, where
 Called by distLifespanCondR2 and calcDistLRO.
 }
 \examples{
-M = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+Umat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 B = mk_B (Fmat)
 mT = 20
-out = make_AxT(B, M, mT)
+out = make_AxT(B, Umat, mT)
 }

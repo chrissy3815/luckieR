@@ -1501,8 +1501,6 @@ probTraitCondLRONoEnv = function (PlistAllTraits, FlistAllTraits,
 
   out = probTraitCondLRO (PlistAll, FlistAll, Q,
                           c0, maxClutchSize, maxLRO, traitDist, Fdist)
-##                        c0, maxClutchSize=10, maxLRO=15,
-##                          traitDist, Fdist)
 
   return (out)
 }
@@ -1575,6 +1573,6 @@ probTraitCondLROPostBreedingNoEnv =
 
     out = probTraitCondLROPostBreeding (PlistAll, FlistAll, Q,
                                         c0, maxClutchSize, maxLRO,
-                                        traitDist, Fdist) 
+                                        traitDist, Fdist)
   return (out)
 }

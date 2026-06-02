@@ -67,7 +67,7 @@ traitMu3 = function (x, traitDist) {
 #' individual becoming successful before it dies.  Also calculates the
 #' transition kernel conditional on becoming successful before death.
 #'
-#' @param M The unconditional kernel (i.e. transition matrix)
+#' @param Umat The unconditional kernel (i.e. transition matrix)
 #' @param transientStates A vector listing the transient
 #'   (non-absorbing) states
 #'
@@ -79,31 +79,31 @@ traitMu3 = function (x, traitDist) {
 #' @export
 #'
 #' @examples
-#' M = matrix (0.1, 3, 3) ## States are small, medium, and large
+#' Umat = matrix (0.1, 3, 3) ## States are small, medium, and large
 #' ## Transient states are small and medium.  "Success" is becoming
 #' ## large before you die.
 #' transientStates = 1:2
-#' out = makeCondKernel (M, transientStates)
-makeCondKernel = function (M, transientStates) {
+#' out = makeCondKernel (Umat, transientStates)
+makeCondKernel = function (Umat, transientStates) {
 
   ## How many states are there all told?
-  numStates = dim(M)[1]
+  numStates = dim(Umat)[1]
   ## Check to ensure that user didn't accidentally include fecundities
-  ## --- M is just survival and growth
-  foo = range (colSums(M))
+  ## --- Umat is just survival and growth
+  foo = range (colSums(Umat))
   if ((min(foo) < 0) | (max(foo) > 1))
-    stop("makeCondKernel: M is the survival/growth kernel.  Column sums should be non-negative and should not exceed 1.")
-  
+    stop("makeCondKernel: Umat is the survival/growth kernel.  Column sums should be non-negative and should not exceed 1.")
+
   ## Create U, the transition matrix for the transient states
-  U = M[transientStates, transientStates]
+  U = Umat[transientStates, transientStates]
   ## How many transient states are there?
   numTransient = length(transientStates)
   if (numTransient < 2)
     stop ("makeCondKernel: need at least 2 transient states\n")
-  
+
   ## calculate a2, the probability of hitting an absorbing state in
   ## the next time step
-  a2 = apply (M, 2, sum)[transientStates] - apply (U, 2, sum)
+  a2 = apply (Umat, 2, sum)[transientStates] - apply (U, 2, sum)
   ## calculate q2, the probability of being in Z2 before you die given
   ## that you are now in state i.
   NU = solve (diag(numTransient) - U)
@@ -113,10 +113,10 @@ makeCondKernel = function (M, transientStates) {
   ## Transition matrix conditional on reproducing before death.
   MCond = matrix (0, numStates, numStates)
   for (j in 1:numStates) {
-    if ((q2Extended[j] == 0) & (sum(M[,j]*q2Extended) == 0)) {
+    if ((q2Extended[j] == 0) & (sum(Umat[,j]*q2Extended) == 0)) {
       MCond[,j] = rep (0, numStates)
     } else {
-      MCond[,j] = M[,j] * q2Extended / q2Extended[j]
+      MCond[,j] = Umat[,j] * q2Extended / q2Extended[j]
     }
   }
 
@@ -135,7 +135,7 @@ makeCondKernel = function (M, transientStates) {
 #' transition kernel conditional on not becoming successful before
 #' death.
 #'
-#' @param M The unconditional kernel (i.e. transition matrix)
+#' @param Umat The unconditional kernel (i.e. transition matrix)
 #' @param transientStates A vector listing the transient
 #'   (non-absorbing) states
 #'
@@ -147,22 +147,22 @@ makeCondKernel = function (M, transientStates) {
 #' @export
 #'
 #' @examples
-#' M = matrix (0.1, 3, 3) ## States are small, medium, and large
+#' Umat = matrix (0.1, 3, 3) ## States are small, medium, and large
 #' ## Transient states are small and medium.  "Success" is becoming
 #' ## large before you die.
 #' transientStates = 1:2
-#' out = makeCondFailureKernel (M, transientStates)
-makeCondFailureKernel = function (M, transientStates) {
+#' out = makeCondFailureKernel (Umat, transientStates)
+makeCondFailureKernel = function (Umat, transientStates) {
 
   ## How many states are there all told?
-  numStates = dim(M)[1]
+  numStates = dim(Umat)[1]
   ## Create U, the transition matrix for the transient states
-  U = M[transientStates, transientStates]
+  U = Umat[transientStates, transientStates]
   ## How many transient states are there?
   numTransient = length(transientStates)
   ## calculate a2, the probability of hitting an absorbing state in
   ## the next time step
-  a2 = apply (M, 2, sum)[transientStates] - apply (U, 2, sum)
+  a2 = apply (Umat, 2, sum)[transientStates] - apply (U, 2, sum)
   ## calculate q2, the probability of being in Z2 before you die given
   ## that you are now in state i.
   NU = solve (diag(numTransient) - U)
@@ -172,21 +172,22 @@ makeCondFailureKernel = function (M, transientStates) {
   ## Transition matrix conditional on not reproducing before death.
   MCond = matrix (0, numTransient, numTransient)
   for (j in 1:numTransient)
-    MCond[,j] = M[transientStates,transientStates[j]] * q1 / q1[j]
+    MCond[,j] = Umat[transientStates,transientStates[j]] * q1 / q1[j]
 
   return (out=list (q1=q1, MCond=MCond))
 }
 
-#' Calculates the mean, the 2nd and 3rd non-central moments, and the skewness of
-#' a lifetime reward
+#' Calculates the mean, the 2nd and 3rd moments, and the skewness of a lifetime
+#' reward
 #'
 #' Given a transition matrix and appropriate reward matrices, calculates the
-#' mean, the 2nd and 3rd non-central moments, and the skewness of some quantity
-#' (a "reward") over the stochastic trajectories generated by the transition
-#' matrix.  If the reward matrices are for reproductive output, then this code
-#' calculates moments of lifetime reproductive output.
+#' mean, the 2nd and 3rd moments (both central and non-central), and the
+#' skewness of some quantity (a "reward") over the stochastic trajectories
+#' generated by the transition matrix.  If the reward matrices are for
+#' reproductive output, then this code calculates moments of lifetime
+#' reproductive output.
 #'
-#' @param M The transition matrix
+#' @param Umat The transition matrix
 #' @param R1 A matrix.  R1\[i,j\] is the expected reward (e.g. reproductive
 #'   output) that occurs when making a transition from state j to state i.
 #'   Reward matrices include the "dead" state: if there are n states, R1 should
@@ -202,7 +203,13 @@ makeCondFailureKernel = function (M, transientStates) {
 #'
 #' @return A list containing
 #' * rho1Vec: A 1xn matrix whose jth entry gives the expected lifetime
-#'   reward for a trajectory starting in state j
+#'   reward for a trajectory starting in state j (NB: for the first moment of a
+#'   distribution, both the non-central and the central moment are equivalent to
+#'   the expectation)
+#' * rho2Vec: A 1xn matrix whose jth entry gives the non-central 2nd moment of
+#'   lifetime reward for a trajectory starting in state j
+#' * rho3Vec: A 1xn matrix whose jth entry gives the non-central 3rd moment of
+#'   lifetime reward for a trajectory starting in state j
 #' * mu2Vec: A 1xn matrix whose jth entry gives the central 2nd moment
 #'   (variance) of lifetime reward for a trajectory starting in state j
 #' * mu3Vec: A 1xn matrix whose jth entry gives the central 3rd moment of
@@ -213,9 +220,9 @@ makeCondFailureKernel = function (M, transientStates) {
 #' @export
 #'
 #' @examples
-#' ## Transition matrix: M\[i,j\] is the probability of transitioning
+#' ## Transition matrix: Umat\[i,j\] is the probability of transitioning
 #' ##  from state j to state i
-#' M = matrix (0.1, 3, 3)
+#' Umat = matrix (0.1, 3, 3)
 #' ## Fecundity matrix: Fmat\[i,j\] is the expected number of size i offspring
 #' ## producted in one time step for a parent of size j
 #' Fmat = matrix (0, 3, 3)
@@ -226,15 +233,15 @@ makeCondFailureKernel = function (M, transientStates) {
 #'   R1[,j] = sum(Fmat[,j])
 #' R2 = R1 + R1^2
 #' R3 = R1 + R1^2 + R1^3
-#' out = calcMoments (M, R1, R2, R3)
-calcMoments = function (M, R1, R2, R3) {
+#' out = calcMoments (Umat, R1, R2, R3)
+calcMoments = function (Umat, R1, R2, R3) {
 
-  numStates = dim(M)[1]
+  numStates = dim(Umat)[1]
 
   ## set up Mplus, the transition matrix with absorbing state (dead)
   Mplus = matrix (0, numStates+1, numStates+1)
-  Mplus[1:numStates, 1:numStates] = M
-  Mplus[numStates+1, 1:numStates] = 1 - colSums(M)
+  Mplus[1:numStates, 1:numStates] = Umat
+  Mplus[numStates+1, 1:numStates] = 1 - colSums(Umat)
   Mplus[numStates+1, numStates+1] = 1
 
   ## Set up Z, which cleaves off dead states
@@ -252,20 +259,20 @@ calcMoments = function (M, R1, R2, R3) {
 
   ## Ex(R)
   e = rep (1, numStates+1)
-  N = solve (diag(numStates) - M)
+  N = solve (diag(numStates) - Umat)
   message ("Calculating rho1Vec...\n")
   rho1Vec = t(N) %*% Z %*% t(Mplus * R1) %*% e
 
   ## Ex(R^2 | x)
   message ("Calculating rho2Vec...\n")
   rho2Vec = t(N) %*% (Z %*% t(Mplus * R2) %*% e +
-                        2*t(M * R1Stripped) %*% rho1Vec)
+                        2*t(Umat * R1Stripped) %*% rho1Vec)
 
   ## Ex(R^3 | x)
   message ("Calculating rho3Vec...\n")
   rho3Vec = t(N) %*% (Z %*% t(Mplus * R3) %*% e +
-                        3*t(M*R2Stripped) %*% rho1Vec +
-                        3*t(M*R1Stripped) %*% rho2Vec)
+                        3*t(Umat*R2Stripped) %*% rho1Vec +
+                        3*t(Umat*R1Stripped) %*% rho2Vec)
 
   ## non-central moments
   rho1Vec = t(rho1Vec)
@@ -281,7 +288,8 @@ calcMoments = function (M, R1, R2, R3) {
   e = which(mu2Vec>0);
   skewnessVec[e] = mu3Vec[e]/mu2Vec[e]^1.5
 
-  return (out=list(rho1Vec=rho1Vec, mu2Vec=mu2Vec, mu3Vec=mu3Vec,
+  return (out=list(rho1Vec=rho1Vec, rho2Vec=rho2Vec, rho3Vec=rho3Vec,
+                   mu2Vec=mu2Vec, mu3Vec=mu3Vec,
                    skewnessVec=skewnessVec))
 }
 
@@ -460,8 +468,8 @@ makePCondBreedDef3 = function (P, Fmat, c0) {
 #'   threshold offspring over the course of a life, as well as related
 #'   quantites.  Assumes a post-breeding census (survival and growth
 #'   happen before reproduction).
-#' @param M the unconditional survival/growth transition matrix.
-#'   M\[i,j\] is the probability of surviving and transitioning from
+#' @param Umat the unconditional survival/growth transition matrix.
+#'   Umat\[i,j\] is the probability of surviving and transitioning from
 #'   state j to state i.
 #' @param Fmat the fecundity matrix.  Fmat\[i,j\] is the expected number of
 #'   size i offspring from a size j parent.
@@ -484,10 +492,10 @@ makePCondBreedDef3 = function (P, Fmat, c0) {
 #'   advance the state by one time step, it is necessary to multiply
 #'   by ACondSucceed twice (once to update fecundity, then another
 #'   time to update survival, growth, and, if necessary, the
-#'   environment.  
-#' 
+#'   environment.
+#'
 #' @return A list containing the following.  All matrices and vectors
-#'   are defined over an extended size distribution: see Details. 
+#'   are defined over an extended size distribution: see Details.
 #' * ACondSucceed: the size x #kids or size x env x #kids transition
 #'   matrix conditional on reaching the LRO threshold before dying
 #' * probSucceedCondZ: a vector whose jth entry is the probability
@@ -500,16 +508,16 @@ makePCondBreedDef3 = function (P, Fmat, c0) {
 #' @export
 #'
 #' @examples
-#' M = matrix(0.1, 3, 3)
+#' Umat = matrix(0.1, 3, 3)
 #' Fmat = matrix(0, 3, 3); Fmat[1,] = 0:2
 #' threshold = 2
 #' m0 = c(1, 0, 0)
-#' out = makeMCondLROThreshold (M, Fmat, threshold, m0)
-makeMCondLROThreshold = function (M, Fmat, threshold, m0, maxLRO=12,
+#' out = makeMCondLROThreshold (Umat, Fmat, threshold, m0)
+makeMCondLROThreshold = function (Umat, Fmat, threshold, m0, maxLRO=12,
                                   maxClutchSize=12, Fdist="Poisson") {
-  
-  bigmz = dim(M)[1]
-  
+
+  bigmz = dim(Umat)[1]
+
   ## Sanity check input
   if (Fdist == "Bernoulli") {
     if (sum(colSums(Fmat) > 1))
@@ -518,11 +526,11 @@ makeMCondLROThreshold = function (M, Fmat, threshold, m0, maxLRO=12,
 
   ## Sanity check input
   if (length(m0) != bigmz)
-    stop ("Length of m0 does not match dimension of M")
+    stop ("Length of m0 does not match dimension of Umat")
 
   ## Sanity check input
   if (dim(Fmat)[1] != bigmz)
-    stop ("M and Fmat should have the same dimensions.")
+    stop ("Umat and Fmat should have the same dimensions.")
 
   ## B[i,j] is the probability that a class-j individual has i-1 kids.
   ## We assume Poisson-distributed number of offspring.
@@ -537,8 +545,8 @@ makeMCondLROThreshold = function (M, Fmat, threshold, m0, maxLRO=12,
   mzA = bigmz*mT
 
   if (FALSE) {  ## just for debugging
-    message ("makeMCondLROThreshold: Making A...")  
-    out = make_AxT (B, M, mT)
+    message ("makeMCondLROThreshold: Making A...")
+    out = make_AxT (B, Umat, mT)
     A = out$A
   }
 
@@ -579,7 +587,7 @@ makeMCondLROThreshold = function (M, Fmat, threshold, m0, maxLRO=12,
   ## Why doesn't the calculation work when I use bdiag?  No idea.
   Mbullet = matrix (0, mzA, mzA)
   for (k in 1:mT)
-    Mbullet[(k-1)*bigmz + 1:bigmz, (k-1)*bigmz + 1:bigmz] = M
+    Mbullet[(k-1)*bigmz + 1:bigmz, (k-1)*bigmz + 1:bigmz] = Umat
 
   ## sanity check: expensive, so just for debugging
   if (FALSE) {
@@ -634,8 +642,8 @@ makeMCondLROThreshold = function (M, Fmat, threshold, m0, maxLRO=12,
 #'   threshold offspring over the course of a life, as well as related
 #'   quantites.  Assumes a post-breeding census (survival and growth
 #'   happen before reproduction).
-#' @param M the unconditional survival/growth transition matrix.
-#'   M\[i,j\] is the probability of surviving and transitioning from
+#' @param Umat the unconditional survival/growth transition matrix.
+#'   Umat\[i,j\] is the probability of surviving and transitioning from
 #'   state j to state i.
 #' @param Fmat the fecundity matrix.  Fmat\[i,j\] is the expected number of
 #'   size i offspring from a size j parent.
@@ -652,7 +660,7 @@ makeMCondLROThreshold = function (M, Fmat, threshold, m0, maxLRO=12,
 #'   are defined over an extended size distribution: if there are n
 #'   sizes/stages, states 1--n are those sizes with LRO = 0,
 #'   states n+1--2n are those sizes with LRO = 1, and so on through
-#'   LRO = maxLRO.  
+#'   LRO = maxLRO.
 #' * ACondSucceed: the size x #kids or size x env x #kids transition
 #'   matrix conditional on reaching the LRO threshold before dying
 #' * probSucceedCondZ: a vector whose jth entry is the probability
@@ -665,15 +673,15 @@ makeMCondLROThreshold = function (M, Fmat, threshold, m0, maxLRO=12,
 #' @export
 #'
 #' @examples
-#' M = matrix(0.1, 3, 3)
+#' Umat = matrix(0.1, 3, 3)
 #' Fmat = matrix(0, 3, 3); Fmat[1,] = 0:2
 #' threshold = 2
 #' m0 = c(1, 0, 0)
-#' out = makeMCondLROThresholdPostBreeding(M, Fmat, threshold, m0)
+#' out = makeMCondLROThresholdPostBreeding(Umat, Fmat, threshold, m0)
 makeMCondLROThresholdPostBreeding =
-  function (M, Fmat, threshold, m0, maxLRO=12,
+  function (Umat, Fmat, threshold, m0, maxLRO=12,
             maxClutchSize=12, Fdist="Poisson") {
-  bigmz = dim(M)[1]
+  bigmz = dim(Umat)[1]
 
   ## Sanity check input
   if (Fdist == "Bernoulli") {
@@ -683,11 +691,11 @@ makeMCondLROThresholdPostBreeding =
 
   ## Sanity check input
   if (length(m0) != bigmz)
-    stop ("Length of m0 does not match dimension of M")
+    stop ("Length of m0 does not match dimension of Umat")
 
   ## Sanity check input
   if (dim(Fmat)[1] != bigmz)
-    stop ("M and Fmat should have the same dimensions.")
+    stop ("Umat and Fmat should have the same dimensions.")
 
   ## B[i,j] is the probability that a class-j individual has i-1 kids.
   ## We assume Poisson-distributed number of offspring.
@@ -699,7 +707,7 @@ makeMCondLROThresholdPostBreeding =
   ## Construct A, the transition matrix for a (number of kids) x stage x
   ## env. model.
   mT = maxLRO + 1
-  out = make_AxT (B, M, mT)
+  out = make_AxT (B, Umat, mT)
   A = out$A
   mzA = bigmz*mT
   message ("Finished making A.\n")
@@ -735,14 +743,14 @@ getModalTimeToHitState = function (absorbingStates,
   mz = dim(Plist[[1]])[1]
   if (is.null(Q)) {  ## no env. var.
     bigmz = mz
-    M = Plist[[1]]
+    Umat = Plist[[1]]
   } else {
     numEnv = dim(Q)[1]
     bigmz = numEnv*mz
-    M = matrix (0, bigmz, bigmz)
+    Umat = matrix (0, bigmz, bigmz)
     for (i in 1:numEnv) {
       for (j in 1:numEnv) {
-        M[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Plist[[j]]*Q[i,j]
+        Umat[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Plist[[j]]*Q[i,j]
         Fmat[(i-1)*mz + 1:mz, (j-1)*mz + 1:mz] = Flist[[j]]*Q[i,j]
       }
     }
@@ -752,7 +760,7 @@ getModalTimeToHitState = function (absorbingStates,
   transient = (1:bigmz)[-absorbingStates]
   numTransient = length(transient)
 
-  out = makeCondKernel (M, transient)
+  out = makeCondKernel (Umat, transient)
   MCond = out$MCond
 
   ## Create kernel with all absorbing states going directly to a

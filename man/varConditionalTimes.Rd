@@ -4,10 +4,10 @@
 \alias{varConditionalTimes}
 \title{Variance in conditional time to reach state i from state j}
 \usage{
-varConditionalTimes(M)
+varConditionalTimes(Umat)
 }
 \arguments{
-\item{M}{An \eqn{n \times n} matrix of transition rates among the \eqn{n}
+\item{Umat}{An \eqn{n \times n} matrix of transition rates among the \eqn{n}
 states in the matrix population model}
 }
 \value{

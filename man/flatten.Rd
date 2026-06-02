@@ -18,11 +18,11 @@ make_AxT, to a cross-classified transition matrix ("megamatrix"),
 such as the A matrix produced by make_AxT
 }
 \examples{
-M = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+Umat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 Fmat = matrix (0, 3, 3); Fmat[1,] = 0.1*(0:2)
 B = mk_B (Fmat, Fdist="Bernoulli")
 mT = 6
-out = make_AxT(B, M, mT)
+out = make_AxT(B, Umat, mT)
 K = out$K
 A = flatten(out$K) ## should equal out$A
 }

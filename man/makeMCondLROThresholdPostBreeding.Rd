@@ -6,7 +6,7 @@
 meeting or exceeding a threshold}
 \usage{
 makeMCondLROThresholdPostBreeding(
-  M,
+  Umat,
   Fmat,
   threshold,
   m0,
@@ -16,8 +16,8 @@ makeMCondLROThresholdPostBreeding(
 )
 }
 \arguments{
-\item{M}{the unconditional survival/growth transition matrix.
-M[i,j] is the probability of surviving and transitioning from
+\item{Umat}{the unconditional survival/growth transition matrix.
+Umat[i,j] is the probability of surviving and transitioning from
 state j to state i.}
 
 \item{Fmat}{the fecundity matrix.  Fmat[i,j] is the expected number of
@@ -61,9 +61,9 @@ quantites.  Assumes a post-breeding census (survival and growth
 happen before reproduction).
 }
 \examples{
-M = matrix(0.1, 3, 3)
+Umat = matrix(0.1, 3, 3)
 Fmat = matrix(0, 3, 3); Fmat[1,] = 0:2
 threshold = 2
 m0 = c(1, 0, 0)
-out = makeMCondLROThresholdPostBreeding(M, Fmat, threshold, m0)
+out = makeMCondLROThresholdPostBreeding(Umat, Fmat, threshold, m0)
 }

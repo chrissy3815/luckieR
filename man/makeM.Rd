@@ -22,7 +22,7 @@ env. 2, stage 1, ...), then environment is the slow state and
 slowMatrix is the environment transition matrix.}
 }
 \value{
-M, the transition matrix for the cross-classified state
+Umat, the transition matrix for the cross-classified state
 }
 \description{
 Calculates the transition matrix for cross-classified states from
@@ -37,6 +37,6 @@ F2 = matrix (0, 3, 3); F1[1,] = 0.8*(0:2)
 Plist = list (P1, P2)
 Flist = list (F1, F2)
 Q = matrix (1/2, 2, 2)
-M = makeM (Plist, Q)
+Umat = makeM (Plist, Q)
 bigF = makeM(Flist, Q)
 }

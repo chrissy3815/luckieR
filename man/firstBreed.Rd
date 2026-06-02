@@ -42,7 +42,7 @@ probability of breeding by assuming that the mean fecundity (provided in
 \code{Fmat}) is the mean of a Poisson, Bernoulli, or fixed reproductive process.
 
 Assumptions and coding follow Ellner et al. (2016) IPM monograph, chapter
-3. The state transition matrix M is assumed to have the form M = p_b M_b +
+3. The state transition matrix Umat is assumed to have the form Umat = p_b M_b +
 (1-p_b) M_0 to allow for costs of reproduction, but M_b and M_0 can be
 equal if there are no costs. Breeding does not necessarily imply producing
 any new recruits, for example clutch size conditional on breeding could be
