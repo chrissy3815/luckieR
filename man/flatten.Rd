@@ -14,18 +14,18 @@ The cross-classified transition matrix
 }
 \description{
 Converts a 4-d transition array, such as the K array produced by
-make_AxT, to a cross-classified transition matrix ("megamatrix"),
-such as the A matrix produced by make_AxT
+makeAxT, to a cross-classified transition matrix ("megamatrix"),
+such as the A matrix produced by makeAxT
 }
 \examples{
 Umat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 Fmat = matrix (0, 3, 3); Fmat[1,] = 0.1*(0:2)
-B = mk_B (Fmat, Fdist="Bernoulli")
+B = makeB (Fmat, Fdist="Bernoulli")
 mT = 6
-out = make_AxT(B, Umat, mT)
+out = makeAxT(B, Umat, mT)
 K = out$K
 A = flatten(out$K) ## should equal out$A
 }
 \seealso{
-unfold, make_AxT
+unfold, makeAxT
 }

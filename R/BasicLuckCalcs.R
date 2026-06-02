@@ -69,7 +69,7 @@ meanLRO<- function(Umat, Fmat, mixdist=NULL, offspring_weight=NULL){
   }
 
   ## Calculate Ex(R | birth size z)
-  N<- fundamental_matrix(Umat)
+  N<- fundamentalMatrix(Umat)
   expRCond_z<- rep(1,Nclasses)%*%Fmat%*%N
 
   if(!is.null(mixdist)){
@@ -120,7 +120,7 @@ probRepro<- function(Umat, Fmat, repro_var = 'poisson'){
   }
 
   P_0<- sweep(Umat, MARGIN = 2, (1-p_b), '*') # survival matrix with reproduction as an absorbing state
-  N_0<- fundamental_matrix(P_0)
+  N_0<- fundamentalMatrix(P_0)
 
   # probability of reproducing at least once:
   B<- p_b%*%N_0
@@ -211,7 +211,7 @@ varLRO<- function(Umat, Fmat, repro_var = 'poisson', mixdist=NULL, offspring_wei
   # column matrix of 1's:
   OneVec<- rep(1, Nclasses+1)
   # The fundamental matrix:
-  Nmat<- fundamental_matrix(Umat)
+  Nmat<- fundamentalMatrix(Umat)
   # Take the sum of offspring:
   eff<- colSums(Fmat) #eff is the stage-specific offspring production
 
@@ -340,7 +340,7 @@ skewLRO<- function(Umat, Fmat, repro_var = 'poisson', mixdist=NULL, offspring_we
   # column matrix of 1's:
   OneVec<- rep(1, Nclasses+1)
   # The fundamental matrix:
-  Nmat<- fundamental_matrix(Umat)
+  Nmat<- fundamentalMatrix(Umat)
   # Take the sum of offspring:
   eff<- colSums(Fmat) #eff is the stage-specific offspring production
 
@@ -446,7 +446,7 @@ meanLifespan<- function(Umat, mixdist=NULL){
   Nclasses<- dim(Umat)[1]
 
   ## Calculate Ex(R | current state)
-  N<- fundamental_matrix(Umat)
+  N<- fundamentalMatrix(Umat)
   expLCond_z<- rep(1,Nclasses)%*%N
 
   if(!is.null(mixdist)){
@@ -502,7 +502,7 @@ varLifespan<- function(Umat, mixdist=NULL){
   Nclasses<- dim(Umat)[1]
 
   # calculate the fundamental matrix
-  N<- fundamental_matrix(Umat)
+  N<- fundamentalMatrix(Umat)
 
   ## Calculate Ex(R | current state)
   expLCond_z<- meanLifespan(Umat, mixdist = NULL)
@@ -569,7 +569,7 @@ skewLifespan<- function(Umat, mixdist=NULL){
   Nclasses<- dim(Umat)[1]
 
   # calculate the fundamental matrix
-  N<- fundamental_matrix(Umat)
+  N<- fundamentalMatrix(Umat)
   # row vector of 1's
   eT<- matrix(data=1, ncol=Nclasses, nrow=1)
   # identity matrix

@@ -535,7 +535,7 @@ makeMCondLROThreshold = function (Umat, Fmat, threshold, m0, maxLRO=12,
   ## B[i,j] is the probability that a class-j individual has i-1 kids.
   ## We assume Poisson-distributed number of offspring.
   ## The columns of B should sum to 1.
-  B = mk_B (Fmat, maxClutchSize, Fdist)
+  B = makeB (Fmat, maxClutchSize, Fdist)
   message ("The column sums of B have min. of ", min(colSums(B)),
            " and we hope this is close to 1.\n")
 
@@ -546,7 +546,7 @@ makeMCondLROThreshold = function (Umat, Fmat, threshold, m0, maxLRO=12,
 
   if (FALSE) {  ## just for debugging
     message ("makeMCondLROThreshold: Making A...")
-    out = make_AxT (B, Umat, mT)
+    out = makeAxT (B, Umat, mT)
     A = out$A
   }
 
@@ -700,14 +700,14 @@ makeMCondLROThresholdPostBreeding =
   ## B[i,j] is the probability that a class-j individual has i-1 kids.
   ## We assume Poisson-distributed number of offspring.
   ## The columns of B should sum to 1.
-  B = mk_B (Fmat, maxClutchSize, Fdist)
+  B = makeB (Fmat, maxClutchSize, Fdist)
   message ("The column sums of B have min. of ", min(colSums(B)),
            " and we hope this is close to 1.\n")
 
   ## Construct A, the transition matrix for a (number of kids) x stage x
   ## env. model.
   mT = maxLRO + 1
-  out = make_AxT (B, Umat, mT)
+  out = makeAxT (B, Umat, mT)
   A = out$A
   mzA = bigmz*mT
   message ("Finished making A.\n")

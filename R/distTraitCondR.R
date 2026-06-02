@@ -104,11 +104,11 @@ distLifespanCondR2 = function (Plist, Flist, Q,
   ## B[i,j] is the probability that a class-j individual has i-1 kids.
   ## We assume Poisson-distributed number of offspring.
   ## The columns of B should sum to 1 and they do.
-  B = mk_B (Fmat, maxClutchSize, Fdist)
+  B = makeB (Fmat, maxClutchSize, Fdist)
 
   ## Construct A, the transition matrix for a (number of kids) x stage x
   ## env. model.
-  out = make_AxT (B, M, mT)
+  out = makeAxT (B, M, mT)
   A = out$A
   mzA = bigmz*mT
   K = out$K
@@ -453,11 +453,11 @@ distLifespanCondR2PostBreeding = function (Plist, Flist, Q,
   ## B[i,j] is the probability that a class-j individual has i-1 kids.
   ## We assume Poisson-distributed number of offspring.
   ## The columns of B should sum to 1.
-  B = mk_BPostBreeding (M, Fmat, maxClutchSize, Fdist)
+  B = makeBPostBreeding (M, Fmat, maxClutchSize, Fdist)
 
   ## Construct A, the transition matrix for a (number of kids) x stage x
   ## env. model.
-  out = make_AxT (B, M, mT)
+  out = makeAxT (B, M, mT)
   A = out$A
   mzA = bigmz*mT
 
@@ -674,7 +674,7 @@ calcDistLRO = function (Plist, Flist, Q,
 
   ## B[i,j] is the probability that a class-j individual has i-1 kids.
   ## The columns of B should sum to 1.
-  B = mk_B (Fmat, maxClutchSize, Fdist)
+  B = makeB (Fmat, maxClutchSize, Fdist)
 
   ## Let user decide if the level of eviction is acceptable
   message("calcDistLRO: checking clutch size distribution sums.  min(colSums(B)) = ",
@@ -682,7 +682,7 @@ calcDistLRO = function (Plist, Flist, Q,
 
   ## Construct A, the transition matrix for a (number of kids) x stage x
   ## env. model.
-  out = make_AxT (B, M, mT)
+  out = makeAxT (B, M, mT)
   message ("calcDistLRO: Making A...")
   A = out$A
   mzA = bigmz*mT
@@ -878,7 +878,7 @@ calcDistLROPostBreeding = function (Plist, Flist, Q,
 
   ## B[i,j] is the probability that a class-j individual has i-1 kids.
   ## The columns of B should sum to 1.
-  B = mk_BPostBreeding (M, Fmat, maxClutchSize, Fdist)
+  B = makeBPostBreeding (M, Fmat, maxClutchSize, Fdist)
 
   ## Let user decide if the level of eviction is acceptable
   message("calcDistLRO: checking clutch size distribution sums.  min(colSums(B)) = ",
@@ -886,7 +886,7 @@ calcDistLROPostBreeding = function (Plist, Flist, Q,
 
   ## Construct A, the transition matrix for a (number of kids) x stage x
   ## env. model.
-  out = make_AxT (B, M, mT)
+  out = makeAxT (B, M, mT)
   message ("calcDistLRO: Making A...")
   A = out$A
   mzA = bigmz*mT

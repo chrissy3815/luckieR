@@ -16,17 +16,17 @@ The transition array
 }
 \description{
 Converts a cross-classified transition matrix ("megamatrix") to a
-4-d transition array, such as the K array produced by make_AxT
+4-d transition array, such as the K array produced by makeAxT
 }
 \examples{
 Umat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 Fmat = matrix (0, 3, 3); Fmat[1,] = 0.1*(0:2)
-B = mk_B (Fmat, Fdist="Bernoulli")
+B = makeB (Fmat, Fdist="Bernoulli")
 mT = 6
-out = make_AxT (B, Umat, mT)
+out = makeAxT (B, Umat, mT)
 A = out$A
 K = unfold (A, dim=c(3,6,3,6))  ## should equal out$K
 }
 \seealso{
-flatten, make_AxT
+flatten, makeAxT
 }

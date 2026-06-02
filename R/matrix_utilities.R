@@ -22,8 +22,8 @@
 #'
 #' @examples
 #' Umat<- matrix(c(0.5, 0.1, 0.1, 0, 0.5, 0.3, 0, 0, 0.8), ncol=3)
-#' Nmat<- fundamental_matrix(Umat)
-fundamental_matrix = function(P){
+#' Nmat<- fundamentalMatrix(Umat)
+fundamentalMatrix = function(P){
   solve( diag(ncol(P)) - P)
 }
 
@@ -50,8 +50,8 @@ fundamental_matrix = function(P){
 #' Umat<- matrix(c(0.5, 0.1, 0.1, 0, 0.5, 0.3, 0, 0, 0.8), ncol=3)
 #' Fmat<- matrix(c(0.2, 0, 0, 1, 0.5, 0, 5, 3, 0), ncol=3)
 #' Amat<- Umat+Fmat
-#' ssd<- stable_dist(Amat)
-stable_dist<- function(Amat){
+#' ssd<- stableDist(Amat)
+stableDist<- function(Amat){
   # Calculate the eigen values and vectors:
   eigz<- eigen(Amat)
   # Find the index of lambda:
@@ -91,7 +91,7 @@ stable_dist<- function(Amat){
 #' Amat<- Umat+Fmat
 #' mixdist<- calcDistOffspringCohort(Amat, Fmat)
 calcDistOffspringCohort<- function(Amat, Fmat){
-  wmean<- stable_dist(Amat)
+  wmean<- stableDist(Amat)
   # Multiply the stable distribution by Fmat to get a cohort of offspring:
   offspring<- Fmat%*%wmean
   # Rescale to sum to 1 (proportions):

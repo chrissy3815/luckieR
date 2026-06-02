@@ -43,21 +43,21 @@ unvec <- function(nvec,nrow=NULL,ncol=NULL){
 #' Convert 4-d array to matrix
 #'
 #' Converts a 4-d transition array, such as the K array produced by
-#' make_AxT, to a cross-classified transition matrix ("megamatrix"),
-#' such as the A matrix produced by make_AxT
+#' makeAxT, to a cross-classified transition matrix ("megamatrix"),
+#' such as the A matrix produced by makeAxT
 #'
 #' @param A4 The 4-d transition array
 #'
 #' @return The cross-classified transition matrix
 #' @export
 #'
-#' @seealso unfold, make_AxT
+#' @seealso unfold, makeAxT
 #' @examples
 #' Umat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' Fmat = matrix (0, 3, 3); Fmat[1,] = 0.1*(0:2)
-#' B = mk_B (Fmat, Fdist="Bernoulli")
+#' B = makeB (Fmat, Fdist="Bernoulli")
 #' mT = 6
-#' out = make_AxT(B, Umat, mT)
+#' out = makeAxT(B, Umat, mT)
 #' K = out$K
 #' A = flatten(out$K) ## should equal out$A
 flatten <- function(A4) {
@@ -68,7 +68,7 @@ flatten <- function(A4) {
 #' Convert a megamatrix to an array
 #'
 #' Converts a cross-classified transition matrix ("megamatrix") to a
-#' 4-d transition array, such as the K array produced by make_AxT
+#' 4-d transition array, such as the K array produced by makeAxT
 #'
 #' @param A2 The megamatrix to be transformed
 #' @param dim A vector containing the dimensions of the array to be returned
@@ -76,13 +76,13 @@ flatten <- function(A4) {
 #' @return The transition array
 #' @export
 #'
-#' @seealso flatten, make_AxT
+#' @seealso flatten, makeAxT
 #' @examples
 #' Umat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' Fmat = matrix (0, 3, 3); Fmat[1,] = 0.1*(0:2)
-#' B = mk_B (Fmat, Fdist="Bernoulli")
+#' B = makeB (Fmat, Fdist="Bernoulli")
 #' mT = 6
-#' out = make_AxT (B, Umat, mT)
+#' out = makeAxT (B, Umat, mT)
 #' A = out$A
 #' K = unfold (A, dim=c(3,6,3,6))  ## should equal out$K
 unfold <- function(A2,dim) {
@@ -108,8 +108,8 @@ unfold <- function(A2,dim) {
 #'
 #' @examples
 #' Fmat = matrix (0, 3, 3); Fmat[1,] = 0.1*(0:2)
-#' out = mk_B (Fmat, Fdist="Bernoulli")
-mk_B = function (Fmat, maxKids=20, Fdist="Poisson") {
+#' out = makeB (Fmat, Fdist="Bernoulli")
+makeB = function (Fmat, maxKids=20, Fdist="Poisson") {
   bigmz = ncol(Fmat)
   B = matrix (0, maxKids+1, bigmz)
   if (Fdist == "Poisson") {
@@ -119,7 +119,7 @@ mk_B = function (Fmat, maxKids=20, Fdist="Poisson") {
     for (z in 1:bigmz)
       B[,z] = dbinom (0:maxKids, size=1, prob=sum(Fmat[,z]))
   } else {
-    stop ("mk_B: I don't recognize that option for Fdist.\n")
+    stop ("makeB: I don't recognize that option for Fdist.\n")
   }
 
   return (B)
@@ -153,8 +153,8 @@ mk_B = function (Fmat, maxKids=20, Fdist="Poisson") {
 #' Fmat = matrix (c(0,0,0, 0.5,0,0, 0,0,0), 3, 3)
 #' Umat = matrix (c(0,0.5,0, 0,0,0.5, 0,0,0), 3, 3)
 #' maxClutchSize=10
-#' out = mk_BPostBreeding (Umat, Fmat, maxClutchSize, Fdist="Bernoulli")
-mk_BPostBreeding = function (Umat, Fmat, maxKids=20, Fdist="Poisson") {
+#' out = makeBPostBreeding (Umat, Fmat, maxClutchSize, Fdist="Bernoulli")
+makeBPostBreeding = function (Umat, Fmat, maxKids=20, Fdist="Poisson") {
   bigmz = ncol(Fmat)
   surv = colSums(Umat); die = 1 - surv
   ## fecCondSurv = colSums(Fmat) / surv
@@ -180,7 +180,7 @@ mk_BPostBreeding = function (Umat, Fmat, maxKids=20, Fdist="Poisson") {
         B[,z] = dbinom (0:maxKids, size=1, prob=sum(Fmat[,z]/surv[z]))
       }
   } else {
-    stop ("mk_BPostBreeding: I don't recognize that option for Fdist.\n")
+    stop ("makeBPostBreeding: I don't recognize that option for Fdist.\n")
   }
 
   return (B)
@@ -213,14 +213,14 @@ mk_BPostBreeding = function (Umat, Fmat, maxKids=20, Fdist="Poisson") {
 #'   individual with total number of offspring j will produce (l - j)
 #'   offspring in the current reproductive bout and will transition to
 #'   size k.  If l-j is < 0, the return value is a vector of zeros.
-#' @details Called by make_AxT
-#' @seealso make_AxT
+#' @details Called by makeAxT
+#' @seealso makeAxT
 #' @export
 #'
 #' @examples
 #' Umat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
-#' B = mk_B (Fmat)
+#' B = makeB (Fmat)
 #' p_xT (5, 2, 3, B, Umat)
 p_xT <- function(l, i, j, B, Umat) {
   bigmz <- ncol(Umat); maxKids <- nrow(B)-1;
@@ -268,10 +268,10 @@ p_xT <- function(l, i, j, B, Umat) {
 #' @examples
 #' Umat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
-#' B = mk_B (Fmat)
+#' B = makeB (Fmat)
 #' mT = 20
-#' out = make_AxT(B, Umat, mT)
-make_AxT <- function(B, Umat, mT) {
+#' out = makeAxT(B, Umat, mT)
+makeAxT <- function(B, Umat, mT) {
   bigmz=ncol(Umat); Kvals=array(0,c(bigmz,mT,bigmz,mT));
   for(z in 1:bigmz){ # initial size
     for(k in 1:mT){ # initial T
@@ -371,7 +371,7 @@ p_xTPostBreeding <- function(l, i, j, B, Umat) {
   }
 }
 
-make_AxTPostBreeding <- function(B, Umat, mT) {
+makeAxTPostBreeding <- function(B, Umat, mT) {
   bigmz=ncol(Umat); Kvals=array(0,c(bigmz,mT,bigmz,mT));
   for(z in 1:bigmz){ # initial size
     for(k in 1:mT){ # initial T

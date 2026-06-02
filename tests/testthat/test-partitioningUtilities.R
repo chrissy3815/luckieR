@@ -160,11 +160,11 @@ out = makeMCondLROThresholdPostBreeding (P, F, threshold, m0, maxLRO=maxLRO,
 probSucceed = out$probSucceed
 ACondSucceed = out$ACondSucceed
 
-B = mk_B (F, maxClutchSize, Fdist="Bernoulli")
+B = makeB (F, maxClutchSize, Fdist="Bernoulli")
 ## Construct A, the transition matrix for a (number of kids) x stage x
 ## env. model.
 mT = maxLRO + 1
-out = make_AxT (B, P, mT)
+out = makeAxT (B, P, mT)
 A = out$A
 
 test_that("makeMCondLROThresholdPostBreeding returns the unconditional kernel if success is guaranteed",{
