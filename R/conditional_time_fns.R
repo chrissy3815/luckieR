@@ -375,3 +375,102 @@ popMeanVar = function(mean_by_type,var_by_type,mixdist){
 }
 
 
+#' Population 3rd central moment of any attribute
+#'
+#' Function to compute the population third central moment of some attribute X,
+#' given the vectors of mean, variance and mu3 conditional individual 'type' Z.
+#' This is done using the order-3 case of the Law of Total Cumulance
+#'
+#' @param mean_by_type A vector of length \eqn{z} containing the mean of
+#'   attribute X for individuals of types 1 to \eqn{z}
+#' @param var_by_type A vector of length \eqn{z} containing the variance of
+#'   attribute X for individuals of types 1 to \eqn{z}
+#' @param mu3_by_type A vector of length \eqn{z} containing the third central
+#'   moment of attribute X for individuals of types 1 to \eqn{z}
+#' @param mixdist A vector of length \eqn{z} indicating the frequency
+#'   distribution of individuals across the \eqn{z} types
+#'
+#' @returns A scalar value for the 3rd central moment of attribute X across the
+#'   population
+#' @export
+#'
+#' @seealso [meanLifespan()], [meanLRO()], [varLifespan()], and [varLRO()],
+#'   which should give the same results when the user provides a mixing
+#'   distribution.
+#'
+#' @examples
+#' Umat<- matrix(c(0.5, 0.1, 0.1, 0, 0.5, 0.3, 0, 0, 0.8), ncol=3)
+#' mean_by_type<- meanLifespan(Umat)
+#' var_by_type<- varLifespan(Umat)
+#' skew_by_type<- skewLifespan(Umat)
+#' mu3_by_type = skew_by_type*((var_by_type)^(3/2))
+#' mixdist<- c(0.3, 0.7, 0)
+#' popMu3_Lifespan<- popMu3(mean_by_type, var_by_type, mu3_by_type, mixdist)
+popMu3 = function(mean_by_type, var_by_type, mu3_by_type, mixdist){
+  if(min(mixdist)<0) {stop("Not a valid mixing distribution")}
+  if(sum(mixdist)!=1) {stop("Not a valid mixing distribution")}
+  if(min(var_by_type)<0) {stop("Not a valid variances vector")}
+  nZ = length(mean_by_type)
+  if(length(var_by_type)!=nZ) {stop("Length mismatch, mean and var")}
+  if(length(mu3_by_type)!=nZ) {stop("Length mismatch, mean and mu3")}
+  if(length(mixdist)!=nZ) {stop("Length mismatch, means and mixing distribution")}
+
+  term1 = sum(mixdist*mu3_by_type)    # E[mu3(X|Z)]
+
+  mean_mean_by_type = sum(mixdist*mean_by_type);
+  term2 = sum(mixdist* ((mean_by_type - mean_mean_by_type)^3) );
+
+
+  Emean_times_var = sum(mixdist*(mean_by_type*var_by_type))
+  Emean_times_Evar = sum(mixdist*mean_by_type)*sum(mixdist*var_by_type);
+  term3 = 3*(Emean_times_var - Emean_times_Evar)
+
+  result = term1+term2+term3
+  return(result)
+}
+
+#' Population skewness of any attribute X
+#'
+#' Function to compute the population skewness of some attribute X, given the
+#' vectors of mean, variance and skewness conditional on individual 'type' Z.
+#' Done by calling popMu3 and popMeanVar.
+#'
+#' @param mean_by_type A vector of length \eqn{z} containing the mean of
+#'   attribute X for individuals of types 1 to \eqn{z}
+#' @param var_by_type A vector of length \eqn{z} containing the variance of
+#'   attribute X for individuals of types 1 to \eqn{z}
+#' @param skew_by_type A vector of length \eqn{z} containing the skewness of
+#'   attribute X for individuals of types 1 to \eqn{z}
+#' @param mixdist A vector of length \eqn{z} indicating the frequency
+#'   distribution of individuals across the \eqn{z} types
+#'
+#' @returns A scalar value for the skewness of attribute X across the population
+#' @export
+#'
+#' @seealso [skewLifespan()] and [skewLRO()], which should give the same results
+#'   when the user provides a mixing distribution.
+#' @seealso [popMu3()] and [popMeanVar()]
+#'
+#' @examples
+#' Umat<- matrix(c(0.5, 0.1, 0.1, 0, 0.5, 0.3, 0, 0, 0.8), ncol=3)
+#' mean_by_type<- meanLifespan(Umat)
+#' var_by_type<- varLifespan(Umat)
+#' skew_by_type<- skewLifespan(Umat)
+#' mixdist<- c(0.3, 0.7, 0)
+#' popSkew_Lifespan<- popSkew(mean_by_type, var_by_type, skew_by_type, mixdist)
+popSkew = function(mean_by_type,var_by_type,skew_by_type,mixdist){
+  if(min(mixdist)<0) {stop("Not a valid mixing distribution")}
+  if(sum(mixdist)!=1) {stop("Not a valid mixing distribution")}
+  if(min(var_by_type)<0) {stop("Not a valid variances vector")}
+  nZ = length(mean_by_type)
+  if(length(var_by_type)!=nZ) {stop("Length mismatch, mean and var")}
+  if(length(skew_by_type)!=nZ) {stop("Length mismatch, mean and mu3")}
+  if(length(mixdist)!=nZ) {stop("Length mismatch, means and mixing distribution")}
+
+  mu3_by_type = skew_by_type*(var_by_type^(3/2));
+  mu3 = popMu3(mean_by_type,var_by_type,mu3_by_type,mixdist)
+  mu2 = popMeanVar(mean_by_type,var_by_type,mixdist)$pop_var
+
+  result = mu3/(mu2^(3/2));
+  return(result)
+}

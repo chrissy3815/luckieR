@@ -29,8 +29,9 @@ R3 should be size n+1 x n+1.}
 A list containing
 \itemize{
 \item rho1Vec: A 1xn matrix whose jth entry gives the expected lifetime
-reward for a trajectory starting in state j (NB: for the first moment, both
-the non-central and the central moment are equivalent to the expectation)
+reward for a trajectory starting in state j (NB: for the first moment of a
+distribution, both the non-central and the central moment are equivalent to
+the expectation)
 \item rho2Vec: A 1xn matrix whose jth entry gives the non-central 2nd moment of
 lifetime reward for a trajectory starting in state j
 \item rho3Vec: A 1xn matrix whose jth entry gives the non-central 3rd moment of
