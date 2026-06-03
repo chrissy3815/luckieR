@@ -71,6 +71,10 @@ we can't be very confident that that individual lacked endophytes.
 For more details on the math behind this calculation, see
 @2018:snyde.ellne and @2024:snyde.ellne.
 
+```{r, echo=FALSE, fig.align="center", out.width="70%"} 
+knitr::include_graphics("probXCondR.png")
+```
+
 ```{r, eval=FALSE}
 library ("luckieR")
 maxClutchSize = 24
@@ -139,6 +143,10 @@ rises rapidly with size for this species, so this too, makes sense.
 (Note: in order to make the code slow, we use an abridged version of
 the model, with only three year types.)  For the mathematical details
 behind this calculation, see @2024:snyde.ellne.
+
+```{r, echo=FALSE, fig.align="center", out.width="70%"} 
+knitr::include_graphics("varPartition.png")
+```
 
 ```{r, eval=FALSE}
 library ("luckieR")
@@ -211,6 +219,10 @@ that do, those that never breed do not grow as large as those who do.
 Survival increases sharply with size for this species, so growing
 large quickly increases survival, not just fecundity.  For the
 mathematical details behind this calculation, see @2018:snyde.ellne.
+
+```{r, echo=FALSE, fig.align="center", out.width="100%"} 
+knitr::include_graphics("condKernelPlots.png")
+```
 
 ```{r, eval=FALSE}
 library ("luckieR")
@@ -301,7 +313,7 @@ fewLeftCondNeverBreed = which.min (abs (fracSurvCondNeverBreed -
                                              0.1))
 
 xmax = max(fewLeftCondNeverBreed, fewLeftCondBreed)
-dev.new(height=6, width=12)
+pdf (height=6, width=12, file="condKernelPlots.pdf")
 par (cex.lab=1.9, cex.axis=1.8, lwd=2, mfrow=c(1,2),
      oma=c(0,0,1,0), mar=c(5.1,4.5,4.1,2.1))
 plot (0:(xmax-1), fracSurvCondNeverBreed[1:xmax], type="l", xlab="Age",
