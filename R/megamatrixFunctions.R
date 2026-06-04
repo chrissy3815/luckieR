@@ -215,7 +215,6 @@ makeBPostBreeding = function (Umat, Fmat, maxKids=20, Fdist="Poisson") {
 #'   size k.  If l-j is < 0, the return value is a vector of zeros.
 #' @details Called by makeAxT
 #' @seealso makeAxT
-#' @export
 #'
 #' @examples
 #' Umat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
