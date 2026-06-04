@@ -38,12 +38,6 @@ j total kids, to all size classes and l total kids.
 \details{
 Called by makeAxT
 }
-\examples{
-Umat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
-Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
-B = makeB (Fmat)
-p_xT (5, 2, 3, B, Umat)
-}
 \seealso{
 makeAxT
 }
