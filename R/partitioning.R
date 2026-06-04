@@ -9,7 +9,7 @@
 #' Partitions variance and skewness of lifetime reproductive output (LRO) for
 #' models without trait or environmental variation.
 #'
-#' @param Pmat The survival/growth transition matrix: Pmat\[i,j\] is the probability
+#' @param Umat The survival/growth transition matrix: Umat\[i,j\] is the probability
 #'   of transitioning from state j to state i.
 #' @param Fmat The fecundity matrix: Fmat\[i,j\] is the expected number of state i
 #'   offspring from a state j parent
@@ -72,11 +72,11 @@
 #' @export
 #'
 #' @examples
-#' Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' Umat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 #' c0 = c(1,0,0)
-#' out = partitionVarSkewnessNoEnvVar (Pmat, Fmat, c0)
-partitionVarSkewnessNoEnvVar = function (Pmat, Fmat, c0, maxAge=100,
+#' out = partitionVarSkewnessNoEnvVar (Umat, Fmat, c0)
+partitionVarSkewnessNoEnvVar = function (Umat, Fmat, c0, maxAge=100,
                                          survThreshold=0.05,
                                          Fdist="Poisson",
                                          esR1=NULL, esR2=NULL,
@@ -87,7 +87,7 @@ partitionVarSkewnessNoEnvVar = function (Pmat, Fmat, c0, maxAge=100,
   ## tolerance for error checking.  0.001 = 0.1% tolerance
   percentTol = 0.001
 
-  mz = dim(Pmat)[1]
+  mz = dim(Umat)[1]
 
   ## Sanity check input
   if (Fdist == "Bernoulli") {
@@ -97,29 +97,29 @@ partitionVarSkewnessNoEnvVar = function (Pmat, Fmat, c0, maxAge=100,
 
   ## Sanity check input
   if (length(c0) != mz)
-    stop ("Length of c0 does not match dimension of Pmat")
+    stop ("Length of c0 does not match dimension of Umat")
 
   ## Sanity check input
   if (dim(Fmat)[1] != mz)
-    stop ("Pmat and Fmat should have the same dimensions.")
+    stop ("Umat and Fmat should have the same dimensions.")
 
   ## Make survival, growth, and fecundity bullet matrices
-  Sbullet = diag (colSums (Pmat))
+  Sbullet = diag (colSums (Umat))
 
   ## Does not work if any stage has zero probability of survival.
   ## Replaced by code below that seems to deal with that issue.
   #Sinv = diag (1 / diag(Sbullet))
-  #Gbullet = Pmat %*% Sinv
+  #Gbullet = Umat %*% Sinv
 
-  Gbullet = Pmat;
+  Gbullet = Umat;
   for(ic in 1:ncol(Gbullet)){
     if(Sbullet[ic,ic]>0) Gbullet[,ic]=Gbullet[,ic]/Sbullet[ic,ic]
   }
 
   ## Sanity check
   epsilon = 0.00001
-  if (sum(abs(range (Gbullet%*%Sbullet-Pmat))) > epsilon)
-    warning ("Gbullet %*% Sbullet does not equal Pmat.")
+  if (sum(abs(range (Gbullet%*%Sbullet-Umat))) > epsilon)
+    warning ("Gbullet %*% Sbullet does not equal Umat.")
 
   ## #kids isn't part of the state definition, so Fbullet = I
   Fbullet = diag (mz)
@@ -151,7 +151,7 @@ partitionVarSkewnessNoEnvVar = function (Pmat, Fmat, c0, maxAge=100,
   ## From ur-state to birth state
   bsP[1 + (1:mz),1] = c0
   ## From normal state to normal state
-  bsP[1 + 1:mz, 1 + 1:mz] = Pmat
+  bsP[1 + 1:mz, 1 + 1:mz] = Umat
 
   ## You only start reproducing once you're past the ur-state.  Note
   ## that all we need are the column sums of bsF.
@@ -250,11 +250,11 @@ partitionVarSkewnessNoEnvVar = function (Pmat, Fmat, c0, maxAge=100,
   birthStateSkewness = urSkewness - justBirthStateSkewness
 
   ## Starting the age loop
-  PaC0 = c0  ## Pmat^a c_0
+  PaC0 = c0  ## Umat^a c_0
   mzZero = rep(0, mz)
 
   ## Sanity check
-  N = solve(diag(mz) - Pmat)
+  N = solve(diag(mz) - Umat)
   rho1Vec = colSums (Fmat %*% N)
   foo1 = esRho1Vec %*% c(c0, mzZero, mzZero)
   foo2 = rho1Vec %*% c0
@@ -265,26 +265,26 @@ partitionVarSkewnessNoEnvVar = function (Pmat, Fmat, c0, maxAge=100,
   survUpdateSkewness[1] = esSkewnessVec %*%
     c(mzZero, mzZero, Sbullet %*% PaC0)
   growthUpdateSkewness[1] = esSkewnessVec %*%
-    c(Pmat %*% PaC0, mzZero, mzZero)
+    c(Umat %*% PaC0, mzZero, mzZero)
 
   fecUpdateVar[1] = esMu2Vec %*% c(mzZero, PaC0, mzZero)
   survUpdateVar[1] = esMu2Vec %*% c(mzZero, mzZero, Sbullet %*% PaC0)
-  growthUpdateVar[1] = esMu2Vec %*% c(Pmat %*% PaC0, mzZero, mzZero)
+  growthUpdateVar[1] = esMu2Vec %*% c(Umat %*% PaC0, mzZero, mzZero)
 
   surv[1] = sum (PaC0)
   ## a is actually age + 1, since the first year of life is age 0
   for (a in 2:maxAge) {
-    PaC0 = Pmat %*% PaC0
+    PaC0 = Umat %*% PaC0
 
     fecUpdateSkewness[a] = esSkewnessVec %*% c(mzZero, PaC0, mzZero)
     survUpdateSkewness[a] = esSkewnessVec %*%
       c(mzZero, mzZero, Sbullet %*% PaC0)
     growthUpdateSkewness[a] = esSkewnessVec %*%
-      c(Pmat %*% PaC0, mzZero, mzZero)
+      c(Umat %*% PaC0, mzZero, mzZero)
 
     fecUpdateVar[a] = esMu2Vec %*% c(mzZero, PaC0, mzZero)
     survUpdateVar[a] = esMu2Vec %*% c(mzZero, mzZero, Sbullet %*% PaC0)
-    growthUpdateVar[a] = esMu2Vec %*% c(Pmat %*% PaC0, mzZero, mzZero)
+    growthUpdateVar[a] = esMu2Vec %*% c(Umat %*% PaC0, mzZero, mzZero)
 
     ## fecundity skewness and var.
     fecSkewness[a] = growthUpdateSkewness[a-1] - fecUpdateSkewness[a]
@@ -459,11 +459,11 @@ partitionVarSkewnessEnvVar = function (Plist, Flist, Q, c0,
 
   ## Sanity check input
   if (length(c0) != mz)
-    stop ("Length of c0 does not match dimension of Pmat")
+    stop ("Length of c0 does not match dimension of Umat")
 
   ## Sanity check input
   if (dim(Flist[[1]])[1] != mz)
-    stop ("Pmat and Fmat should have the same dimensions.")
+    stop ("Umat and Fmat should have the same dimensions.")
 
   ## u0 is the stationary environmental distribution, given by the
   ## dominant eigenvector of Q
@@ -988,11 +988,11 @@ partitionVarSkewnessEnvVarAndTraits = function (PlistAllTraits,
 
   ## Sanity check input
   if (length(c0) != mz)
-    stop ("Length of c0 does not match dimension of Pmat")
+    stop ("Length of c0 does not match dimension of Umat")
 
   ## Sanity check input
   if (dim(FlistAllTraits[[1]][[1]])[1] != mz)
-    stop ("Pmat and Fmat should have the same dimensions.")
+    stop ("Umat and Fmat should have the same dimensions.")
 
   lifespanCondX = birthEnvSkewnessCondX =
     birthEnvVarCondX = birthStateSkewnessCondX =
@@ -1299,7 +1299,7 @@ partitionVarSkewnessEnvVarAndTraits = function (PlistAllTraits,
 #' Partitions variance and 3rd central moment of lifetime reproductive
 #' output (LRO) for models without trait or environmental variation.
 #'
-#' @param Pmat The survival/growth transition matrix: Pmat\[i,j\] is the probability
+#' @param Umat The survival/growth transition matrix: Umat\[i,j\] is the probability
 #'   of transitioning from state j to state i.
 #' @param Fmat The fecundity matrix: Fmat\[i,j\] is the expected number of state i
 #'   offspring from a state j parent
@@ -1363,11 +1363,11 @@ partitionVarSkewnessEnvVarAndTraits = function (PlistAllTraits,
 #' @export
 #'
 #' @examples
-#' Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' Umat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 #' c0 = c(1,0,0)
-#' out = partitionVarMu3NoEnvVar (Pmat, Fmat, c0)
-partitionVarMu3NoEnvVar = function (Pmat, Fmat, c0, maxAge=100,
+#' out = partitionVarMu3NoEnvVar (Umat, Fmat, c0)
+partitionVarMu3NoEnvVar = function (Umat, Fmat, c0, maxAge=100,
                                          survThreshold=0.05,
                                          Fdist="Poisson",
                                          esR1=NULL, esR2=NULL,
@@ -1378,7 +1378,7 @@ partitionVarMu3NoEnvVar = function (Pmat, Fmat, c0, maxAge=100,
   ## tolerance for error checking.  0.001 = 0.1% tolerance
   percentTol = 0.001
 
-  mz = dim(Pmat)[1]
+  mz = dim(Umat)[1]
 
   ## Sanity check input
   if (Fdist == "Bernoulli") {
@@ -1388,29 +1388,29 @@ partitionVarMu3NoEnvVar = function (Pmat, Fmat, c0, maxAge=100,
 
   ## Sanity check input
   if (length(c0) != mz)
-    stop ("Length of c0 does not match dimension of Pmat")
+    stop ("Length of c0 does not match dimension of Umat")
 
   ## Sanity check input
   if (dim(Fmat)[1] != mz)
-    stop ("Pmat and Fmat should have the same dimensions.")
+    stop ("Umat and Fmat should have the same dimensions.")
 
   ## Make survival, growth, and fecundity bullet matrices
-  Sbullet = diag (colSums (Pmat))
+  Sbullet = diag (colSums (Umat))
 
   ## Does not work if any stage has zero probability of survival.
   ## Replaced by code below that seems to deal with that issue.
   #Sinv = diag (1 / diag(Sbullet))
-  #Gbullet = Pmat %*% Sinv
+  #Gbullet = Umat %*% Sinv
 
-  Gbullet = Pmat;
+  Gbullet = Umat;
   for(ic in 1:ncol(Gbullet)){
     if(Sbullet[ic,ic]>0) Gbullet[,ic]=Gbullet[,ic]/Sbullet[ic,ic]
   }
 
   ## Sanity check
   epsilon = 0.00001
-  if (sum(abs(range (Gbullet%*%Sbullet-Pmat))) > epsilon)
-    warning ("Gbullet %*% Sbullet does not equal Pmat.")
+  if (sum(abs(range (Gbullet%*%Sbullet-Umat))) > epsilon)
+    warning ("Gbullet %*% Sbullet does not equal Umat.")
 
   ## #kids isn't part of the state definition, so Fbullet = I
   Fbullet = diag (mz)
@@ -1442,7 +1442,7 @@ partitionVarMu3NoEnvVar = function (Pmat, Fmat, c0, maxAge=100,
   ## From ur-state to birth state
   bsP[1 + (1:mz),1] = c0
   ## From normal state to normal state
-  bsP[1 + 1:mz, 1 + 1:mz] = Pmat
+  bsP[1 + 1:mz, 1 + 1:mz] = Umat
 
   ## You only start reproducing once you're past the ur-state.  Note
   ## that all we need are the column sums of bsF.
@@ -1539,11 +1539,11 @@ partitionVarMu3NoEnvVar = function (Pmat, Fmat, c0, maxAge=100,
   birthStateMu3 = urMu3 - justBirthStateMu3
 
   ## Starting the age loop
-  PaC0 = c0  ## Pmat^a c_0
+  PaC0 = c0  ## Umat^a c_0
   mzZero = rep(0, mz)
 
   ## Sanity check
-  N = solve(diag(mz) - Pmat)
+  N = solve(diag(mz) - Umat)
   rho1Vec = colSums (Fmat %*% N)
   foo1 = esRho1Vec %*% c(c0, mzZero, mzZero)
   foo2 = rho1Vec %*% c0
@@ -1554,26 +1554,26 @@ partitionVarMu3NoEnvVar = function (Pmat, Fmat, c0, maxAge=100,
   survUpdateMu3[1] = esMu3Vec %*%
     c(mzZero, mzZero, Sbullet %*% PaC0)
   growthUpdateMu3[1] = esMu3Vec %*%
-    c(Pmat %*% PaC0, mzZero, mzZero)
+    c(Umat %*% PaC0, mzZero, mzZero)
 
   fecUpdateVar[1] = esMu2Vec %*% c(mzZero, PaC0, mzZero)
   survUpdateVar[1] = esMu2Vec %*% c(mzZero, mzZero, Sbullet %*% PaC0)
-  growthUpdateVar[1] = esMu2Vec %*% c(Pmat %*% PaC0, mzZero, mzZero)
+  growthUpdateVar[1] = esMu2Vec %*% c(Umat %*% PaC0, mzZero, mzZero)
 
   surv[1] = sum (PaC0)
   ## a is actually age + 1, since the first year of life is age 0
   for (a in 2:maxAge) {
-    PaC0 = Pmat %*% PaC0
+    PaC0 = Umat %*% PaC0
 
     fecUpdateMu3[a] = esMu3Vec %*% c(mzZero, PaC0, mzZero)
     survUpdateMu3[a] = esMu3Vec %*%
       c(mzZero, mzZero, Sbullet %*% PaC0)
     growthUpdateMu3[a] = esMu3Vec %*%
-      c(Pmat %*% PaC0, mzZero, mzZero)
+      c(Umat %*% PaC0, mzZero, mzZero)
 
     fecUpdateVar[a] = esMu2Vec %*% c(mzZero, PaC0, mzZero)
     survUpdateVar[a] = esMu2Vec %*% c(mzZero, mzZero, Sbullet %*% PaC0)
-    growthUpdateVar[a] = esMu2Vec %*% c(Pmat %*% PaC0, mzZero, mzZero)
+    growthUpdateVar[a] = esMu2Vec %*% c(Umat %*% PaC0, mzZero, mzZero)
 
     ## fecundity mu3 and var.
     fecMu3[a] = growthUpdateMu3[a-1] - fecUpdateMu3[a]
@@ -1760,11 +1760,11 @@ partitionVarMu3EnvVar = function (Plist, Flist, Q, c0,
 
   ## Sanity check input
   if (length(c0) != mz)
-    stop ("Length of c0 does not match dimension of Pmat")
+    stop ("Length of c0 does not match dimension of Umat")
 
   ## Sanity check input
   if (dim(Flist[[1]])[1] != mz)
-    stop ("Pmat and Fmat should have the same dimensions.")
+    stop ("Umat and Fmat should have the same dimensions.")
 
   ## u0 is the stationary environmental distribution, given by the
   ## dominant eigenvector of Q
@@ -2294,11 +2294,11 @@ partitionVarMu3EnvVarAndTraits = function (PlistAllTraits,
 
   ## Sanity check input
   if (length(c0) != mz)
-    stop ("Length of c0 does not match dimension of Pmat")
+    stop ("Length of c0 does not match dimension of Umat")
 
   ## Sanity check input
   if (dim(FlistAllTraits[[1]][[1]])[1] != mz)
-    stop ("Pmat and Fmat should have the same dimensions.")
+    stop ("Umat and Fmat should have the same dimensions.")
 
   lifespanCondX = birthEnvMu3CondX =
     birthEnvVarCondX = birthStateMu3CondX =
@@ -2601,7 +2601,7 @@ partitionVarMu3EnvVarAndTraits = function (PlistAllTraits,
 #' models without trait or environmental variation, assuming a post-breeding
 #' census.
 #'
-#' @param Pmat The survival/growth transition matrix: Pmat\[i,j\] is the probability
+#' @param Umat The survival/growth transition matrix: Umat\[i,j\] is the probability
 #'   of transitioning from state j to state i.
 #' @param Fmat The fecundity matrix: Fmat\[i,j\] is the expected number of state i
 #'   offspring from a state j parent
@@ -2654,11 +2654,11 @@ partitionVarMu3EnvVarAndTraits = function (PlistAllTraits,
 #' @export
 #'
 #' @examples
-#' Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+#' Umat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 #' Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 #' c0 = c(1,0,0)
-#' out = partitionVarSkewnessNoEnvVarPostBreeding (Pmat, Fmat, c0)
-partitionVarSkewnessNoEnvVarPostBreeding = function (Pmat, Fmat, c0, maxAge=100,
+#' out = partitionVarSkewnessNoEnvVarPostBreeding (Umat, Fmat, c0)
+partitionVarSkewnessNoEnvVarPostBreeding = function (Umat, Fmat, c0, maxAge=100,
                                                      survThreshold=0.05,
                                                      Fdist="Poisson",
                                                      esR1=NULL, esR2=NULL,
@@ -2669,7 +2669,7 @@ partitionVarSkewnessNoEnvVarPostBreeding = function (Pmat, Fmat, c0, maxAge=100,
   ## tolerance for error checking.  0.001 = 0.1% tolerance
   percentTol = 0.001
 
-  mz = dim(Pmat)[1]
+  mz = dim(Umat)[1]
 
   ## Sanity check input
   if (Fdist == "Bernoulli") {
@@ -2679,29 +2679,29 @@ partitionVarSkewnessNoEnvVarPostBreeding = function (Pmat, Fmat, c0, maxAge=100,
 
   ## Sanity check input
   if (length(c0) != mz)
-    stop ("Length of c0 does not match dimension of Pmat")
+    stop ("Length of c0 does not match dimension of Umat")
 
   ## Sanity check input
   if (dim(Fmat)[1] != mz)
-    stop ("Pmat and Fmat should have the same dimensions.")
+    stop ("Umat and Fmat should have the same dimensions.")
 
   ## Make survival, growth, and fecundity bullet matrices
-  Sbullet = diag (colSums (Pmat))
+  Sbullet = diag (colSums (Umat))
 
   ## Does not work if any stage has zero probability of survival.
   ## Replaced by code below that seems to deal with that issue.
   #Sinv = diag (1 / diag(Sbullet))
-  #Gbullet = Pmat %*% Sinv
+  #Gbullet = Umat %*% Sinv
 
-  Gbullet = Pmat;
+  Gbullet = Umat;
   for(ic in 1:ncol(Gbullet)){
     if(Sbullet[ic,ic]>0) Gbullet[,ic]=Gbullet[,ic]/Sbullet[ic,ic]
   }
 
   ## Sanity check
   epsilon = 0.00001
-  if (sum(abs(range (Gbullet%*%Sbullet-Pmat))) > epsilon)
-    warning ("Gbullet %*% Sbullet does not equal Pmat.")
+  if (sum(abs(range (Gbullet%*%Sbullet-Umat))) > epsilon)
+    warning ("Gbullet %*% Sbullet does not equal Umat.")
 
   ## #kids isn't part of the state definition, so Fbullet = I
   Fbullet = diag (mz)
@@ -2733,7 +2733,7 @@ partitionVarSkewnessNoEnvVarPostBreeding = function (Pmat, Fmat, c0, maxAge=100,
   ## From ur-state to birth state
   bsP[1 + (1:mz),1] = c0
   ## From normal state to normal state
-  bsP[1 + 1:mz, 1 + 1:mz] = Pmat
+  bsP[1 + 1:mz, 1 + 1:mz] = Umat
 
   ## You only start reproducing once you're past the ur-state.  Note
   ## that all we need are the column sums of bsF.
@@ -2832,11 +2832,11 @@ partitionVarSkewnessNoEnvVarPostBreeding = function (Pmat, Fmat, c0, maxAge=100,
   birthStateSkewness = urSkewness - justBirthStateSkewness
 
   ## Starting the age loop
-  PaC0 = c0  ## Pmat^a c_0
+  PaC0 = c0  ## Umat^a c_0
   mzZero = rep(0, mz)
 
   ## Sanity check
-  N = solve(diag(mz) - Pmat)
+  N = solve(diag(mz) - Umat)
   rho1Vec = colSums (Fmat %*% N)
   foo1 = esRho1Vec %*% c(c0, mzZero, mzZero)
   foo2 = rho1Vec %*% c0
@@ -2846,29 +2846,29 @@ partitionVarSkewnessNoEnvVarPostBreeding = function (Pmat, Fmat, c0, maxAge=100,
   survUpdateSkewness[1] = esSkewnessVec %*%
     c(mzZero, Sbullet %*% PaC0, mzZero)
   growthUpdateSkewness[1] = esSkewnessVec %*%
-    c(mzZero, mzZero, Pmat %*% PaC0)
+    c(mzZero, mzZero, Umat %*% PaC0)
   fecUpdateSkewness[1] = esSkewnessVec %*%
-    c(Pmat %*% PaC0, mzZero, mzZero)
+    c(Umat %*% PaC0, mzZero, mzZero)
 
   survUpdateVar[1] = esMu2Vec %*% c(mzZero, Sbullet %*% PaC0, mzZero)
-  growthUpdateVar[1] = esMu2Vec %*% c(mzZero, mzZero, Pmat %*% PaC0)
-  fecUpdateVar[1] = esMu2Vec %*% c(Pmat %*% PaC0, mzZero, mzZero)
+  growthUpdateVar[1] = esMu2Vec %*% c(mzZero, mzZero, Umat %*% PaC0)
+  fecUpdateVar[1] = esMu2Vec %*% c(Umat %*% PaC0, mzZero, mzZero)
 
   surv[1] = sum (PaC0)
   ## a is actually age + 1, since the first year of life is age 0
   for (a in 2:maxAge) {
-    PaC0 = Pmat %*% PaC0
+    PaC0 = Umat %*% PaC0
 
     survUpdateSkewness[a] = esSkewnessVec %*%
       c(mzZero, Sbullet %*% PaC0, mzZero)
     growthUpdateSkewness[a] = esSkewnessVec %*%
-      c(mzZero, mzZero, Pmat %*% PaC0)
+      c(mzZero, mzZero, Umat %*% PaC0)
     fecUpdateSkewness[a] = esSkewnessVec %*%
-      c(Pmat %*% PaC0, mzZero, mzZero)
+      c(Umat %*% PaC0, mzZero, mzZero)
 
     survUpdateVar[a] = esMu2Vec %*% c(mzZero, Sbullet %*% PaC0, mzZero)
-    growthUpdateVar[a] = esMu2Vec %*% c(mzZero, mzZero, Pmat %*% PaC0)
-    fecUpdateVar[a] = esMu2Vec %*% c(Pmat %*% PaC0, mzZero, mzZero)
+    growthUpdateVar[a] = esMu2Vec %*% c(mzZero, mzZero, Umat %*% PaC0)
+    fecUpdateVar[a] = esMu2Vec %*% c(Umat %*% PaC0, mzZero, mzZero)
 
     ## survival trajectory skewness and var.
     survTrajecSkewness[a] = fecUpdateSkewness[a-1] -
@@ -3052,11 +3052,11 @@ partitionVarSkewnessEnvVarPostBreeding = function (Plist, Flist, Q, c0,
 
   ## Sanity check input
   if (length(c0) != mz)
-    stop ("Length of c0 does not match dimension of Pmat")
+    stop ("Length of c0 does not match dimension of Umat")
 
   ## Sanity check input
   if (dim(Flist[[1]])[1] != mz)
-    stop ("Pmat and Fmat should have the same dimensions.")
+    stop ("Umat and Fmat should have the same dimensions.")
 
   ## u0 is the stationary environmental distribution, given by the
   ## dominant eigenvector of Q

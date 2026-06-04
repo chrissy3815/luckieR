@@ -5,7 +5,7 @@
 \title{Partitions variance and skewness of LRO for a post-breeding census}
 \usage{
 partitionVarSkewnessNoEnvVarPostBreeding(
-  Pmat,
+  Umat,
   Fmat,
   c0,
   maxAge = 100,
@@ -20,7 +20,7 @@ partitionVarSkewnessNoEnvVarPostBreeding(
 )
 }
 \arguments{
-\item{Pmat}{The survival/growth transition matrix: Pmat[i,j] is the probability
+\item{Umat}{The survival/growth transition matrix: Umat[i,j] is the probability
 of transitioning from state j to state i.}
 
 \item{Fmat}{The fecundity matrix: Fmat[i,j] is the expected number of state i
@@ -92,8 +92,8 @@ of reproductive skew and extreme reproductive success in structured
 populations." The American Naturalist 204(2) and its online supplement.
 }
 \examples{
-Pmat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
+Umat = matrix (c(0, 0.3, 0, 0, 0, 0.5, 0, 0, 0.5), 3, 3)
 Fmat = matrix (0, 3, 3); Fmat[1,] = 0:2
 c0 = c(1,0,0)
-out = partitionVarSkewnessNoEnvVarPostBreeding (Pmat, Fmat, c0)
+out = partitionVarSkewnessNoEnvVarPostBreeding (Umat, Fmat, c0)
 }
