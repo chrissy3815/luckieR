@@ -19,18 +19,37 @@ impacts, and luck (also called individual stochasticity).
 
 ## Installation
 
-We are working on releasing the package to CRAN. You can always install
-the development version of `luckieR` from [Github](https://github.com/)
-as follows:
+The luckieR package (v 0.1.0.0) is available on CRAN. We are actively
+making improvements to the package as version 0.1.0.9000, so we
+currently recommend using the development version. You can always
+install the development version of `luckieR` from
+[Github](https://github.com/) as follows:
 
 ``` r
 # CRAN installation:
 install.packages("luckieR")
 
-# Github direct installation
+# Github development version installation
 # install.packages("pak")
 pak::pak("chrissy3815/luckieR")
 ```
+
+## Reporting an issue
+
+Because we are actively improving the package, we are keen for people to
+try it out on their own data and let us know about anything that needs
+work.
+
+Please use the [Issues](https://github.com/chrissy3815/luckieR/issues)
+tab here on Github to let us know about any bugs, issues, or
+recommendations for improvement of the package and its documentation.
+*Please use this reporting method even if you’ve talked to or emailed
+one of the developers directly!*
+
+It’s a simple text submission form, so please describe the issue as best
+you can, and provide example code and/or data when relevant. This helps
+us track the changes that we need to make, and whether we’ve solved the
+issue.
 
 ## Example
 
