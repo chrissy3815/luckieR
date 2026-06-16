@@ -26,12 +26,12 @@ install the development version of `luckieR` from
 [Github](https://github.com/) as follows:
 
 ``` r
-# CRAN installation:
-install.packages("luckieR")
-
 # Github development version installation
 # install.packages("pak")
 pak::pak("chrissy3815/luckieR")
+
+# CRAN installation:
+install.packages("luckieR")
 ```
 
 ## Reporting an issue
@@ -51,7 +51,31 @@ you can, and provide example code and/or data when relevant. This helps
 us track the changes that we need to make, and whether we’ve solved the
 issue.
 
-## Example
+## Examples:
+
+We have two sets of examples available. Here, in the README, we provide
+some code to perform a few simple calculations - mean, variance, and
+skewness of lifespan and LRO for a matrix population model.
+
+### GrassEndophyteVignette:
+
+The real power of luckieR is in the ability to calculate conditional
+probability distributions (*e.g.*, lifespan conditional on producing at
+least one offspring) and to perform variance decompositions (*e.g.*,
+partitioning the variance in LRO into contributions from growth
+trajectory luck, survival luck, and fertility luck). To see some
+examples of using the more powerful functionality in a model where
+individuals differ in a phenotypic trait, please look through the
+**GrassEndophyteVignette**:
+
+``` r
+browseVignettes("luckieR")
+# This will open a page listing the available vignettes in your browser.
+# Currently there is only one available. 
+# Click on the HTML option to read the vignette in your browser window!
+```
+
+### Simple Example:
 
 This is a basic example which shows you how to calculate mean of
 lifespan and lifetime reproductive output (LRO) for a simple matrix
