@@ -117,6 +117,10 @@ makeCondKernel = function (Umat, transientStates) {
       MCond[,j] = rep (0, numStates)
     } else {
       MCond[,j] = Umat[,j] * q2Extended / q2Extended[j]
+      ## Take care of potential division by zero.
+      foo = which (Umat[,j] * q2Extended == 0)    
+      if (length(foo) > 0)
+        MCond[foo,j] = 0
     }
   }
 
@@ -171,8 +175,13 @@ makeCondFailureKernel = function (Umat, transientStates) {
 
   ## Transition matrix conditional on not reproducing before death.
   MCond = matrix (0, numTransient, numTransient)
-  for (j in 1:numTransient)
+  for (j in 1:numTransient) {
     MCond[,j] = Umat[transientStates,transientStates[j]] * q1 / q1[j]
+    ## Take care of potential division by zero.
+    foo = which (Umat[transientStates,transientStates[j]] * q1 == 0)    
+    if (length(foo) > 0)
+      MCond[foo,j] = 0
+  }
 
   return (out=list (q1=q1, MCond=MCond))
 }
