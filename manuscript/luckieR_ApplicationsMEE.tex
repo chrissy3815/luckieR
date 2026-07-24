@@ -21,9 +21,12 @@
 \usepackage{cancel}
 \usepackage{lineno}
 \usepackage{authblk}
-\usepackage{siunitx}
+%\usepackage{siunitx}  % RES: when I try to compile, it stumbles over siunitx.sty
+
 \usepackage{mathtools}
 \usepackage[font=small,skip=0pt]{caption}
+
+\newcommand{\comment}{\textcolor{blue}}
 
 %Useful new commands
 \newcommand{\A}{\mathbf{A}}
@@ -32,16 +35,17 @@
 \newcommand{\wbar}{\overline\w}
 \newcommand{\vbar}{\overline\bbv}
 
+%% Commented out so that Robin can compile:
 % Chrissy bibliography:
-\usepackage[
-    citestyle=authoryear, 
-    uniquelist=false,
-    uniquename=false,
-    natbib,
-    backend=biber,
-    bibstyle=apa,
-    ]{biblatex}
-\addbibresource{hernandez_library.bib}
+% \usepackage[
+%     citestyle=authoryear, 
+%     uniquelist=false,
+%     uniquename=false,
+%     natbib,
+%     backend=biber,
+%     bibstyle=apa,
+%     ]{biblatex}
+% \addbibresource{hernandez_library.bib}
 
 \title{luckieR: an R package for calculating and decomposing distributions of luck in life histories}
 \author[1]{Stephen P. Ellner}
@@ -98,10 +102,35 @@ Different papers use different headers for this section: Implementation, Modelin
 \subsection{Chrissy's questions about software dev}
 \begin{enumerate}
 	\item Robin's functions have different options for different cases (NoEnv, PostBreeding, PostBreedingNoEnv). Is it worth creating a wrapper that has input variables that allow users to select pre- vs. post-breeding and environment vs no environment? Chrissy is offering to do that if it's desirable.
-	\item Is it possible to change ``Def3" to something more intuitive?
+	\item Is it possible to change ``Def3" to something more
+          intuitive? \comment{RES: yes, I'll add that to my to-do list.}
 \end{enumerate}
 
 \section{Example Applications}
+
+As an example, consider a size-structured model for \emph{Elymus
+  villosus}, a perennial grass, for individuals with and without
+endophytes~\citep{2024:fowle.ziegl.whitn.ea}.  The model is based on
+data from a long-term symbiont removal experiment at Lilly-Dickey
+Woods in Indiana, USA~\ref{2023:mille.fowle.ziegl.ea} and contains
+transition matrices for 13 years.  One question we may wish to ask is
+how certain we are of an individual's endophyte status based on their
+lifetime reproductive output (LRO).  Fig.~\ref{fig:ELRIfigs} top left,
+is generated with \texttt{probTraitCondLRO} and shows that for this
+species, not having endophytes produces higher LRO, but even if we
+observe an individual with 6 offspring (which is well into the 90th
+percentile), we can't be very confident that that individual lacked
+endophytes.
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=0.47\linewidth]{probXCondR}
+  \caption{The probability that an individual is endophyte-positive
+    (black) or -negative (red) given their LRO.  Axis tics are at the
+    75th, 90th, 95th percentiles, and the plot extends to the 99th
+    percentile.}
+  \label{fig:ELRIfigs}
+\end{figure}
 
 \section{Discussion}
 
