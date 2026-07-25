@@ -112,7 +112,7 @@ As an example, consider a size-structured model for \emph{Elymus
   villosus}, a perennial grass, for individuals with and without
 endophytes~\citep{2024:fowle.ziegl.whitn.ea}.  The model is based on
 data from a long-term symbiont removal experiment at Lilly-Dickey
-Woods in Indiana, USA~\ref{2023:mille.fowle.ziegl.ea} and contains
+Woods in Indiana, USA~\citep{2023:mille.fowle.ziegl.ea} and contains
 transition matrices for 13 years.  One question we may wish to ask is
 how certain we are of an individual's endophyte status based on their
 lifetime reproductive output (LRO).  Fig.~\ref{fig:ELRIfigs} top left,
@@ -120,15 +120,59 @@ is generated with \texttt{probTraitCondLRO} and shows that for this
 species, not having endophytes produces higher LRO, but even if we
 observe an individual with 6 offspring (which is well into the 90th
 percentile), we can't be very confident that that individual lacked
-endophytes.
+endophytes.  For more details on the math behind this calculation,
+see~\cite{2018:snyde.ellne,2024:snyde.ellne}.
+
+Alternatively, we may wish to focus on what forms of luck are most
+important and at what ages.  If we partition the variance in LRO into
+a within-endophyte-status contribution and a between-endophyte-status
+contribution, we can think of the within-endophyte-status contribution
+as the contribution of luck~\citep{2018:snyde.ellne}.  We can further
+partition that luck contribution into contributions from individual
+demographic transitions at different ages.  Did you survive from age 2
+to age 3 and how much does knowing the outcome reduce the overall
+variance?  If you lived, how much did you grow or shrink and how much
+does knowing the outcome reduce the overall variance?  And so forth.
+The amount that knowing the outcome of each of these demographic
+transitions reduces the overall variance is the contribution that
+transition makes.
+
+Fig.~\ref{fig:ELRIfigs} top right shows that early survival luck is key,
+and this makes sense: if you die young, it doesn't matter how lucky
+you would have been later.  We also see that growing quickly at ages 2
+and 3 is important.  Survival rises rapidly with size for this
+species, so this too, makes sense.  For the mathematical details
+behind this calculation, see~\cite{2024:snyde.ellne}.
+
+As a final example, let us plot survival fraction and average size vs
+age for those destined to have at least one offspring and for those
+who will never have any offspring, as a way of understanding what is
+different about successful breeders.  To do this, we need to calculate
+the survival/growth transition matrices conditional on having at least
+one offspring.  Fig.~\ref{fig:ELRIfigs} bottom shows that that most of those
+who never breed fail because they do not survive the seedling stage
+(age 0), and of those that do, those that never breed do not grow as
+large as those who do.  Survival increases sharply with size for this
+species, so growing large quickly increases survival, not just
+fecundity.  For the mathematical details behind this calculation,
+see~\cite{2018:snyde.ellne}.
 
 \begin{figure}[htb]
   \centering
   \includegraphics[width=0.47\linewidth]{probXCondR}
-  \caption{The probability that an individual is endophyte-positive
-    (black) or -negative (red) given their LRO.  Axis tics are at the
-    75th, 90th, 95th percentiles, and the plot extends to the 99th
-    percentile.}
+  \hspace{3mm}
+  \includegraphics[width=0.47\linewidth]{luckTrajecELRI}
+
+  \includegraphics[width=\linewidth]{condKernelPlots}
+  \caption{Top left: The probability that an individual is
+    endophyte-positive (black) or -negative (red) given their LRO.
+    Axis tics are at the 75th, 90th, 95th percentiles, and the plot
+    extends to the 99th percentile.  Top right: Contributions to
+    $\var(R)$ as a function of age for endophyte-positive individuals.
+    The plot extends to the age by which an individual is 95\% likely
+    to have died, while the dashed purpble line shows the modal age at
+    first reproduction.  Bottom: Survival and average size vs age for
+    endophyte-positive individuals with and without offspring.}
   \label{fig:ELRIfigs}
 \end{figure}
 
